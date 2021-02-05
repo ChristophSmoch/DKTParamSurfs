@@ -1,28 +1,5 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
-
-### What is this repository for? ###
-
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
-### Setup ###
-
-Check:
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-
-#### virtual box ####
-https://www.virtualbox.org/
-sudo apt-get install virtualbox virtualbox-qt virtualbox-dkms
-
 #### BLAS and LAPACK ####
 ```bash
 $ sudo apt-get install libblas-dev liblapack-dev libopenblas-base libopenblas-dev
@@ -80,14 +57,40 @@ sudo apt-get install libeigen3-dev
 
 #### boost#: ####
 
-##### option 1: Install (recommended): 
+##### option 1: Install from archive manager: 
 UNIX: sudo apt-get install libboost-all-dev
-WINDOWS: 
+
+
+##### option 2: build from source
+
 download from boost.org/users/download
-extract zip file
+extract to $BOOSTDIR, e.g. $BOOSTDIR = /home/user/prog/boost_1_75_0
+
+UNIX:
+Open Terminal and navigate to $BOOSTDIR
+Run ./bootstrap.sh
+
+To install, the options are listed by using
+./b2 --help
+
+Consruct build and install directory:
+mkdir boost-build
+mkdir boost-install
+
+Run
+./b2 --build-dir="$BOOSTDIR/boost-build" --prefix="$BOOSTDIR/boost-install" --build-type=minimal --layout=system toolset=gcc install
+
+(layout=versioned produces another directory structure and libraries are name with version numbers. It seems that cmake cannot find the versioned libraries?)
+(build-type=complete installs all libraries, but minimal should be sufficient. Note that minimal is platform-dependent.)
+
+
+Run ./b2 install --prefix=PREFIX where PREFIX is a directory where you want Boost.Build to be installed.
+
+
+
+WINDOWS: 
 open shell-script bootstrap
 
-##### option 2: Include in source/externalLib
 On the command line, go to the root of the unpacked tree.
 Run ./bootstrap.sh
 Run ./b2 install --prefix=PREFIX where PREFIX is a directory where you want Boost.Build to be installed.
@@ -225,6 +228,8 @@ else use
 * VTK_DIR:PATH=$VTKDIR/build
 * MPI_INCLUDE_DIR=$OPENMPIBUILDDIR/include
 
+if boost is installed from source:
+* PESOPT_BOOST_DIR:PATH=$BOOSTDIR/boost-install
 
 #### Build documentation with DOXYGEN #### 
 

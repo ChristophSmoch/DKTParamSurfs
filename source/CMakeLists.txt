@@ -136,7 +136,7 @@ endif( PESOPT_WITH_IPOPT )
 ###########################################
 #OpenMP
 ############################################  
-option( PESOPT_WITH_OPENMP "OpenMP for parallel computing" ON )
+option( PESOPT_WITH_OPENMP "OpenMP for parallel computing" OFF )
 if ( PESOPT_WITH_OPENMP )
     find_package(OpenMP)
     add_definitions( -DPESOPT_WITH_OPENMP )
@@ -173,7 +173,7 @@ endif( PESOPT_WITH_MPI )
 ###########################################
 #SuiteSparse
 ############################################ 
-option( PESOPT_WITH_SUITESPARSE "SuiteSparse provides direct solvers for linear systems" ON )
+option( PESOPT_WITH_SUITESPARSE "SuiteSparse provides direct solvers for linear systems" OFF )
 if ( PESOPT_WITH_SUITESPARSE )
 # list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # find_package(SUITESPARSE REQUIRED)
