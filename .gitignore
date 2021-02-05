@@ -47,4 +47,73 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+#Project files
+build/
+debug/
+build*/
+debug*/
+
+#external libs
+source/externalLibs
+
+#results
+results/
+#symlink
+#./results, ./data
+results
+data/
+data
+
+#documentation
+doc/
+
+#parameters
+parameters/counter.txt
+
+
+#######
+# IDE
+######
+#kdev
+pesopt.kdev4
+#codelite
+pesopt.workspace
+.codelite/
+tags#Project files
+build/
+debug/
+build*/
+debug*/
+
+#external libs
+source/externalLibs
+
+#results
+results/
+#symlink
+#./results, ./data
+results
+data/
+data
+
+#documentation
+doc/
+
+#parameters
+parameters/counter.txt
+
+
+#######
+# IDE
+######
+#kdev
+pesopt.kdev4
+#codelite
+pesopt.workspace
+.codelite/
+tags
+
+
+
+
 

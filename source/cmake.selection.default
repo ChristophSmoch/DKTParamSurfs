@@ -1,0 +1,36 @@
+SET ( SELECTED_MODULES
+      modules/pesoptIO
+      modules/pesoptEnergies
+      modules/pesoptMatOpt
+      modules/pesoptSolver
+      modules/pesoptFE
+      modules/pesoptFE/pesoptQuocFE
+      modules/pesoptFE/pesoptTriangleFE
+      ##
+      #modules/pesoptDiscreteShells
+      modules/pesoptDKTFE
+)
+
+      
+SET ( SELECTED_EXTERNALS
+      external/eigen
+      external/ipopt
+      external/vtk
+)
+      
+# projects that have their own CMakeLists.txt.
+SET ( SELECTED_PROJECTS ${SELECTED_PROJECTS}
+      projects/dkt/elastDeform
+)
+
+ 
+# test projects that have their own CMakeLists.txt.     
+SET ( SELECTED_PROJECTS ${SELECTED_PROJECTS}
+      #tests/testExternal
+)
+
+
+# tools that have their own CMakeLists.txt.     
+SET ( SELECTED_TOOLS ${SELECTED_TOOLS}
+      #tools/vtkTools
+)
