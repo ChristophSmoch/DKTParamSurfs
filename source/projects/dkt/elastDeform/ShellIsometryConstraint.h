@@ -218,7 +218,7 @@ public :
     
     const int getNumDofs( ) const override { return _numDofsTotal; }
     
-    void evaluateEnergy ( const VectorType &DispAndMultiplier, RealType & L ) const {
+    void evaluateEnergy ( const VectorType &DispAndMultiplier, RealType & L ) const override{
         
         const Eigen::Ref<const VectorType> Disp = DispAndMultiplier.segment( 0, _numDofsDisp );
         const Eigen::Ref<const VectorType> Multiplier = DispAndMultiplier.segment( _numDofsDisp, _numDofsMultiplier );
@@ -232,7 +232,7 @@ public :
     RealType getLastElasticEnergy( ) const { return _energyElast; }
     void getLastConstraintVecEnergy( VectorType & constraintVec ) const { constraintVec = _constraintVecEnergy; }
     
-    void evaluateJacobian ( const VectorType &DispAndMultiplier, VectorType & jacL ) const {    
+    void evaluateJacobian ( const VectorType &DispAndMultiplier, VectorType & jacL ) const override{    
         const Eigen::Ref<const VectorType> Disp = DispAndMultiplier.segment( 0, _numDofsDisp );
         const Eigen::Ref<const VectorType> Multiplier = DispAndMultiplier.segment( _numDofsDisp, _numDofsMultiplier );
         
@@ -260,7 +260,7 @@ public :
         
     }
     
-    void evaluateHessian ( const VectorType &DispAndMultiplier, SparseMatrixType & hessL ) const {
+    void evaluateHessian ( const VectorType &DispAndMultiplier, SparseMatrixType & hessL ) const override{
     
         const int _numGlobalDofs = _numDofsDisp / 3;
         
@@ -274,11 +274,11 @@ public :
         hessL.setFromTriplets( tripletListLagrangianHessian.begin(), tripletListLagrangianHessian.end() ); 
     }
     
-    void evaluateTripletListHessian( const VectorType &Arg, std::vector<typename ConfiguratorType::TripletType> & tripletListHessian ) const {
+    void evaluateTripletListHessian( const VectorType &Arg, std::vector<typename ConfiguratorType::TripletType> & tripletListHessian ) const override{
         throw std::invalid_argument( pesopt::strprintf ( "HessianTriplet not implemented. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
     }
     
-    void evaluateTripletListHessianSym( const VectorType &Arg, std::vector<typename ConfiguratorType::TripletType> & tripletListHessian ) const {
+    void evaluateTripletListHessianSym( const VectorType &Arg, std::vector<typename ConfiguratorType::TripletType> & tripletListHessian ) const override{
         throw std::invalid_argument( pesopt::strprintf ( "HessianTriplet not implemented. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
     }
     

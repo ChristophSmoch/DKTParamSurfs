@@ -77,9 +77,9 @@ public :
             else if( dataType == VTKUNSTRUCTUREDGRID )  saveLegacyVTKFile<vtkUnstructuredGridWriter> ( outputFileName, dataSet );
             else if( dataType == VTKSTRUCTUREDPOINTS )  saveLegacyVTKFile<vtkStructuredPointsWriter> ( outputFileName, dataSet );
             else if( dataType == VTKRECTILINEARGRID  )  saveLegacyVTKFile<vtkRectilinearGridWriter>  ( outputFileName, dataSet );
-            else throw invalid_argument( pesopt::strprintf ( "Unknown VTK-DataType. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
+            else throw std::invalid_argument( pesopt::strprintf ( "Unknown VTK-DataType. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
         }
-        else throw invalid_argument( pesopt::strprintf ( "In function saveVTKDataSet, for outputfile %s, got unknown VTK-FileExtension %s. In File %s at line %d.", outputFileName, extension, __FILE__, __LINE__ ).c_str() );    
+        else throw std::invalid_argument( pesopt::strprintf ( "In function saveVTKDataSet, for outputfile %s, got unknown VTK-FileExtension %s. In File %s at line %d.", outputFileName.c_str(), extension.c_str(), __FILE__, __LINE__ ).c_str() );    
 #ifdef __DEBUGVTKSaver
         cout << "finished writting dataset to file " << endl << outputFileName.c_str() << endl << endl;
 #endif
@@ -98,9 +98,9 @@ public :
 //             else if( dataType == VTKUNSTRUCTUREDGRID )  saveLegacyVTKFile<vtkUnstructuredGridWriter> ( outputFileName, algoOut );
 //             else if( dataType == VTKSTRUCTUREDPOINTS )  saveLegacyVTKFile<vtkStructuredPointsWriter> ( outputFileName, algoOut );
 //             else if( dataType == VTKRECTILINEARGRID  )  saveLegacyVTKFile<vtkRectilinearGridWriter>  ( outputFileName, algoOut );
-//             else throw invalid_argument( pesopt::strprintf ( "Unknown VTK-DataType. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
+//             else throw std::invalid_argument( pesopt::strprintf ( "Unknown VTK-DataType. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
 //         }
-//         else throw invalid_argument( pesopt::strprintf ( "Unknown VTK-FileExtension. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );    
+//         else throw std::invalid_argument( pesopt::strprintf ( "Unknown VTK-FileExtension. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );    
 //      }
     
     
@@ -140,7 +140,7 @@ public :
         else if (extension == ".vtr") { readXMLVTKFile<vtkXMLRectilinearGridReader> (inputFileName, dataSet ); dataType = VTKRECTILINEARGRID; }
         else if (extension == ".vti") { readXMLVTKFile<vtkXMLImageDataReader> (inputFileName, dataSet ); dataType = VTKIMAGEDATA; }
         else if (extension == ".vtk")   readLegacyVTKFile<vtkDataSetReader> (inputFileName, dataSet, dataType );
-        else throw invalid_argument( pesopt::strprintf ( "Unknown VTK-FileExtension for file %s. In File %s at line %d.", inputFileName, __FILE__, __LINE__ ).c_str() ); 
+        else throw std::invalid_argument( pesopt::strprintf ( "Unknown VTK-FileExtension for file %s. In File %s at line %d.", inputFileName.c_str(), __FILE__, __LINE__ ).c_str() ); 
 #ifdef __DEBUGVTKSaver
         cout << "finished reading dataset from file " << endl << inputFileName.c_str() << endl << endl;
 #endif
@@ -276,7 +276,7 @@ public :
         vtkSmartPointer<vtkDataSet> data; this->readVTKDataSet( inputFileName, data, file_extension, dataType );
         vtkIdType idNumCellsInFile = data->GetNumberOfCells();
         dataVec.resize( idNumCellsInFile );
-        vtkSmartPointer<vtkPointData> cd = data->GetCellData();
+        vtkSmartPointer<vtkCellData> cd = data->GetCellData();
 #ifdef __DEBUGVTKSaver
         if (cd) cout << " contains cell data with " << cd->GetNumberOfArrays() << " arrays." << endl;
 #endif

@@ -77,7 +77,7 @@ public:
   virtual bool get_starting_point ( Ipopt::Index n, bool init_x,  Ipopt::Number* x, 
                                     bool init_z, Ipopt::Number* /*z_L*/, Ipopt::Number* /*z_U*/, 
                                     Ipopt::Index /*m*/, bool init_lambda, Ipopt::Number* /*lambda*/ ) {
-    init_x == true; init_z == false; init_lambda == false;
+    init_x = true; init_z = false; init_lambda = false;
     for ( int j = 0; j < _startingPoint.size (); ++j ) x[j] = _startingPoint[j];
     return true;
   }
@@ -354,7 +354,7 @@ public:
   virtual bool get_starting_point ( Ipopt::Index n, bool init_x,  Ipopt::Number* x, 
                                     bool init_z, Ipopt::Number* /*z_L*/, Ipopt::Number* /*z_U*/, 
                                     Ipopt::Index /*m*/, bool init_lambda, Ipopt::Number* /*lambda*/ ) {
-    init_x == true; init_z == false; init_lambda == false;
+    init_x = true; init_z = false; init_lambda = false;
     for ( int j = 0; j < _startingPoint.size (); ++j ) x[j] = _startingPoint[j];
     return true;
   }

@@ -107,7 +107,7 @@ parameters/counter.txt
 # IDE
 ######
 #kdev
-pesopt.kdev4
+*.kdev4
 #codelite
 pesopt.workspace
 .codelite/
