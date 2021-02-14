@@ -348,7 +348,7 @@ public:
   const RealType getLowerBound( const int numConstraint ) const override { return 0.; };
   const RealType getUpperBound( const int numConstraint ) const override { return 0.; };
   
-  void evaluate ( const VectorType & Disp, VectorType & ConstraintVec ) const{
+  void evaluate ( const VectorType & Disp, VectorType & ConstraintVec ) const override{
 
       ConstraintVec.setZero();
       std::vector<Eigen::Ref<const VectorType> > refsD1U, refsD2U; 
@@ -386,9 +386,9 @@ public:
   }
     
 
-  const int sizeJacobian ( ) const { return 4 * this->getNumConstraints(); }
+  const int sizeJacobian ( ) const override { return 4 * this->getNumConstraints(); }
     
-  void evaluateJacobian( const VectorType & Disp, std::vector<TripletType> & tripletListJac ) const {
+  void evaluateJacobian( const VectorType & Disp, std::vector<TripletType> & tripletListJac ) const override{
 
       tripletListJac.reserve( this->sizeJacobian() );
       
@@ -429,8 +429,8 @@ public:
      }
   }
   
-  const int sizeHessian ( ) const { return 3 * this->getNumConstraints(); }
-  void evaluateHessian( const VectorType &/*Arg*/, std::vector<std::vector<TripletType>> &hessian ) const{
+  const int sizeHessian ( ) const override { return 3 * this->getNumConstraints(); }
+  void evaluateHessian( const VectorType &/*Arg*/, std::vector<std::vector<TripletType>> &hessian ) const override{
        unsigned bdrIt = 0;
        for( int i=0; i<_numVertices; ++i){
          if( _mask[i] ) bdrIt++;        
