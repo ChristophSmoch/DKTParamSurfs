@@ -3,7 +3,7 @@
 
 # include <energyDefines.h>
 
-#include "ShellDeformationEnergiesInterfaces.h"
+#include "../elastDeform/ShellDeformationEnergiesInterfaces.h"
 #include "../elastDeform/ShellDeformationEnergiesNonLin.h"
 
 
@@ -27,8 +27,8 @@
 //-----------------------------------------------------------------
 
 template <typename MatOptConfType>
-class NonlinearBendingEnergy 
-: public RefTriangleIntegrator<typename MatOptConfType::ConfiguratorType, NonlinearBendingEnergy<MatOptConfType> >
+class SemiNonlinearBendingEnergy 
+: public RefTriangleIntegrator<typename MatOptConfType::ConfiguratorType, SemiNonlinearBendingEnergy<MatOptConfType> >
 {
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -52,12 +52,12 @@ class NonlinearBendingEnergy
   const RealType _thicknessHard, _thicknessSoft;  
   
   public:
-    NonlinearBendingEnergy ( const MatOptConfType &matOptConf, 
+    SemiNonlinearBendingEnergy ( const MatOptConfType &matOptConf, 
                              const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                              const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                              const VectorType &pf,
                              const RealType factorBendingEnergy  ) : 
-     RefTriangleIntegrator <ConfiguratorType, NonlinearBendingEnergy<MatOptConfType> > ( matOptConf._conf ),
+     RefTriangleIntegrator <ConfiguratorType, SemiNonlinearBendingEnergy<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ), 
      _xAStorage(xAStorage), _xBStorage ( xBStorage ),
      _pf( matOptConf._confpf, pf ),
@@ -66,19 +66,38 @@ class NonlinearBendingEnergy
     _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ) {}
 
     RealType evaluateIntegrand ( const typename ConfiguratorType::ElementType &El, int QuadPoint) const{
+      // material factors
       const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
       const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
-      Matrix22 mat;
-      mat = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) *  ( _xBStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) -_xAStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) );
-      return 1./24. * chi * _factorBendingEnergy * deltaSqr * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint ) * mat.squaredNorm( );
+      const materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
+      
+      
+      RealType aux = 0.;
+      
+      
+      for ( int l = 0; l<3; ++ ) {
+         Matrix22 mat_temp; mat_temp.setZero();
+         
+         mat_temp +=  _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
+         
+         mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
+         
+         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
+         
+         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
+         
+         aux +=  mat_temp.squaredNorm( );
+      }
+    
+      return materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint ) * aux;
     } 
 };
   
   
   
 template<typename MatOptConfType>
-class NonlinearBendingEnergyGradient_Part1 :
-public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType, NonlinearBendingEnergyGradient_Part1<MatOptConfType> >
+class SemiNonlinearBendingEnergyGradient_Part1 :
+public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType, SemiNonlinearBendingEnergyGradient_Part1<MatOptConfType> >
 {      
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -103,12 +122,12 @@ public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType,
   const RealType _thicknessHard, _thicknessSoft;  
     
  public:
-    NonlinearBendingEnergyGradient_Part1 ( const MatOptConfType &matOptConf, 
+    SemiNonlinearBendingEnergyGradient_Part1 ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
                               const RealType factorBendingEnergy  ) : 
-     RefTriangleMVDiff2OpIntegrator<ConfiguratorType, NonlinearBendingEnergyGradient_Part1<MatOptConfType> > ( matOptConf._conf ),
+     RefTriangleMVDiff2OpIntegrator<ConfiguratorType, SemiNonlinearBendingEnergyGradient_Part1<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ), 
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
@@ -132,8 +151,8 @@ public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType,
 
 
 template<typename MatOptConfType>
-class NonlinearBendingEnergyGradient_Part2 :
-public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType, NonlinearBendingEnergyGradient_Part2<MatOptConfType> >
+class SemiNonlinearBendingEnergyGradient_Part2 :
+public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType, SemiNonlinearBendingEnergyGradient_Part2<MatOptConfType> >
 {      
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -158,12 +177,12 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
   const RealType _thicknessHard, _thicknessSoft;  
     
   public:
-    NonlinearBendingEnergyGradient_Part2 ( const MatOptConfType &matOptConf, 
+    SemiNonlinearBendingEnergyGradient_Part2 ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
                               const RealType factorBendingEnergy  ) : 
-     RefTriangleMVDiffOpIntegrator<ConfiguratorType, NonlinearBendingEnergyGradient_Part2<MatOptConfType> > ( matOptConf._conf ),
+     RefTriangleMVDiffOpIntegrator<ConfiguratorType, SemiNonlinearBendingEnergyGradient_Part2<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ), 
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
@@ -191,7 +210,7 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
 
 
 template<typename MatOptConfType>
-class NonlinearBendingEnergyGradient {
+class SemiNonlinearBendingEnergyGradient {
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
   typedef typename MatOptConfType::ConfiguratorTypePf ConfiguratorTypePf;
@@ -204,7 +223,7 @@ class NonlinearBendingEnergyGradient {
   const RealType _factorBendingEnergy;
     
  public:
-    NonlinearBendingEnergyGradient ( const MatOptConfType &matOptConf, 
+    SemiNonlinearBendingEnergyGradient ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
@@ -216,8 +235,8 @@ class NonlinearBendingEnergyGradient {
     _factorBendingEnergy ( factorBendingEnergy ) {}
 
   void assembleAdd( VectorType &Deriv ) const {
-    NonlinearBendingEnergyGradient_Part1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
-    NonlinearBendingEnergyGradient_Part2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
+    SemiNonlinearBendingEnergyGradient_Part1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
+    SemiNonlinearBendingEnergyGradient_Part2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
   }
 };
 
@@ -227,8 +246,8 @@ class NonlinearBendingEnergyGradient {
 
       
 template<typename MatOptConfType>
-class NonlinearBendingEnergyMixedSecondDerivative_Part1
-: public RefTriangleFENonlinOpIntegrator<typename MatOptConfType::ConfiguratorTypePf, NonlinearBendingEnergyMixedSecondDerivative_Part1<MatOptConfType> >
+class SemiNonlinearBendingEnergyMixedSecondDerivative_Part1
+: public RefTriangleFENonlinOpIntegrator<typename MatOptConfType::ConfiguratorTypePf, SemiNonlinearBendingEnergyMixedSecondDerivative_Part1<MatOptConfType> >
 {      
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -254,13 +273,13 @@ class NonlinearBendingEnergyMixedSecondDerivative_Part1
   const RealType _thicknessHard, _thicknessSoft;  
 
   public:
-    NonlinearBendingEnergyMixedSecondDerivative_Part1 ( const MatOptConfType &matOptConf, 
+    SemiNonlinearBendingEnergyMixedSecondDerivative_Part1 ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
                               const VectorType &adjoint,
                               const RealType factorBendingEnergy  ) : 
-     RefTriangleFENonlinOpIntegrator<ConfiguratorTypePf, NonlinearBendingEnergyMixedSecondDerivative_Part1<MatOptConfType> > ( matOptConf._confpf ),
+     RefTriangleFENonlinOpIntegrator<ConfiguratorTypePf, SemiNonlinearBendingEnergyMixedSecondDerivative_Part1<MatOptConfType> > ( matOptConf._confpf ),
      _matOptConf( matOptConf ), 
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
@@ -294,8 +313,8 @@ class NonlinearBendingEnergyMixedSecondDerivative_Part1
       
       
 template<typename MatOptConfType>
-class NonlinearBendingEnergyMixedSecondDerivative_Part2
-: public RefTriangleFENonlinOpIntegrator<typename MatOptConfType::ConfiguratorTypePf, NonlinearBendingEnergyMixedSecondDerivative_Part2<MatOptConfType> >
+class SemiNonlinearBendingEnergyMixedSecondDerivative_Part2
+: public RefTriangleFENonlinOpIntegrator<typename MatOptConfType::ConfiguratorTypePf, SemiNonlinearBendingEnergyMixedSecondDerivative_Part2<MatOptConfType> >
 {      
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -320,13 +339,13 @@ class NonlinearBendingEnergyMixedSecondDerivative_Part2
   const RealType _thicknessHard, _thicknessSoft;  
 
   public:
-    NonlinearBendingEnergyMixedSecondDerivative_Part2 ( const MatOptConfType &matOptConf, 
+    SemiNonlinearBendingEnergyMixedSecondDerivative_Part2 ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
                               const VectorType &adjoint,
                               const RealType factorBendingEnergy  ) : 
-     RefTriangleFENonlinOpIntegrator<ConfiguratorTypePf, NonlinearBendingEnergyMixedSecondDerivative_Part2<MatOptConfType> > ( matOptConf._confpf ),
+     RefTriangleFENonlinOpIntegrator<ConfiguratorTypePf, SemiNonlinearBendingEnergyMixedSecondDerivative_Part2<MatOptConfType> > ( matOptConf._confpf ),
      _matOptConf( matOptConf ), 
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
@@ -364,7 +383,7 @@ class NonlinearBendingEnergyMixedSecondDerivative_Part2
 
 
 template<typename MatOptConfType>
-class NonlinearBendingEnergyMixedSecondDerivative {
+class SemiNonlinearBendingEnergyMixedSecondDerivative {
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
   typedef typename MatOptConfType::ConfiguratorTypePf ConfiguratorTypePf;
@@ -378,7 +397,7 @@ class NonlinearBendingEnergyMixedSecondDerivative {
   const RealType _factorBendingEnergy;
     
  public:
-    NonlinearBendingEnergyMixedSecondDerivative ( const MatOptConfType &matOptConf, 
+    SemiNonlinearBendingEnergyMixedSecondDerivative ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
@@ -391,8 +410,8 @@ class NonlinearBendingEnergyMixedSecondDerivative {
     _factorBendingEnergy ( factorBendingEnergy ) {}
 
   void assembleAdd( VectorType &Deriv ) const {
-    NonlinearBendingEnergyMixedSecondDerivative_Part1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _adjoint, _factorBendingEnergy ).assembleAdd( Deriv );
-    NonlinearBendingEnergyMixedSecondDerivative_Part2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _adjoint, _factorBendingEnergy ).assembleAdd( Deriv );
+    SemiNonlinearBendingEnergyMixedSecondDerivative_Part1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _adjoint, _factorBendingEnergy ).assembleAdd( Deriv );
+    SemiNonlinearBendingEnergyMixedSecondDerivative_Part2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _adjoint, _factorBendingEnergy ).assembleAdd( Deriv );
   }
 };
       
@@ -403,8 +422,8 @@ class NonlinearBendingEnergyMixedSecondDerivative {
 
 
 template<typename MatOptConfType>
-class NonlinearBendingEnergySubHessian_PartDiff1 :
-public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType::ConfiguratorType, NonlinearBendingEnergySubHessian_PartDiff1<MatOptConfType> > 
+class SemiNonlinearBendingEnergySubHessian_PartDiff1 :
+public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType::ConfiguratorType, SemiNonlinearBendingEnergySubHessian_PartDiff1<MatOptConfType> > 
 { 
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -430,13 +449,13 @@ public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType
   const int _k, _l;
     
  public:
-  NonlinearBendingEnergySubHessian_PartDiff1 ( const MatOptConfType &matOptConf, 
+  SemiNonlinearBendingEnergySubHessian_PartDiff1 ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
                               const RealType factorBendingEnergy,
                               const int k, const int l  ) : 
-     RefTriangleFELinAsymMatrixWeightedStiffIntegrator<ConfiguratorType, NonlinearBendingEnergySubHessian_PartDiff1<MatOptConfType> > ( matOptConf._conf ),
+     RefTriangleFELinAsymMatrixWeightedStiffIntegrator<ConfiguratorType, SemiNonlinearBendingEnergySubHessian_PartDiff1<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ), 
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
@@ -525,8 +544,8 @@ public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType
  
 // Part 2.1 = Part 2.2
 template<typename MatOptConfType>
-class NonlinearBendingEnergySubHessian_PartDiffMixed1 :
-public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator<typename MatOptConfType::ConfiguratorType, NonlinearBendingEnergySubHessian_PartDiffMixed1 <MatOptConfType> > 
+class SemiNonlinearBendingEnergySubHessian_PartDiffMixed1 :
+public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator<typename MatOptConfType::ConfiguratorType, SemiNonlinearBendingEnergySubHessian_PartDiffMixed1 <MatOptConfType> > 
 {
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -553,13 +572,13 @@ public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator<typename MatOptConfT
   const int _k, _l;
     
  public:
-  NonlinearBendingEnergySubHessian_PartDiffMixed1 ( const MatOptConfType &matOptConf, 
+  SemiNonlinearBendingEnergySubHessian_PartDiffMixed1 ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
                               const RealType factorBendingEnergy,
                               const int k, const int l  ) : 
-     RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator<ConfiguratorType, NonlinearBendingEnergySubHessian_PartDiffMixed1<MatOptConfType> > ( matOptConf._conf ),
+     RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator<ConfiguratorType, SemiNonlinearBendingEnergySubHessian_PartDiffMixed1<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ), 
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
@@ -587,8 +606,8 @@ public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator<typename MatOptConfT
  
 // // Part 1.3 = Part 1.2^T
 template<typename MatOptConfType>
-class NonlinearBendingEnergySubHessian_PartDiffMixed2 :
-public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor<typename MatOptConfType::ConfiguratorType, NonlinearBendingEnergySubHessian_PartDiffMixed2 <MatOptConfType>> 
+class SemiNonlinearBendingEnergySubHessian_PartDiffMixed2 :
+public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor<typename MatOptConfType::ConfiguratorType, SemiNonlinearBendingEnergySubHessian_PartDiffMixed2 <MatOptConfType>> 
 {
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -615,13 +634,13 @@ public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor<typename MatO
   const int _k, _l;
     
  public:
-  NonlinearBendingEnergySubHessian_PartDiffMixed2 ( const MatOptConfType &matOptConf, 
+  SemiNonlinearBendingEnergySubHessian_PartDiffMixed2 ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
                               const RealType factorBendingEnergy,
                               const int k, const int l  ) : 
-     RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor<ConfiguratorType, NonlinearBendingEnergySubHessian_PartDiffMixed2<MatOptConfType> > ( matOptConf._conf ),
+     RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor<ConfiguratorType, SemiNonlinearBendingEnergySubHessian_PartDiffMixed2<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ), 
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
@@ -662,8 +681,8 @@ public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor<typename MatO
  
 // Part 1.1
 template<typename MatOptConfType>
-class NonlinearBendingEnergySubHessian_PartDiff2 :
-public RefTriangleFELinMatrixDiff2Integrator<typename MatOptConfType::ConfiguratorType, NonlinearBendingEnergySubHessian_PartDiff2<MatOptConfType> > 
+class SemiNonlinearBendingEnergySubHessian_PartDiff2 :
+public RefTriangleFELinMatrixDiff2Integrator<typename MatOptConfType::ConfiguratorType, SemiNonlinearBendingEnergySubHessian_PartDiff2<MatOptConfType> > 
 {
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -689,13 +708,13 @@ public RefTriangleFELinMatrixDiff2Integrator<typename MatOptConfType::Configurat
   const int _k, _l;
     
  public:
-  NonlinearBendingEnergySubHessian_PartDiff2 ( const MatOptConfType &matOptConf, 
+  SemiNonlinearBendingEnergySubHessian_PartDiff2 ( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
                               const RealType factorBendingEnergy,
                               const int k, const int l  ) : 
-     RefTriangleFELinMatrixDiff2Integrator<ConfiguratorType, NonlinearBendingEnergySubHessian_PartDiff2<MatOptConfType> > ( matOptConf._conf ),
+     RefTriangleFELinMatrixDiff2Integrator<ConfiguratorType, SemiNonlinearBendingEnergySubHessian_PartDiff2<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ), 
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
@@ -717,7 +736,7 @@ public RefTriangleFELinMatrixDiff2Integrator<typename MatOptConfType::Configurat
 
 
 template<typename MatOptConfType>
-class NonlinearBendingEnergySubHessian {
+class SemiNonlinearBendingEnergySubHessian {
      
  protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -734,7 +753,7 @@ class NonlinearBendingEnergySubHessian {
   const int _k, _l;
     
  public:
-  NonlinearBendingEnergySubHessian( const MatOptConfType &matOptConf, 
+  SemiNonlinearBendingEnergySubHessian( const MatOptConfType &matOptConf, 
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
                               const VectorType &pf,
@@ -751,19 +770,19 @@ class NonlinearBendingEnergySubHessian {
 
        //Part 1.1
        std::vector<TripletType> tripletList_Part1;
-       NonlinearBendingEnergySubHessian_PartDiff2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part1, 1. );
+       SemiNonlinearBendingEnergySubHessian_PartDiff2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part1, 1. );
        
        //Parts 1.4, 2.3, 2.4.1, 2.4.2, 2.5
        std::vector<TripletType> tripletList_Part2;
-       NonlinearBendingEnergySubHessian_PartDiff1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part2, 1. );
+       SemiNonlinearBendingEnergySubHessian_PartDiff1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part2, 1. );
        
        //Part 1.2 = (1.3)^T
        std::vector<TripletType> tripletList_Part3;
-       NonlinearBendingEnergySubHessian_PartDiffMixed2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part3, 2. );
+       SemiNonlinearBendingEnergySubHessian_PartDiffMixed2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part3, 2. );
 
        //Part 2.1 = Part 2.2
        std::vector<TripletType> tripletList_Part4;
-       NonlinearBendingEnergySubHessian_PartDiffMixed1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part4, 2. );
+       SemiNonlinearBendingEnergySubHessian_PartDiffMixed1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part4, 2. );
        
        tripletList.reserve( tripletList_Part1.size() + tripletList_Part2.size() + tripletList_Part3.size() + tripletList_Part4.size() );
        for( int i=0; i<tripletList_Part1.size(); ++i ) tripletList.push_back( tripletList_Part1[i] );   
@@ -780,7 +799,7 @@ class NonlinearBendingEnergySubHessian {
  
  
 template <typename MatOptConfType>
-class NonlinearBendingEnergyOp {
+class SemiNonlinearBendingEnergyOp {
   
 protected :
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -803,7 +822,7 @@ protected :
 
 public:
 
-  NonlinearBendingEnergyOp ( const MatOptConfType& matOptConf,
+  SemiNonlinearBendingEnergyOp ( const MatOptConfType& matOptConf,
                              const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                              const VectorType& pf,
                              const RealType factorBendingEnergy ) 
@@ -816,28 +835,28 @@ public:
       Dest = 0.;
       VectorType xB ( Displacement.size() ); xB = _xA + Displacement;
       DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( _matOptConf._conf, xB, 3 );
-      NonlinearBendingEnergy<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Dest );
+      SemiNonlinearBendingEnergy<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Dest );
   }
   
   void evaluateStressOnElements( const VectorType &Displacement, VectorType &bendingStressVec ) const{
       bendingStressVec.setZero();
       VectorType xB ( Displacement.size() ); xB = _xA + Displacement;
       DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( _matOptConf._conf, xB, 3 );
-      NonlinearBendingEnergy<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy ).assembleOnElements( bendingStressVec );
+      SemiNonlinearBendingEnergy<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy ).assembleOnElements( bendingStressVec );
   }
   
   void evaluateGradient(const VectorType& Displacement, VectorType& Dest) const {
       Dest.setZero();
       VectorType xB ( Displacement.size() ); xB = _xA + Displacement;
       DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( _matOptConf._conf, xB, 3 );
-      NonlinearBendingEnergyGradient<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Dest );
+      SemiNonlinearBendingEnergyGradient<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Dest );
   }
     
   void evaluateMixedSecondDerivative(const VectorType& Displacement, const VectorType& adjointSol, VectorType& Dest) const {
       Dest.setZero();
       VectorType xB ( Displacement.size() ); xB = _xA + Displacement;
       DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( _matOptConf._conf, xB, 3 );
-      NonlinearBendingEnergyMixedSecondDerivative<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, adjointSol, _factorBendingEnergy ).assembleAdd( Dest );
+      SemiNonlinearBendingEnergyMixedSecondDerivative<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, adjointSol, _factorBendingEnergy ).assembleAdd( Dest );
   }
     
   void evaluateHessian( const VectorType& Displacement, SparseMatrixType& Hessian ) const {
@@ -857,7 +876,7 @@ public:
       for( int k=0; k<3; ++k )
           for( int l=0; l<3; ++l ){ 
               std::vector<TripletType> tripletList_kl;
-              NonlinearBendingEnergySubHessian<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy, k, l ).assembleTripletList( tripletList_kl );
+              SemiNonlinearBendingEnergySubHessian<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy, k, l ).assembleTripletList( tripletList_kl );
               for( int i=0; i<tripletList_kl.size(); ++i ){
                 tripletList.push_back( TripletType( tripletList_kl[i].row() + k * numGlobalDofs, tripletList_kl[i].col() + l * numGlobalDofs, 0.5 * tripletList_kl[i].value() ) );  
                 tripletList.push_back( TripletType( tripletList_kl[i].col() + l * numGlobalDofs, tripletList_kl[i].row() + k * numGlobalDofs, 0.5 * tripletList_kl[i].value() ) );  
@@ -877,8 +896,8 @@ public:
 
 
 template<typename MatOptConfType>
-class NonlinearMembraneBendingEnergyOp 
-: public NonLinElastEnergyOpInterface<MatOptConfType, NonlinearMembraneBendingEnergyOp<MatOptConfType> > {
+class SemiNonlinearMembraneBendingEnergyOp 
+: public NonLinElastEnergyOpInterface<MatOptConfType, SemiNonlinearMembraneBendingEnergyOp<MatOptConfType> > {
 
  protected: 
   typedef typename MatOptConfType::ConfiguratorType ConfiguratorType;
@@ -900,19 +919,19 @@ protected :
 
 public:
     
-  NonlinearMembraneBendingEnergyOp ( const MatOptConfType &matOptConf, 
+  SemiNonlinearMembraneBendingEnergyOp ( const MatOptConfType &matOptConf, 
                                      const MaskType &mask,
                                      const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xAStorage,
                                      const VectorType &pf,
                                      const VectorType &force  )
-    : NonLinElastEnergyOpInterface<MatOptConfType, NonlinearMembraneBendingEnergyOp<MatOptConfType> > ( matOptConf ),
+    : NonLinElastEnergyOpInterface<MatOptConfType, SemiNonlinearMembraneBendingEnergyOp<MatOptConfType> > ( matOptConf ),
     _xAStorage ( xAStorage ), _xA( xAStorage.getDofs() ), _pf( pf ),  _mask( mask ),  _force( force ),
     _factorMembraneEnergy ( matOptConf._materialInfo._factorMembraneEnergy ), _factorBendingEnergy ( matOptConf._materialInfo._factorBendingEnergy ) {}
 
   void evaluateElasticEnergies( const VectorType &disp, RealType &membraneEnergy, RealType &bendingEnergy, RealType &potEnergy, RealType &totalEnergy  ) const {
       NonlinearMembraneEnergyOp<MatOptConfType> membraneEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorMembraneEnergy );
       membraneEnergy = 0.; membraneEnergyOp.evaluateEnergy( disp, membraneEnergy );
-      NonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );
+      SemiNonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );
       bendingEnergy = 0.; bendingEnergyOp.evaluateEnergy( disp, bendingEnergy );
       potEnergy = _force.dot(disp);
       totalEnergy = membraneEnergy + bendingEnergy - potEnergy;
@@ -921,7 +940,7 @@ public:
   void evaluateJacobian( const VectorType &disp, VectorType &Deriv ) const {
       NonlinearMembraneEnergyOp<MatOptConfType> membraneEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorMembraneEnergy );
       VectorType membraneEnergyGrad ( Deriv.size() ); membraneEnergyOp.evaluateGradient( disp, membraneEnergyGrad );
-      NonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );
+      SemiNonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );
       VectorType bendingEnergyGrad ( Deriv.size() ); bendingEnergyOp.evaluateGradient( disp, bendingEnergyGrad );
       Deriv = membraneEnergyGrad + bendingEnergyGrad - _force;
       for( int i = 0; i < _mask.size(); ++i ){
@@ -933,7 +952,7 @@ public:
   void evaluateMixedSecondDerivative(const VectorType& disp, const VectorType& adjointSol, VectorType& Deriv) const {
       NonlinearMembraneEnergyOp<MatOptConfType> membraneEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorMembraneEnergy );
       VectorType membraneEnergyGrad ( Deriv.size() ); membraneEnergyOp.evaluateMixedSecondDerivative( disp, adjointSol, membraneEnergyGrad );
-      NonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );
+      SemiNonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );
       VectorType bendingEnergyGrad ( Deriv.size() ); bendingEnergyOp.evaluateMixedSecondDerivative( disp, adjointSol, bendingEnergyGrad );
       Deriv = membraneEnergyGrad + bendingEnergyGrad;
   }
@@ -942,7 +961,7 @@ public:
       membraneStressVec.setZero(); bendingStressVec.setZero(); totalStressVec.setZero();
       NonlinearMembraneEnergyOp<MatOptConfType> membraneEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorMembraneEnergy );
       membraneEnergyOp.evaluateStressOnElements( disp, membraneStressVec );
-      NonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );
+      SemiNonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );
       bendingEnergyOp.evaluateStressOnElements( disp, bendingStressVec );
       totalStressVec = membraneStressVec + bendingStressVec;
     }
@@ -953,7 +972,7 @@ public:
       
    std::vector<TripletType> tripletListMembrane, tripletListBending;
    NonlinearMembraneEnergyOp<MatOptConfType>( this->_matOptConf, this->_xAStorage, this->_pf, _factorMembraneEnergy ).assembleTripletListHessian( disp, tripletListMembrane, Factor );  
-   NonlinearBendingEnergyOp<MatOptConfType>( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy ).assembleTripletListHessian( disp, tripletListBending, Factor );
+   SemiNonlinearBendingEnergyOp<MatOptConfType>( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy ).assembleTripletListHessian( disp, tripletListBending, Factor );
 
    tripletListMasked.reserve( tripletListMembrane.size() + tripletListBending.size() );
     

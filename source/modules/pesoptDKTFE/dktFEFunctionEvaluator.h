@@ -473,6 +473,46 @@ public:
 
 
 
+template <typename ConfiguratorType>
+class SemiNonlinIsometryPointWiseVectorFunctionEvaluatorShellFE {
+public:
+  typedef typename ConfiguratorType::RealType RealType;
+  typedef typename ConfiguratorType::TangentVecType TangentVecType;
+  typedef typename ConfiguratorType::Point3DType Point3DType;
+  typedef typename ConfiguratorType::VectorType VectorType;
+  typedef typename ConfiguratorType::Matrix22  Matrix22;
+  typedef typename ConfiguratorType::Matrix32  Matrix32;
+  typedef typename ConfiguratorType::Matrix33  Matrix33;
+  
+  typedef typename ConfiguratorType::Tensor222Type  Tensor222Type;
+  typedef typename ConfiguratorType::Tensor322Type  Tensor322Type;
+  
+  typedef typename ConfiguratorType::ElementType ElementType;
+  typedef typename ConfiguratorType::DomVecType  DomVecType;
+  
+
+public:
+  
+  SemiNonlinIsometryPointWiseVectorFunctionEvaluatorShellFE ( ) { }
+
+  
+  void evaluateA1 ( const Matrix32 &Dx, TangentVecType &a1 ) const {
+    TangentVecType a1unnormalized = Dx.col(0);
+    a1 = a1unnormalized.normalized();
+  }
+  
+  void evaluateA2Hat ( const Matrix32 &Dx, const TangentVecType &a1, TangentVecType &a2hat ) const {
+    const TangentVecType partial2x = Dx.col(1);
+    a2hat = partial2x - (a1.dot(partial2x)) * a1;
+  }
+  
+  void evaluateA2 ( const TangentVecType &a2hat, TangentVecType &a2 ) const {
+    a2 = a2hat.normalized();
+  }
+  
+  // TODO Christoph: schreibe punktweise Auswertungsfunktionen
+
+};
 
 
 // template <typename ConfiguratorType>
@@ -990,6 +1030,7 @@ class DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> : publ
     const ConfiguratorType &_conf;
     const DKTFEVectorFunctionEvaluator <ConfiguratorType> _discrFuncs;
     PointWiseVectorFunctionEvaluatorShellFE<ConfiguratorType> _pointwiseEvaluator;
+    SemiNonlinIsometryPointWiseVectorFunctionEvaluatorShellFE<ConfiguratorType> _semiNonlinIsometryPointwiseEvaluator
     const int _numberOfElements;
     const int _numberOfQuadPointsPerElement;
     
@@ -1006,11 +1047,15 @@ protected:
     DFDStorageStructure <Tensor322Type>       _Hessian;
     
     //Mixed
-    DFDStorageStructure <Matrix22>                     _secondFF;
+    DFDStorageStructure <Matrix22>            _secondFF;
     DFDStorageStructure <DomVecType>         _gInvChristoffel2;
 //     DFDStorageStructure < TangentVecType >     _LaplaceBeltrami;
 
-    
+    // SemiNonlinIsometry
+    DFDStorageStructure <TangentVecType>      _SemiNonlinIsometry_a1;
+    DFDStorageStructure <TangentVecType>      _SemiNonlinIsometry_a2hat;
+    DFDStorageStructure <TangentVecType>      _SemiNonlinIsometry_a2;
+    // TODO Christoph: member variablen fuer a1tilde, ... anlegen
     
   public:
     DiscreteVectorFunctionStorage ( const ConfiguratorType &conf, const VectorType &dofs, const int numComponents ) :
@@ -1031,8 +1076,13 @@ protected:
       _Hessian ( _numberOfElements, _numberOfQuadPointsPerElement ),
       //mixed 
       _secondFF( _numberOfElements, _numberOfQuadPointsPerElement ),
-      _gInvChristoffel2 ( _numberOfElements, _numberOfQuadPointsPerElement )
-//       _LaplaceBeltrami ( _numberOfElements, _numberOfQuadPointsPerElement )
+      _gInvChristoffel2 ( _numberOfElements, _numberOfQuadPointsPerElement ), 
+      //SemiNonlinIsometry
+      _SemiNonlinIsometry_a1 ( _numberOfElements, _numberOfQuadPointsPerElement ), 
+      _SemiNonlinIsometry_a2hat ( _numberOfElements, _numberOfQuadPointsPerElement ), 
+      _SemiNonlinIsometry_a2 ( _numberOfElements, _numberOfQuadPointsPerElement )
+      // TODO Christoph: initialisiere von der groesse ( _numberOfElements, _numberOfQuadPointsPerElement )
+
     {
         for ( int elementIdx = 0; elementIdx < _conf.getInitializer().getNumTriangs(); ++elementIdx){
             const ElementType& El ( _conf.getInitializer().getTriang( elementIdx ) );
@@ -1051,6 +1101,17 @@ protected:
                 _pointwiseEvaluator.evaluateSecondFundamentalForm ( _Hessian.at (elementIdx, localQuadPointIndex), this->_normal.at (elementIdx, localQuadPointIndex), _secondFF.at (elementIdx, localQuadPointIndex));
                 _pointwiseEvaluator.evaluateVectorForLaplacian( this->_firstFFInv.at(elementIdx, localQuadPointIndex), this->_Gradient.at(elementIdx, localQuadPointIndex), _Hessian.at(elementIdx, localQuadPointIndex), _gInvChristoffel2.at(elementIdx, localQuadPointIndex) );
 //                 _discrFuncs.evaluateLaplaceBeltrami ( _firstFFInv.at(elementIdx, localQuadPointIndex), _Gradient.at(elementIdx, localQuadPointIndex), _Hessian.at(elementIdx, localQuadPointIndex), _gInvChristoffel2.at(elementIdx, localQuadPointIndex), _LaplaceBeltrami.at(elementIdx, localQuadPointIndex ) );
+
+
+                // SemiNonlinIsometry
+                _semiNonlinIsometryPointwiseEvaluator.evaluateA1(  this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex) );
+                
+                _semiNonlinIsometryPointwiseEvaluator.evaluateA2Hat(  this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex) );
+                
+                _semiNonlinIsometryPointwiseEvaluator.evaluateA2( _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex)  );
+                
+                // TODO Christoph: greife auf punktweise Auswertungen in SemiNonlinIsometryPointWiseVectorFunctionEvaluatorShellFE zu
+                
             }
         }
     }
@@ -1068,6 +1129,9 @@ public:
     
     const Matrix22& getSecondFF ( const int elementIdx, const int QuadPoint ) const {return _secondFF[elementIdx][QuadPoint];}
     const DomVecType& getGInvChristoffel2 ( const int elementIdx, const int QuadPoint ) const {return _gInvChristoffel2[elementIdx][QuadPoint];}
+    
+    // TODO Christoph: get-Funktionen
+    const TangentVecType& getSemiNonlinIsometry_a1 ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a1[elementIdx][QuadPoint];}
     
 };
 

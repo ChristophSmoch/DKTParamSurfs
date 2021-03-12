@@ -68,7 +68,7 @@ int main(int argc, char ** argv) {
                                                      parser.template get<RealType> ("InitMaterial.areaHardMaterial"), 
                                                      material, designTypeName );
 
-        optimalDeformSolverIsometryNonLinAdaptive<MatOptConfTypePlateTriang, NonlinearMembraneBendingEnergyOp<MatOptConfTypePlateTriang> > OptDeformFinderShell ( parser );
+        optimalDeformSolverIsometryNonLinAdaptive<MatOptConfTypePlateTriang, SemiNonlinearMembraneBendingEnergyOp<MatOptConfTypePlateTriang> > OptDeformFinderShell ( parser );
         OptDeformFinderShell.computeOptimalDeformation_Adaptive( mesh, material, initDisp, numAdaptiveRefinementSteps );
         
         
