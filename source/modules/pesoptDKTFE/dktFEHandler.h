@@ -168,6 +168,32 @@ public:
       }
       
       
+      // TODO Christoph: Karte zur undeformierten Schale (nicht isometrisch)
+      if( chartXAType == "PlateToNonIsometricTest" ){
+          const RealType pi = 4 * atan ( 1.0 );
+          const RealType radius = 1. / pi;
+          for ( int nodeIdx=0; nodeIdx < _numVertices; ++nodeIdx ) {
+            const Point3DType& coords ( _mesh.getVertex(nodeIdx) );
+            Point3DType coordsOnCylinder; 
+            coordsOnCylinder(0) = radius * sin( coords(0) * pi );
+            coordsOnCylinder(1) = coords(1);
+            coordsOnCylinder(2) = radius * cos( coords(0) * pi );
+            for( int comp=0; comp<3; ++comp )_xA[ nodeIdx + _numGlobalDofs * comp ] = coordsOnCylinder[comp];
+            if( ConfiguratorType::_ShellFEType == C1Dofs ){
+                TangentVecType firstTangentVecAtNode;  
+                firstTangentVecAtNode(0) = radius * pi * cos( coords(0) * pi ); 
+                firstTangentVecAtNode(1) = 0.;
+                firstTangentVecAtNode(2) = - radius * pi * sin( coords(0) * pi ); 
+                TangentVecType secondTangentVecAtNode; secondTangentVecAtNode(0) = 0.; secondTangentVecAtNode(1) = 1.; secondTangentVecAtNode(2) = 0.;
+                for( int comp=0; comp<3; ++comp ){
+                  _xA[ nodeIdx +     _numVertices + _numGlobalDofs * comp ] = firstTangentVecAtNode  [comp];
+                  _xA[ nodeIdx + 2 * _numVertices + _numGlobalDofs * comp ] = secondTangentVecAtNode [comp];
+                }
+            }
+        }
+      }
+      
+      
       // chart(x,y) = (x,y, 1/4(2x-1)^2 - 1/4(2y-1)^2)
       // D chart(x,y) =
       // ( 1             0

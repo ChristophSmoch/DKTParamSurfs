@@ -138,15 +138,20 @@ public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType,
     _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ) {}
 
    void getNonlinearity ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Tensor322Type &NL) const {
+      // material factors
       const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
       const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
+      const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
+      
+      // TODO Christoph: werte richtig NL aus
       Matrix22 mat;
       mat = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) *  ( _xBStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) -_xAStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) );
       for( int i=0; i<3; ++i )
         for( int j=0; j<2; ++j )
           for( int k=0; k<2; ++k )
             NL.set( i, j, k, _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[i] * mat(j,k) );
-      NL *= 1./12. * chi * _factorBendingEnergy * deltaSqr * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
+      
+      NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
    }
 };
 
@@ -193,18 +198,21 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
     _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ) {}
 
     void getNonlinearity ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Matrix32 &NL) const{
+      // material factors
       const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
       const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
+      const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
+      
+      // TODO Christoph replate NL
       Matrix22 gAInvGAInvHBMinHA = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * ( _xBStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) - _xAStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) );
       TangentVecType v;
       for (int comp = 0; comp < 3; ++comp){
         v(comp) = pesopt::ddProd<RealType,Matrix22> ( gAInvGAInvHBMinHA, _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[comp] );
       }
-      //normalTensorV.makeTensorProduct ( _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint ) , v);
       Matrix33 normalTensorV = _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint ) * v.transpose();
       NL = normalTensorV * _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint );
-      NL *= _xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
-      NL *= -1. * 1./12. * chi * _factorBendingEnergy * deltaSqr * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
+     
+      NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
     }
 };
 
