@@ -946,7 +946,7 @@ public:
       totalEnergy = membraneEnergy + bendingEnergy - potEnergy;
   }
 
-  void evaluateJacobian( const VectorType &disp, VectorType &Deriv ) const {
+  void evaluateJacobian( const VectorType &disp, VectorType &Deriv ) const override{
       NonlinearMembraneEnergyOp<MatOptConfType> membraneEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorMembraneEnergy );
       VectorType membraneEnergyGrad ( Deriv.size() ); membraneEnergyOp.evaluateGradient( disp, membraneEnergyGrad );
       SemiNonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );

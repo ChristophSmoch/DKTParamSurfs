@@ -319,7 +319,7 @@ class NonLinElastEnergyOpInterface
       throw std::invalid_argument( pesopt::strprintf ( "Called the interface function. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
   }
   
-  void evaluateEnergy( const VectorType &disp, RealType &totalEnergy ) const {
+  void evaluateEnergy( const VectorType &disp, RealType &totalEnergy ) const override {
       RealType membraneEnergy, bendingEnergy, potEnergy;
       this->asImp().evaluateElasticEnergies( disp, membraneEnergy, bendingEnergy, potEnergy, totalEnergy );
   }
