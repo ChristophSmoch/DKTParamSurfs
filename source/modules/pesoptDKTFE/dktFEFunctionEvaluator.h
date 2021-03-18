@@ -526,7 +526,7 @@ public:
         for ( int j = 0; j < 2; ++j ) {
           TangentVecType ddX_ij;
           ddX.getVector( ddX_ij, i, j );
-          a1tilde( i , j ) = (a1.dot( ddX_ij ))/partial1x.norm() - (a2.dot( ddX_ij )/a2hat.norm())*(partial2x.dot( a1 )/a1.norm());
+          a1tilde( i , j ) = (a1.dot( ddX_ij ))/partial1x.norm() - (a2.dot( ddX_ij )/a2hat.norm())*(partial2x.dot( a1 )/partial1x.norm());
         }
   }
 
