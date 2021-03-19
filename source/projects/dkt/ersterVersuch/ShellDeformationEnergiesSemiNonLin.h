@@ -78,9 +78,16 @@ class SemiNonlinearBendingEnergy
       for ( int l = 0; l<3; ++l ) {
          Matrix22 mat_temp; mat_temp.setZero();
 
-         mat_temp +=  _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
+         Matrix22 gAinvD2xB = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
+         mat_temp += gAinvD2xB;
 
-         mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
+         Matrix22 gAinvSeconFFBNormalB = _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
+         mat_temp -= gAinvSeconFFBNormalB;
+         
+         cout << "==============" << endl
+              << "gAinvD2xB = " << endl << gAinvD2xB << endl
+              << "gAinvSeconFFBNormalB = " << endl << gAinvSeconFFBNormalB << endl
+              << "|diff|^2 = " << mat_temp.squaredNorm( )  << endl;
 
          // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
          //
