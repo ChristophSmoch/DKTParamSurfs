@@ -5,8 +5,8 @@
  
 #include <includesVTK.h>
 
-// #define __DEBUGVTKSaver
 
+// #define __DEBUGVTKSaver
  
 class VTKSaver {
     
@@ -118,6 +118,9 @@ public :
     void readLegacyVTKFile(const string &inputFileName, vtkSmartPointer<vtkDataSet> &dataSet, VTKDATATYPE &dataType ) const{
         auto reader = vtkSmartPointer<TReader>::New();
         reader->SetFileName(inputFileName.c_str());
+//         boost::filesystem::path p ( inputFileName );
+//         reader->SetFileName( boost::filesystem::weakly_canonical( boost::filesystem::absolute(p) ).string().c_str() );
+
         reader->Update();
         reader->GetOutput()->Register(reader);
         dataSet = vtkDataSet::SafeDownCast(reader->GetOutput());

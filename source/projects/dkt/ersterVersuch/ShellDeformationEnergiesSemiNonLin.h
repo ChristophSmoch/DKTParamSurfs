@@ -78,7 +78,8 @@ class SemiNonlinearBendingEnergy
       for ( int l = 0; l<3; ++l ) {
          Matrix22 mat_temp; mat_temp.setZero();
 
-         mat_temp +=  _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
+         Matrix22 gAinvD2xB = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
+         mat_temp += gAinvD2xB;
 
          // mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
 
@@ -1036,7 +1037,7 @@ public:
       totalEnergy = membraneEnergy + bendingEnergy - potEnergy;
   }
 
-  void evaluateJacobian( const VectorType &disp, VectorType &Deriv ) const {
+  void evaluateJacobian( const VectorType &disp, VectorType &Deriv ) const override{
       NonlinearMembraneEnergyOp<MatOptConfType> membraneEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorMembraneEnergy );
       VectorType membraneEnergyGrad ( Deriv.size() ); membraneEnergyOp.evaluateGradient( disp, membraneEnergyGrad );
       SemiNonlinearBendingEnergyOp<MatOptConfType> bendingEnergyOp( this->_matOptConf, this->_xAStorage, this->_pf, _factorBendingEnergy );
