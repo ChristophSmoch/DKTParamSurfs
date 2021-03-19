@@ -496,18 +496,61 @@ public:
   SemiNonlinIsometryPointWiseVectorFunctionEvaluatorShellFE ( ) { }
 
 
-  void evaluateA1 ( const Matrix32 &Dx, TangentVecType &a1 ) const {
-    const TangentVecType a1unnormalized = Dx.col(0);
-    a1 = a1unnormalized.normalized();
+  // void evaluateA1 ( const Matrix32 &Dx, TangentVecType &a1 ) const {
+  //   const TangentVecType a1unnormalized = Dx.col(0);
+  //   a1 = a1unnormalized.normalized();
+  // }
+  //
+  // void evaluateA2Hat ( const Matrix32 &Dx, const TangentVecType &a1, TangentVecType &a2hat ) const {
+  //   const TangentVecType partial2x = Dx.col(1);
+  //   a2hat = partial2x - (a1.dot(partial2x)) * a1;
+  // }
+  //
+  // void evaluateA2 ( const TangentVecType &a2hat, TangentVecType &a2 ) const {
+  //   a2 = a2hat.normalized();
+  // }
+  //
+  // void evaluateA0Tilde ( const Tensor322Type &ddX, const TangentVecType &normal, Matrix22& a0tilde ) const {
+  //     for ( int i = 0; i < 2; ++i )
+  //       for ( int j = 0; j < 2; ++j ) {
+  //         TangentVecType ddX_ij;
+  //         ddX.getVector( ddX_ij, i, j );
+  //         a0tilde( i , j ) = normal.dot( ddX_ij );
+  //       }
+  // }
+  //
+  // void evaluateA1Tilde ( const Tensor322Type &ddX, const Matrix32 &Dx, const TangentVecType &a1, const TangentVecType &a2, const TangentVecType &a2hat, Matrix22& a1tilde ) const {
+  //     const TangentVecType partial1x = Dx.col(0);
+  //     const TangentVecType partial2x = Dx.col(1);
+  //     for ( int i = 0; i < 2; ++i )
+  //       for ( int j = 0; j < 2; ++j ) {
+  //         TangentVecType ddX_ij;
+  //         ddX.getVector( ddX_ij, i, j );
+  //         a1tilde( i , j ) = (a1.dot( ddX_ij ))/partial1x.norm() - (a2.dot( ddX_ij )/a2hat.norm())*(partial2x.dot( a1 )/partial1x.norm());
+  //       }
+  // }
+  //
+  // void evaluateA2Tilde ( const Tensor322Type &ddX, const TangentVecType &a2, const TangentVecType &a2hat, Matrix22& a2tilde ) const {
+  //     for ( int i = 0; i < 2; ++i )
+  //       for ( int j = 0; j < 2; ++j ) {
+  //         TangentVecType ddX_ij;
+  //         ddX.getVector( ddX_ij, i, j );
+  //         a2tilde( i , j ) = (a2.dot( ddX_ij ))/a2hat.norm();
+  //       }
+  // }
+
+  void evaluateA2 ( const Matrix32 &Dx, TangentVecType &a2 ) const {
+    const TangentVecType a2unnormalized = Dx.col(1);
+    a2 = a2unnormalized.normalized();
   }
 
-  void evaluateA2Hat ( const Matrix32 &Dx, const TangentVecType &a1, TangentVecType &a2hat ) const {
-    const TangentVecType partial2x = Dx.col(1);
-    a2hat = partial2x - (a1.dot(partial2x)) * a1;
+  void evaluateA1Hat ( const Matrix32 &Dx, const TangentVecType &a2, TangentVecType &a1hat ) const {
+    const TangentVecType partial1x = Dx.col(0);
+    a1hat = partial1x - (a2.dot(partial1x)) * a2;
   }
 
-  void evaluateA2 ( const TangentVecType &a2hat, TangentVecType &a2 ) const {
-    a2 = a2hat.normalized();
+  void evaluateA1 ( const TangentVecType &a1hat, TangentVecType &a1 ) const {
+    a1 = a1hat.normalized();
   }
 
   void evaluateA0Tilde ( const Tensor322Type &ddX, const TangentVecType &normal, Matrix22& a0tilde ) const {
@@ -519,23 +562,23 @@ public:
         }
   }
 
-  void evaluateA1Tilde ( const Tensor322Type &ddX, const Matrix32 &Dx, const TangentVecType &a1, const TangentVecType &a2, const TangentVecType &a2hat, Matrix22& a1tilde ) const {
+  void evaluateA2Tilde ( const Tensor322Type &ddX, const Matrix32 &Dx, const TangentVecType &a2, const TangentVecType &a1, const TangentVecType &a1hat, Matrix22& a2tilde ) const {
       const TangentVecType partial1x = Dx.col(0);
       const TangentVecType partial2x = Dx.col(1);
       for ( int i = 0; i < 2; ++i )
         for ( int j = 0; j < 2; ++j ) {
           TangentVecType ddX_ij;
           ddX.getVector( ddX_ij, i, j );
-          a1tilde( i , j ) = (a1.dot( ddX_ij ))/partial1x.norm() - (a2.dot( ddX_ij )/a2hat.norm())*(partial2x.dot( a1 )/partial1x.norm());
+          a2tilde( i , j ) = (a2.dot( ddX_ij ))/partial2x.norm() - (a1.dot( ddX_ij )/a1hat.norm())*(partial1x.dot( a2 )/partial2x.norm());
         }
   }
 
-  void evaluateA2Tilde ( const Tensor322Type &ddX, const TangentVecType &a2, const TangentVecType &a2hat, Matrix22& a2tilde ) const {
+  void evaluateA1Tilde ( const Tensor322Type &ddX, const TangentVecType &a1, const TangentVecType &a1hat, Matrix22& a1tilde ) const {
       for ( int i = 0; i < 2; ++i )
         for ( int j = 0; j < 2; ++j ) {
           TangentVecType ddX_ij;
           ddX.getVector( ddX_ij, i, j );
-          a2tilde( i , j ) = (a2.dot( ddX_ij ))/a2hat.norm();
+          a1tilde( i , j ) = (a1.dot( ddX_ij ))/a1hat.norm();
         }
   }
 
@@ -1084,7 +1127,8 @@ protected:
 
     // SemiNonlinIsometry
     DFDStorageStructure <TangentVecType>      _SemiNonlinIsometry_a1;
-    DFDStorageStructure <TangentVecType>      _SemiNonlinIsometry_a2hat;
+    // DFDStorageStructure <TangentVecType>      _SemiNonlinIsometry_a2hat;
+    DFDStorageStructure <TangentVecType>      _SemiNonlinIsometry_a1hat;
     DFDStorageStructure <TangentVecType>      _SemiNonlinIsometry_a2;
     DFDStorageStructure <Matrix22>      _SemiNonlinIsometry_a0tilde;
     DFDStorageStructure <Matrix22>      _SemiNonlinIsometry_a1tilde;
@@ -1113,7 +1157,8 @@ protected:
       _gInvChristoffel2 ( _numberOfElements, _numberOfQuadPointsPerElement ),
       //SemiNonlinIsometry
       _SemiNonlinIsometry_a1 ( _numberOfElements, _numberOfQuadPointsPerElement ),
-      _SemiNonlinIsometry_a2hat ( _numberOfElements, _numberOfQuadPointsPerElement ),
+      // _SemiNonlinIsometry_a2hat ( _numberOfElements, _numberOfQuadPointsPerElement ),
+      _SemiNonlinIsometry_a1hat ( _numberOfElements, _numberOfQuadPointsPerElement ),
       _SemiNonlinIsometry_a2 ( _numberOfElements, _numberOfQuadPointsPerElement ),
       _SemiNonlinIsometry_a0tilde ( _numberOfElements, _numberOfQuadPointsPerElement),
       _SemiNonlinIsometry_a1tilde ( _numberOfElements, _numberOfQuadPointsPerElement),
@@ -1141,17 +1186,30 @@ protected:
 
 
                 // SemiNonlinIsometry
-                _semiNonlinIsometryPointwiseEvaluator.evaluateA1(  this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex) );
+                // _semiNonlinIsometryPointwiseEvaluator.evaluateA1(  this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex) );
+                //
+                // _semiNonlinIsometryPointwiseEvaluator.evaluateA2Hat(  this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex) );
+                //
+                // _semiNonlinIsometryPointwiseEvaluator.evaluateA2( _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex)  );
+                //
+                // _semiNonlinIsometryPointwiseEvaluator.evaluateA0Tilde( this->_Hessian.at(elementIdx, localQuadPointIndex), this->_normal.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a0tilde.at(elementIdx, localQuadPointIndex)  );
+                //
+                // _semiNonlinIsometryPointwiseEvaluator.evaluateA1Tilde( this->_Hessian.at(elementIdx, localQuadPointIndex), this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1tilde.at(elementIdx, localQuadPointIndex)  );
+                //
+                // _semiNonlinIsometryPointwiseEvaluator.evaluateA2Tilde( this->_Hessian.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2tilde.at(elementIdx, localQuadPointIndex)  );
 
-                _semiNonlinIsometryPointwiseEvaluator.evaluateA2Hat(  this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex) );
+                _semiNonlinIsometryPointwiseEvaluator.evaluateA2(  this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex) );
 
-                _semiNonlinIsometryPointwiseEvaluator.evaluateA2( _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex)  );
+                _semiNonlinIsometryPointwiseEvaluator.evaluateA1Hat(  this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1hat.at(elementIdx, localQuadPointIndex) );
+
+                _semiNonlinIsometryPointwiseEvaluator.evaluateA1( _SemiNonlinIsometry_a1hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex)  );
 
                 _semiNonlinIsometryPointwiseEvaluator.evaluateA0Tilde( this->_Hessian.at(elementIdx, localQuadPointIndex), this->_normal.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a0tilde.at(elementIdx, localQuadPointIndex)  );
 
-                _semiNonlinIsometryPointwiseEvaluator.evaluateA1Tilde( this->_Hessian.at(elementIdx, localQuadPointIndex), this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1tilde.at(elementIdx, localQuadPointIndex)  );
+                _semiNonlinIsometryPointwiseEvaluator.evaluateA2Tilde( this->_Hessian.at(elementIdx, localQuadPointIndex), this->_Gradient.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2tilde.at(elementIdx, localQuadPointIndex)  );
 
-                _semiNonlinIsometryPointwiseEvaluator.evaluateA2Tilde( this->_Hessian.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2tilde.at(elementIdx, localQuadPointIndex)  );
+                _semiNonlinIsometryPointwiseEvaluator.evaluateA1Tilde( this->_Hessian.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a1tilde.at(elementIdx, localQuadPointIndex)  );
+
 
                 // TODO Christoph: greife auf punktweise Auswertungen in SemiNonlinIsometryPointWiseVectorFunctionEvaluatorShellFE zu
 
@@ -1175,7 +1233,8 @@ public:
 
     // TODO Christoph: get-Funktionen
     const TangentVecType& getSemiNonlinIsometry_a1 ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a1[elementIdx][QuadPoint];}
-    const TangentVecType& getSemiNonlinIsometry_a2hat ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a2hat[elementIdx][QuadPoint];}
+    // const TangentVecType& getSemiNonlinIsometry_a2hat ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a2hat[elementIdx][QuadPoint];}
+    const TangentVecType& getSemiNonlinIsometry_a1hat ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a1hat[elementIdx][QuadPoint];}
     const TangentVecType& getSemiNonlinIsometry_a2 ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a2[elementIdx][QuadPoint];}
     const Matrix22& getSemiNonlinIsometry_a0tilde ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a0tilde[elementIdx][QuadPoint];}
     const Matrix22& getSemiNonlinIsometry_a1tilde ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a1tilde[elementIdx][QuadPoint];}

@@ -80,7 +80,7 @@ class SemiNonlinearBendingEnergy
 
          mat_temp +=  _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
 
-         mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
+         // mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
 
          // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
          //
@@ -90,11 +90,11 @@ class SemiNonlinearBendingEnergy
          // mat_temp -= _xAStorage.getFirstFF( El.getGlobalElementIdx(), QuadPoint );
 
 
-         // mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
-         //
-         // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
-         //
-         // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
+         mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
+
+         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
+
+         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
 
          aux +=  mat_temp.squaredNorm( );
       }
