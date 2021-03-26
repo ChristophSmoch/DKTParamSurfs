@@ -82,7 +82,7 @@ class SemiNonlinearBendingEnergy
          mat_temp += gAinvD2xB;
 
          // mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
-
+         //
          // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
          //
          // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );

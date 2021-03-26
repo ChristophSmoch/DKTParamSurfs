@@ -21,12 +21,12 @@ typedef typename ConfiguratorTypePlateTriang::TangentVecType TangentVecType;
 
 int main(int argc, char ** argv) {
 
-    pesopt::consoleOutputStartProgramm( "Find Optimal Deformation (nonlinear elasticity)" );
+    pesopt::consoleOutputStartProgramm( "Compare semilinear and nonlinear bending energy" );
 
-    cout << " Usage of programm ShelOptimalDeformNonLin : " << endl
-         << " 1 - num adaptive refinement steps [default 0]" << endl
-         << " 2 - [ParameterFile]" << endl
-         << " 3 - [saveDirectory]" << endl;
+    // cout << " Usage of programm ShelOptimalDeformNonLin : " << endl
+    //      << " 1 - num adaptive refinement steps [default 0]" << endl
+    //      << " 2 - [ParameterFile]" << endl
+    //      << " 3 - [saveDirectory]" << endl;
 
 
     int numAdaptiveRefinementSteps = 0;
@@ -60,7 +60,7 @@ int main(int argc, char ** argv) {
         MeshTypeRefTriang mesh ( fileName, tangentSpaceType );
         ConfiguratorTypePlateTriang conf ( mesh ); ConfiguratorTypePlateTriangPf confpf ( mesh );
         MatOptConfTypePlateTriang matOptConf ( parser, conf, confpf );
-        
+
         VectorType initDisp( 3 * conf.getNumGlobalDofs() );
         initDisp.setZero();
 
@@ -75,32 +75,41 @@ int main(int argc, char ** argv) {
         // TODO Christoph
         ShellHandler<ConfiguratorTypePlateTriang,FirstAndSecondOrder> shellHandlerXA ( parser, conf );
         VectorType xB ( shellHandlerXA.getChartToUndeformedShell().size() );
-        
+
         const RealType pi = 4 * atan ( 1.0 );
-        const RealType radius = 1. / pi;
+        const RealType radius = 2. / pi;
         for ( int nodeIdx=0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ) {
             const Point3DType& coords ( mesh.getVertex(nodeIdx) );
-            Point3DType coordsOnCylinder; 
-            coordsOnCylinder(0) = radius * sin( coords(0) * pi );
-            coordsOnCylinder(1) = coords(1);
-            coordsOnCylinder(2) = radius * cos( coords(0) * pi );
+            Point3DType coordsOnCylinder;
+            coordsOnCylinder(0) = coords(0);
+            coordsOnCylinder(1) = radius * sin( coords(1) * pi/2 );
+            coordsOnCylinder(2) = - radius * cos( coords(1) * pi/2 );
+            // coordsOnCylinder(0) = coords(0) * cos(pi/2 );
+            // coordsOnCylinder(1) = coords(1);
+            // coordsOnCylinder(2) = coords(0) * sin( pi/2 );
             for( int comp=0; comp<3; ++comp )xB[ nodeIdx + conf.getNumGlobalDofs() * comp ] = coordsOnCylinder[comp];
             if( ConfiguratorTypePlateTriang::_ShellFEType == C1Dofs ){
-                TangentVecType firstTangentVecAtNode;  
-                firstTangentVecAtNode(0) = radius * pi * cos( coords(0) * pi ); 
+                TangentVecType firstTangentVecAtNode;
+                firstTangentVecAtNode(0) =  1.;
                 firstTangentVecAtNode(1) = 0.;
-                firstTangentVecAtNode(2) = - radius * pi * sin( coords(0) * pi ); 
-                TangentVecType secondTangentVecAtNode; secondTangentVecAtNode(0) = 0.; secondTangentVecAtNode(1) = 1.; secondTangentVecAtNode(2) = 0.;
+                firstTangentVecAtNode(2) = 0.;
+                // firstTangentVecAtNode(0) =  cos( pi/2 );
+                // firstTangentVecAtNode(1) = 0.;
+                // firstTangentVecAtNode(2) = sin( pi/2 );
+                TangentVecType secondTangentVecAtNode;
+                secondTangentVecAtNode(0) = 0.;
+                secondTangentVecAtNode(1) =  pi/2 * radius * cos( coords(1) * pi/2);
+                secondTangentVecAtNode(2) =  pi/2 * radius * sin( coords(1) * pi/2 );
                 for( int comp=0; comp<3; ++comp ){
                   xB[ nodeIdx +     mesh.getNumVertices() + conf.getNumGlobalDofs() * comp ] = firstTangentVecAtNode  [comp];
                   xB[ nodeIdx + 2 * mesh.getNumVertices() + conf.getNumGlobalDofs() * comp ] = secondTangentVecAtNode [comp];
                 }
             }
         }
-        
-        
-        
-        DiscreteVectorFunctionStorage<ConfiguratorTypePlateTriang,FirstAndSecondOrder> xBStorage ( matOptConf._conf, xB, 3 );    
+
+
+
+        DiscreteVectorFunctionStorage<ConfiguratorTypePlateTriang,FirstAndSecondOrder> xBStorage ( matOptConf._conf, xB, 3 );
         SemiNonlinearBendingEnergy<MatOptConfTypePlateTriang> testSemiNonlinearEnergyOp( matOptConf,
                              shellHandlerXA.getChartToUndeformedShell_Cache(),
                              xBStorage,
@@ -116,10 +125,10 @@ int main(int argc, char ** argv) {
                              matOptConf._materialInfo._factorBendingEnergy  );
         RealType testNonlinearEnergy;
         testNonlinearEnergyOp.assembleAdd ( testNonlinearEnergy );
-        cout << "==========================" <<  endl
-            << "seminonlin energy after optimization = " <<  testSemiNonlinearEnergy  <<  endl
-            << "nonlin energy after optimization     = " <<  testNonlinearEnergy  <<  endl
-            << "==========================" <<  endl;
+        cout <<"============================ " <<  endl
+            << "seminonlin energy  = " <<  testSemiNonlinearEnergy  <<  endl
+            << "nonlin energy      = " <<  testNonlinearEnergy  <<  endl
+            << "============================" <<  endl;
 
 
   }
