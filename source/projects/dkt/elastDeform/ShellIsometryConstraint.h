@@ -359,7 +359,8 @@ public:
       for( int nodeIndex=0; nodeIndex < _numVertices; ++nodeIndex ){
           if( _mask[nodeIndex] ) bdrIt++;        
           else{
-            for( int comp = 0; comp <3; ++comp )  ConstraintVec[nodeIndex - bdrIt] += ( 2. * _refsD1X[comp][nodeIndex] + refsD1U[comp][nodeIndex] ) * refsD1U[comp][nodeIndex];
+            for( int comp = 0; comp <3; ++comp )  
+                ConstraintVec[nodeIndex - bdrIt] += ( 2. * _refsD1X[comp][nodeIndex] + refsD1U[comp][nodeIndex] ) * refsD1U[comp][nodeIndex];
           }
       }
         
@@ -368,7 +369,8 @@ public:
       for( int nodeIndex=0; nodeIndex < _numVertices; ++nodeIndex ){
           if( _mask[nodeIndex] ) bdrIt++;        
           else{
-            for( int comp = 0; comp <3; ++comp ) ConstraintVec[nodeIndex - bdrIt + 1 * _numInteriorNodes] += ( 2. * _refsD2X[comp][nodeIndex] + refsD2U[comp][nodeIndex] ) * refsD2U[comp][nodeIndex];
+            for( int comp = 0; comp <3; ++comp ) 
+                ConstraintVec[nodeIndex - bdrIt + 1 * _numInteriorNodes] += ( 2. * _refsD2X[comp][nodeIndex] + refsD2U[comp][nodeIndex] ) * refsD2U[comp][nodeIndex];
           }
       }
        

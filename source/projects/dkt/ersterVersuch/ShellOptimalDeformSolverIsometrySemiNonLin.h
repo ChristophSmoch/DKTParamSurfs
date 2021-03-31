@@ -219,7 +219,23 @@ protected:
 // 
 //         return true;
 //     }
-// //END DerivativeTest
+//     //END DerivativeTest
+
+
+//BEGIN DerivativeTest
+    if( this->_parser.template get<int>( "DerivativeTest.order" ) > 0 ){
+        VectorType testPoint_Disp = VectorType::Random( 3 * this->_numGlobalDofsDisp );
+        for( int i = 0; i < this->_numGlobalDofsDisp; ++i ){
+            if ( this->_mask[i] ){
+                for( int comp=0; comp<3; ++comp ) testPoint_Disp[i + comp * this->_numGlobalDofsDisp] = 0.0;
+            }
+        } 
+        DerivativeTester<DataTypeContainer> derivTester ( NonLinearEnergyOp, this->_parser.template get<RealType>( "DerivativeTest.stepSize" ), testPoint_Disp, 1, this->_parser.template get<RealType>( "DerivativeTest.tolerance" ) );
+        if( this->_parser.template get<int>( "DerivativeTest.order" ) == 1 ) derivTester.testFirstDerivative_AllDirections( );
+        if( this->_parser.template get<int>( "DerivativeTest.order" ) == 2 ) derivTester.testSecondDerivative_AllDirections( );
+        return true;
+    }
+//END DerivativeTest
     
     
     SolverInfo<DataTypeContainer> solverInfo;

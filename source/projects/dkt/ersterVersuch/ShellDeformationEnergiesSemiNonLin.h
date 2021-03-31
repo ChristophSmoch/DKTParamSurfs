@@ -149,6 +149,7 @@ public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType,
     _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ) {}
 
    void getNonlinearity ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Tensor322Type &NL) const {
+       
       // material factors
       const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
       const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
@@ -198,6 +199,7 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
 
   const MatOptConfType& _matOptConf;
   const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &_xAStorage, &_xBStorage;
+  const MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &_xABStorage;
   DKTFEScalarFunctionEvaluator<ConfiguratorTypePf> _pf;
   const Material<RealType> &_HardMaterial, &_SoftMaterial;
   const RealType _factorBendingEnergy;
@@ -207,18 +209,26 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
     SemiNonlinearBendingEnergyGradient_Part2 ( const MatOptConfType &matOptConf,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
+                              const MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xABStorage,
                               const VectorType &pf,
                               const RealType factorBendingEnergy  ) :
      RefTriangleMVDiffOpIntegrator<ConfiguratorType, SemiNonlinearBendingEnergyGradient_Part2<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ),
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
+     _xABStorage ( xABStorage ), 
      _pf( matOptConf._confpf, pf ),
     _HardMaterial ( matOptConf._materialInfo._HardMaterial ), _SoftMaterial ( matOptConf._materialInfo._SoftMaterial ),
     _factorBendingEnergy ( factorBendingEnergy ),
     _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ) {}
 
     void getNonlinearity ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Matrix32 &NL) const{
+        
+      cout << "gradient part 2: getNonlinearity " << endl;   
+        
+      // TEST MixedDiscreteVectorFunctionStorage
+      cout <<  "gAinvSecondFFB = " <<  _xABStorage.getGAInvSecondFFB(El.getGlobalElementIdx(),  QuadPoint ) << endl; 
+  
       // material factors
       const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
       const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
@@ -226,6 +236,7 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
 
       // TODO Christoph replate NL
 
+      cout << "test 1" << endl;
       VectorType gAInvGuA0tildeDu; gAInvGuA0tildeDu.setZero();
       for( int m=0; m<2; ++m){
 
@@ -257,6 +268,7 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
 
       Matrix32 NL1;
 
+      cout << "test 2" << endl;
       for ( int l = 0; l<3; ++l ) {
          Matrix22 mat_temp; mat_temp.setZero();
 
@@ -273,6 +285,7 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
 
          NL1(l,0) = gAGuA1tilde;
     }
+    cout << "test 3" << endl;
       for ( int l = 0; l<3; ++l ) {
          Matrix22 mat_temp; mat_temp.setZero();
 
@@ -291,6 +304,8 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
     }
     NL -= NL1;
     NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
+    
+    cout << "finished gradient part 2: getNonlinearity " << endl; 
 
 ///////////////////////////////////
 
@@ -319,6 +334,7 @@ class SemiNonlinearBendingEnergyGradient {
 
   const MatOptConfType& _matOptConf;
   const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &_xAStorage, &_xBStorage;
+  const MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &_xABStorage;
   const VectorType &_pf;
   const RealType _factorBendingEnergy;
 
@@ -326,17 +342,19 @@ class SemiNonlinearBendingEnergyGradient {
     SemiNonlinearBendingEnergyGradient ( const MatOptConfType &matOptConf,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
+                              const MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xABStorage, 
                               const VectorType &pf,
                               const RealType factorBendingEnergy  ) :
      _matOptConf( matOptConf ),
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
+     _xABStorage ( xABStorage ), 
      _pf( pf ),
     _factorBendingEnergy ( factorBendingEnergy ) {}
 
   void assembleAdd( VectorType &Deriv ) const {
     SemiNonlinearBendingEnergyGradient_Part1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
-    SemiNonlinearBendingEnergyGradient_Part2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
+    SemiNonlinearBendingEnergyGradient_Part2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _xABStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
   }
 };
 
@@ -949,7 +967,10 @@ public:
       Dest.setZero();
       VectorType xB ( Displacement.size() ); xB = _xA + Displacement;
       DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( _matOptConf._conf, xB, 3 );
-      SemiNonlinearBendingEnergyGradient<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Dest );
+      
+      MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xABStorage ( _matOptConf._conf, _xAStorage, xBStorage, 3 );
+      
+      SemiNonlinearBendingEnergyGradient<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, xABStorage, _pf, _factorBendingEnergy ).assembleAdd( Dest );
   }
 
   void evaluateMixedSecondDerivative(const VectorType& Displacement, const VectorType& adjointSol, VectorType& Dest) const {

@@ -110,20 +110,26 @@ int main(int argc, char ** argv) {
 
 
         DiscreteVectorFunctionStorage<ConfiguratorTypePlateTriang,FirstAndSecondOrder> xBStorage ( matOptConf._conf, xB, 3 );
-        SemiNonlinearBendingEnergy<MatOptConfTypePlateTriang> testSemiNonlinearEnergyOp( matOptConf,
-                             shellHandlerXA.getChartToUndeformedShell_Cache(),
-                             xBStorage,
+      
+        SemiNonlinearBendingEnergyOp<MatOptConfTypePlateTriang> testSemiNonlinearEnergyOp ( matOptConf, shellHandlerXA.getChartToUndeformedShell_Cache(), 
                              material,
-                             matOptConf._materialInfo._factorBendingEnergy  );
-        RealType testSemiNonlinearEnergy;
-        testSemiNonlinearEnergyOp.assembleAdd ( testSemiNonlinearEnergy );
+                             matOptConf._materialInfo._factorBendingEnergy );
+//       SemiNonlinearBendingEnergy<MatOptConfTypePlateTriang> testSemiNonlinearEnergyOp( matOptConf,
+//                              shellHandlerXA.getChartToUndeformedShell_Cache(),
+//                              xBStorage,
+//                              material,
+//                              matOptConf._materialInfo._factorBendingEnergy  );
+        RealType testSemiNonlinearEnergy = 0.;
+//         testSemiNonlinearEnergyOp.assembleAdd ( testSemiNonlinearEnergy );
+        VectorType disp = xB - shellHandlerXA.getChartToUndeformedShell();
+        testSemiNonlinearEnergyOp.evaluateEnergy( disp,  testSemiNonlinearEnergy );
         // full nonlin
         NonlinearBendingEnergy<MatOptConfTypePlateTriang> testNonlinearEnergyOp( matOptConf,
                              shellHandlerXA.getChartToUndeformedShell_Cache(),
                              xBStorage,
                              material,
                              matOptConf._materialInfo._factorBendingEnergy  );
-        RealType testNonlinearEnergy;
+        RealType testNonlinearEnergy = 0.;
         testNonlinearEnergyOp.assembleAdd ( testNonlinearEnergy );
         cout <<"============================ " <<  endl
             << "seminonlin energy  = " <<  testSemiNonlinearEnergy  <<  endl
@@ -131,6 +137,12 @@ int main(int argc, char ** argv) {
             << "============================" <<  endl;
 
 
+        // TEST Gradient
+        cout << "test gradient" <<  endl;
+        VectorType grad ( disp.size() );
+        testSemiNonlinearEnergyOp.evaluateGradient( disp,  grad );
+        cout <<  "grad.norm = " <<  grad.norm() <<  endl;
+            
   }
 
     //! print elapsed time

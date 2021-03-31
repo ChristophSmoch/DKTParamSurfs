@@ -1185,4 +1185,197 @@ public:
 
 
 
+
+
+
+
+template <typename ConfiguratorType, DiscreteFunctionCacheType>
+class MixedDiscreteVectorFunctionStorage {};
+
+
+
+// template <typename ConfiguratorType>
+// class MixedDiscreteVectorFunctionStorage<ConfiguratorType,NoCache>{
+// 
+// protected:
+// 
+//     typedef typename ConfiguratorType::RealType                 RealType;
+//     typedef typename ConfiguratorType::Matrix22                 Matrix22;
+//     typedef typename ConfiguratorType::Matrix32                 Matrix32;
+//     typedef typename ConfiguratorType::Matrix33                 Matrix33;
+//     typedef typename ConfiguratorType::TangentVecType           TangentVecType;
+//     typedef typename ConfiguratorType::Point3DType              Point3DType;
+//     typedef typename ConfiguratorType::VectorType               VectorType;
+//     typedef typename ConfiguratorType::Tensor322Type            Tensor322Type;
+// 
+//     typedef typename ConfiguratorType::ElementType ElementType;
+//     typedef typename ConfiguratorType::DomVecType  DomVecType;
+// 
+//     const ConfiguratorType &_conf;
+//     const DKTFEVectorFunctionEvaluator <ConfiguratorType> _discrFuncs;
+//     PointWiseVectorFunctionEvaluatorShellFE<ConfiguratorType> _pointwiseEvaluator;
+//     const int _numberOfElements;
+//     const int _numberOfQuadPointsPerElement;
+// 
+// public :
+//     const VectorType& _dofs;
+// 
+// public:
+//     DiscreteVectorFunctionStorage ( const ConfiguratorType &conf, const VectorType &dofs, const int numComponents ) :
+//       _conf (conf),
+//       _discrFuncs (conf, dofs, numComponents),
+//       _numberOfElements (conf.getInitializer ().getNumTriangs ()),
+//       _numberOfQuadPointsPerElement (conf.maxNumQuadPoints ()),
+//       _dofs( dofs ) {}
+// };
+
+
+
+// template <typename ConfiguratorType>
+// class DiscreteVectorFunctionStorage<ConfiguratorType,FirstOrder>
+// {
+//   protected:
+// 
+//     typedef typename ConfiguratorType::RealType                 RealType;
+//     typedef typename ConfiguratorType::Matrix22                 Matrix22;
+//     typedef typename ConfiguratorType::Matrix32                 Matrix32;
+//     typedef typename ConfiguratorType::Matrix33                 Matrix33;
+//     typedef typename ConfiguratorType::TangentVecType           TangentVecType;
+//     typedef typename ConfiguratorType::Point3DType              Point3DType;
+//     typedef typename ConfiguratorType::VectorType               VectorType;
+//     typedef typename ConfiguratorType::Tensor322Type            Tensor322Type;
+// 
+//     typedef typename ConfiguratorType::ElementType ElementType;
+//     typedef typename ConfiguratorType::DomVecType  DomVecType;
+// 
+//     const ConfiguratorType &_conf;
+//     const DKTFEVectorFunctionEvaluator <ConfiguratorType> _discrFuncs;
+//     PointWiseVectorFunctionEvaluatorShellFE<ConfiguratorType> _pointwiseEvaluator;
+//     const int _numberOfElements;
+//     const int _numberOfQuadPointsPerElement;
+// 
+// protected :
+//     const VectorType& _dofs;
+//     //
+//     DFDStorageStructure <Point3DType>                        _coords;
+//     DFDStorageStructure <Matrix32>                           _Gradient;
+//     DFDStorageStructure <Matrix22>                           _firstFF;
+//     DFDStorageStructure <Matrix22>                           _firstFFInv;
+//     DFDStorageStructure <RealType>                           _detFirstFF;
+//     DFDStorageStructure <RealType>                           _area;
+//     DFDStorageStructure <TangentVecType>                     _normal;
+//     DFDStorageStructure <Matrix32>                           _GradientGInv;
+// 
+//   public:
+//     DiscreteVectorFunctionStorage ( const ConfiguratorType &conf, const VectorType &dofs, const int numComponents ) :
+//       _conf (conf),
+//       _discrFuncs (conf, dofs, numComponents),
+//       _numberOfElements (conf.getInitializer ().getNumTriangs ()),
+//       _numberOfQuadPointsPerElement (conf.maxNumQuadPoints ()),
+//       _dofs( dofs ),
+//       //
+//       _coords ( _numberOfElements, _numberOfQuadPointsPerElement ),
+//       _Gradient (_numberOfElements, _numberOfQuadPointsPerElement),
+//       _firstFF (_numberOfElements, _numberOfQuadPointsPerElement),
+//       _firstFFInv (_numberOfElements, _numberOfQuadPointsPerElement),
+//       _detFirstFF (_numberOfElements, _numberOfQuadPointsPerElement),
+//       _area ( _numberOfElements, _numberOfQuadPointsPerElement ),
+//       _normal (_numberOfElements, _numberOfQuadPointsPerElement),
+//       _GradientGInv( _numberOfElements, _numberOfQuadPointsPerElement )
+//     {
+//         for ( int elementIdx = 0; elementIdx < _conf.getInitializer().getNumTriangs(); ++elementIdx){
+//             const ElementType& El ( _conf.getInitializer().getTriang( elementIdx ) );
+//             for ( int q = 0; q < _numberOfQuadPointsPerElement; ++q){
+//                 //
+//                 _discrFuncs.evaluateAtQuadPoint ( El, q, _coords.at(elementIdx, q ) );
+//                 _discrFuncs.evaluateGradientAtQuadPoint (El, q, _Gradient.at (elementIdx, q));
+//                 _pointwiseEvaluator.evaluateFirstFundamentalForm ( _Gradient.at (elementIdx, q), _firstFF.at (elementIdx, q));
+//                 _firstFFInv.at (elementIdx, q) = (_firstFF.at (elementIdx, q)).inverse();
+//                 _detFirstFF.at (elementIdx, q) = _firstFF.at (elementIdx, q).determinant();
+//                 _area.at (elementIdx, q) = std::sqrt (_detFirstFF.at (elementIdx, q));
+//                 _pointwiseEvaluator.evaluateNormal ( _Gradient.at (elementIdx, q), _normal.at (elementIdx, q) );
+//                 _GradientGInv.at ( elementIdx, q ) = _Gradient.at (elementIdx, q) * _firstFFInv.at (elementIdx, q);
+//             }
+//         }
+//     }
+// 
+// public :
+//     const VectorType& getDofs( ) const {return _dofs;};
+//     const Point3DType& getCoords( const int elementIdx, const int QuadPoint ) const { return _coords[elementIdx][QuadPoint]; }
+//     const Matrix32& getGradient( const int elementIdx, const int QuadPoint ) const { return _Gradient[elementIdx][QuadPoint]; }
+//     const Matrix22& getFirstFF( const int elementIdx, const int QuadPoint ) const { return _firstFF[elementIdx][QuadPoint]; }
+//     const Matrix22& getFirstFFInv( const int elementIdx, const int QuadPoint ) const { return _firstFFInv[elementIdx][QuadPoint]; }
+//     const RealType& getDetFirstFF( const int elementIdx, const int QuadPoint ) const { return _detFirstFF[elementIdx][QuadPoint]; }
+//     const RealType& getArea( const int elementIdx, const int QuadPoint ) const { return _area[elementIdx][QuadPoint]; }
+//     const TangentVecType& getNormal( const int elementIdx, const int QuadPoint ) const { return _normal[elementIdx][QuadPoint]; }
+//     const Matrix32& getGradientGInv( const int elementIdx, const int QuadPoint ) const { return _GradientGInv[elementIdx][QuadPoint]; }
+// 
+// };
+
+
+
+template <typename ConfiguratorType>
+class MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> 
+{
+ protected:
+
+    typedef typename ConfiguratorType::RealType                 RealType;
+    typedef typename ConfiguratorType::Matrix22                 Matrix22;
+    typedef typename ConfiguratorType::Matrix32                 Matrix32;
+    typedef typename ConfiguratorType::Matrix33                 Matrix33;
+    typedef typename ConfiguratorType::TangentVecType           TangentVecType;
+    typedef typename ConfiguratorType::Point3DType              Point3DType;
+    typedef typename ConfiguratorType::VectorType               VectorType;
+    typedef typename ConfiguratorType::Tensor322Type            Tensor322Type;
+
+    typedef typename ConfiguratorType::ElementType ElementType;
+    typedef typename ConfiguratorType::DomVecType  DomVecType;
+
+    const ConfiguratorType &_conf;
+    const DiscreteVectorFunctionStorage<ConfiguratorType, FirstAndSecondOrder> &_xAStorage,  &_xBStorage; 
+    PointWiseVectorFunctionEvaluatorShellFE<ConfiguratorType> _pointwiseEvaluator;
+    SemiNonlinIsometryPointWiseVectorFunctionEvaluatorShellFE<ConfiguratorType> _semiNonlinIsometryPointwiseEvaluator;
+    const int _numberOfElements;
+    const int _numberOfQuadPointsPerElement;
+
+protected:
+
+    //ApproxGradient
+    DFDStorageStructure <Matrix22>            _gAInvSecondFFB;
+
+  public:
+    MixedDiscreteVectorFunctionStorage ( const ConfiguratorType &conf, 
+                    const DiscreteVectorFunctionStorage<ConfiguratorType, FirstAndSecondOrder> &xAStorage, 
+                    const DiscreteVectorFunctionStorage<ConfiguratorType, FirstAndSecondOrder> &xBStorage,
+                    const int numComponents ) :
+      _conf (conf),
+      _xAStorage ( xAStorage ),  _xBStorage ( xBStorage ),
+      _numberOfElements (conf.getInitializer ().getNumTriangs ()),
+      _numberOfQuadPointsPerElement (conf.maxNumQuadPoints ()),
+
+      _gAInvSecondFFB (_numberOfElements, _numberOfQuadPointsPerElement)
+
+    {
+        for ( int elementIdx = 0; elementIdx < _conf.getInitializer().getNumTriangs(); ++elementIdx){
+            const ElementType& El ( _conf.getInitializer().getTriang( elementIdx ) );
+            for ( int localQuadPointIndex = 0; localQuadPointIndex < _numberOfQuadPointsPerElement; ++localQuadPointIndex){
+                //approx
+                _gAInvSecondFFB.at (elementIdx, localQuadPointIndex) = _xAStorage.getFirstFFInv(elementIdx, localQuadPointIndex) * _xBStorage.getSecondFF(elementIdx, localQuadPointIndex );
+            }
+        }
+    }
+
+
+public:
+    const Matrix22& getGAInvSecondFFB ( const int elementIdx, const int QuadPoint ) const {
+        return _gAInvSecondFFB[elementIdx][QuadPoint];
+    }
+
+};
+
+
+
+
+
+
 #endif
