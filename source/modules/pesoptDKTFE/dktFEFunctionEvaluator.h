@@ -1343,6 +1343,7 @@ protected:
     //ApproxGradient
     DFDStorageStructure <Matrix22>            _gAInvSecondFFB;
     DFDStorageStructure <Tensor322Type>            _semiNonlinearityB;
+    DFDStorageStructure <Tensor322Type>            _gAInvSemiNonlinearityB;
 
   public:
     MixedDiscreteVectorFunctionStorage ( const ConfiguratorType &conf,
@@ -1355,6 +1356,7 @@ protected:
       _numberOfQuadPointsPerElement (conf.maxNumQuadPoints ()),
 
       _semiNonlinearityB (_numberOfElements, _numberOfQuadPointsPerElement),
+      _gAInvSemiNonlinearityB (_numberOfElements, _numberOfQuadPointsPerElement),
       _gAInvSecondFFB (_numberOfElements, _numberOfQuadPointsPerElement)
 
     {
@@ -1376,6 +1378,7 @@ protected:
                          mat_temp -= _xBStorage.getGradient( elementIdx, localQuadPointIndex )(l, 1) * _xAStorage.getFirstFFInv( elementIdx, localQuadPointIndex ) * _xAStorage.getSemiNonlinIsometry_a2tilde( elementIdx, localQuadPointIndex );
 
                          _semiNonlinearityB.at (elementIdx, localQuadPointIndex)[l] = mat_temp;
+                         _gAInvSemiNonlinearityB.at (elementIdx, localQuadPointIndex)[l] = _xAStorage.getFirstFFInv( elementIdx, localQuadPointIndex ) * mat_temp;
                       }
 
             }
@@ -1414,6 +1417,9 @@ public:
     }
     const Tensor322Type& getSemiNonlinearityB (const int elementIdx, const int QuadPoint) const{
         return _semiNonlinearityB[elementIdx][QuadPoint];
+    }
+    const Tensor322Type& getGAInvSemiNonlinearityB (const int elementIdx, const int QuadPoint) const{
+        return _gAInvSemiNonlinearityB[elementIdx][QuadPoint];
     }
 
 };

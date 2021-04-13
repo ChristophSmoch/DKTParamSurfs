@@ -130,6 +130,7 @@ public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType,
 
   const MatOptConfType& _matOptConf;
   const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &_xAStorage, &_xBStorage;
+  const MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &_xABStorage;
   DKTFEScalarFunctionEvaluator<ConfiguratorTypePf> _pf;
   const Material<RealType> &_HardMaterial, &_SoftMaterial;
   const RealType _factorBendingEnergy;
@@ -139,43 +140,29 @@ public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType,
     SemiNonlinearBendingEnergyGradient_Part1 ( const MatOptConfType &matOptConf,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                               const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
+                              const MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xABStorage,
                               const VectorType &pf,
                               const RealType factorBendingEnergy  ) :
      RefTriangleMVDiff2OpIntegrator<ConfiguratorType, SemiNonlinearBendingEnergyGradient_Part1<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ),
      _xAStorage(xAStorage),
      _xBStorage ( xBStorage ),
+     _xABStorage ( xABStorage ),
      _pf( matOptConf._confpf, pf ),
-    _HardMaterial ( matOptConf._materialInfo._HardMaterial ), _SoftMaterial ( matOptConf._materialInfo._SoftMaterial ),
-    _factorBendingEnergy ( factorBendingEnergy ),
-    _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ) {}
+     _HardMaterial ( matOptConf._materialInfo._HardMaterial ), _SoftMaterial ( matOptConf._materialInfo._SoftMaterial ),
+     _factorBendingEnergy ( factorBendingEnergy ),
+     _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ) {}
 
-   void getNonlinearity ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Tensor322Type &NL) const {
+     void getNonlinearity ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Tensor322Type &NL) const {
 
-      // material factors
-      const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
-      const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
-      const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
+        // material factors
+        const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
+        const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
+        const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
 
-      // TODO Christoph: werte richtig NL aus
+        NL = _xABStorage.getGAInvSemiNonlinearityB( El.getGlobalElementIdx(), QuadPoint);
 
-      for ( int l = 0; l<3; ++l ) {
-         Matrix22 mat_temp; mat_temp.setZero();
-
-         mat_temp +=  _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
-
-         mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
-
-         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
-
-         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
-
-         for( int i=0; i<2; ++i )
-           for( int j=0; j<2; ++j ) {
-             NL.set( l, i, j, mat_temp(i,j));
-           }
-      }
-      NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
+        NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
    }
 };
 
@@ -220,111 +207,44 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
      _xBStorage ( xBStorage ),
      _xABStorage ( xABStorage ),
      _pf( matOptConf._confpf, pf ),
-    _HardMaterial ( matOptConf._materialInfo._HardMaterial ), _SoftMaterial ( matOptConf._materialInfo._SoftMaterial ),
-    _factorBendingEnergy ( factorBendingEnergy ),
-    _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ) {}
+     _HardMaterial ( matOptConf._materialInfo._HardMaterial ), _SoftMaterial ( matOptConf._materialInfo._SoftMaterial ),
+     _factorBendingEnergy ( factorBendingEnergy ),
+     _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ) {}
 
-    void getNonlinearity ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Matrix32 &NL) const{
-
-      // cout << "gradient part 2: getNonlinearity " << endl;
-      //
-      // // TEST MixedDiscreteVectorFunctionStorage
-      // cout <<  "gAinvSecondFFB = " <<  _xABStorage.getGAInvSecondFFB(El.getGlobalElementIdx(),  QuadPoint ) << endl;
-      // cout << "G[u] = " << _xABStorage.getSemiNonlinearityB(El.getGlobalElementIdx(), QuadPoint)[0] << endl;
-
-      // material factors
-      const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
-      const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
-      const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
-
-      // TODO Christoph replate NL
-
-      // cout << "test 1" << endl;
-      VectorType gAInvGuA0tildeDu (2); gAInvGuA0tildeDu.setZero();
-
-      for( int m=0; m<2; ++m){
-
-        RealType aux = 0.0;
-        for ( int l = 0; l<3; ++l ) {
-           Matrix22 mat_temp; mat_temp.setZero();
-
-           mat_temp +=  _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
-
-           mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
-
-           mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
-
-           mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
-
-           RealType w;
-           w = pesopt::ddProd<RealType,Matrix22> ( mat_temp, _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint ) ) ;
-           w *=  _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, m);
-
-           aux += w;
-
-           }
-        gAInvGuA0tildeDu(m) = aux;
-
-      }
+     void getNonlinearity ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Matrix32 &NL) const{
 
 
+       // material factors
+       const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
+       const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
+       const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
 
-      NL = _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint ) * (_xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * gAInvGuA0tildeDu).transpose();
+       VectorType gAInvGuA0tildeDu (2); gAInvGuA0tildeDu.setZero();
 
+       for( int m=0; m<2; ++m){
+         Tensor322Type a0tildedmxB;
+         for ( int l = 0; l<3; ++l ) {
+           a0tildedmxB [l] = _xAStorage.getSemiNonlinIsometry_a0tilde(El.getGlobalElementIdx(), QuadPoint) * _xBStorage.getGradient(El.getGlobalElementIdx(), QuadPoint)(l,m);
+         }
+         gAInvGuA0tildeDu(m) = _xABStorage.getGAInvSemiNonlinearityB(El.getGlobalElementIdx(), QuadPoint).ddprod(a0tildedmxB);
+       }
 
-      Matrix32 NL1;
+       NL = _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint ) * (_xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * gAInvGuA0tildeDu).transpose();
 
-      // cout << "test 2" << endl;
-      for ( int l = 0; l<3; ++l ) {
-         Matrix22 mat_temp; mat_temp.setZero();
+       Matrix32 NL1;
 
-         mat_temp +=  _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
+       for ( int l = 0; l<3; ++l ) {
+         RealType gAInvGuA1tilde;
+         RealType gAInvGuA2tilde;
+         gAInvGuA1tilde = pesopt::ddProd<RealType,Matrix22> ( _xABStorage.getGAInvSemiNonlinearityB(El.getGlobalElementIdx(), QuadPoint)[l], _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint ));
+         NL1(l,0) = gAInvGuA1tilde;
+         gAInvGuA2tilde = pesopt::ddProd<RealType,Matrix22> ( _xABStorage.getGAInvSemiNonlinearityB(El.getGlobalElementIdx(), QuadPoint)[l], _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint ));
+         NL1(l,1) =  gAInvGuA2tilde;
+       }
 
-         mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
+       NL -= NL1;
+       NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
 
-         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
-
-         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
-
-         RealType gAGuA1tilde;
-         gAGuA1tilde = pesopt::ddProd<RealType,Matrix22> ( mat_temp, _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint ));
-
-         NL1(l,0) = gAGuA1tilde;
-    }
-    // cout << "test 3" << endl;
-      for ( int l = 0; l<3; ++l ) {
-         Matrix22 mat_temp; mat_temp.setZero();
-
-         mat_temp +=  _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
-
-         mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
-
-         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
-
-         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
-
-         RealType gAGuA2tilde;
-         gAGuA2tilde = pesopt::ddProd<RealType,Matrix22> ( mat_temp, _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint ));
-
-         NL1(l,1) =  gAGuA2tilde;
-    }
-    NL -= NL1;
-    NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
-
-    // cout << "finished gradient part 2: getNonlinearity " << endl;
-
-///////////////////////////////////
-
-    //   Matrix22 gAInvGAInvHBMinHA = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * ( _xBStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) - _xAStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) );
-    //   TangentVecType v;
-    //   for (int comp = 0; comp < 3; ++comp){
-    //     v(comp) = pesopt::ddProd<RealType,Matrix22> ( gAInvGAInvHBMinHA, _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[comp] );
-    //   }
-    //   Matrix33 normalTensorV = _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint ) * v.transpose();
-    //   NL = normalTensorV * _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint );
-    //
-    //   NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
-    // }
 }
 };
 
@@ -359,7 +279,7 @@ class SemiNonlinearBendingEnergyGradient {
     _factorBendingEnergy ( factorBendingEnergy ) {}
 
   void assembleAdd( VectorType &Deriv ) const {
-    SemiNonlinearBendingEnergyGradient_Part1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
+    SemiNonlinearBendingEnergyGradient_Part1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _xABStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
     SemiNonlinearBendingEnergyGradient_Part2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _xABStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
   }
 };
