@@ -46,7 +46,6 @@ class SemiNonlinearBendingEnergy
 
   const MatOptConfType& _matOptConf;
   const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &_xAStorage, &_xBStorage;
-  const MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &_xABStorage;
   DKTFEScalarFunctionEvaluator<ConfiguratorTypePf> _pf;
   const Material<RealType> &_HardMaterial, &_SoftMaterial;
   const RealType _factorBendingEnergy;
@@ -56,12 +55,11 @@ class SemiNonlinearBendingEnergy
     SemiNonlinearBendingEnergy ( const MatOptConfType &matOptConf,
                              const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xAStorage,
                              const DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xBStorage,
-                             const MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> &xABStorage,
                              const VectorType &pf,
                              const RealType factorBendingEnergy  ) :
      RefTriangleIntegrator <ConfiguratorType, SemiNonlinearBendingEnergy<MatOptConfType> > ( matOptConf._conf ),
      _matOptConf( matOptConf ),
-     _xAStorage(xAStorage), _xBStorage ( xBStorage ), _xABStorage (xABStorage),
+     _xAStorage(xAStorage), _xBStorage ( xBStorage ),
      _pf( matOptConf._confpf, pf ),
     _HardMaterial ( matOptConf._materialInfo._HardMaterial ), _SoftMaterial ( matOptConf._materialInfo._SoftMaterial ),
     _factorBendingEnergy ( factorBendingEnergy ),
@@ -74,35 +72,35 @@ class SemiNonlinearBendingEnergy
       const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
 
 
-      // RealType aux = 0.;
-      //
-      //
-      // for ( int l = 0; l<3; ++l ) {
-      //    Matrix22 mat_temp; mat_temp.setZero();
-      //
-      //    Matrix22 gAinvD2xB = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
-      //    mat_temp += gAinvD2xB;
-      //
-      //    // mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
-      //    //
-      //    // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
-      //    //
-      //    // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
-      //
-      //    // mat_temp += _xBStorage.getFirstFF( El.getGlobalElementIdx(), QuadPoint );
-      //    // mat_temp -= _xAStorage.getFirstFF( El.getGlobalElementIdx(), QuadPoint );
-      //
-      //
-      //    mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
-      //
-      //    mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
-      //
-      //    mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
-      //
-      //    aux +=  mat_temp.squaredNorm( );
-      // }
+      RealType aux = 0.;
 
-      return materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint ) * _xABStorage.getSemiNonlinearityB(El.getGlobalElementIdx(), QuadPoint).normSqr();
+
+      for ( int l = 0; l<3; ++l ) {
+         Matrix22 mat_temp; mat_temp.setZero();
+
+         Matrix22 gAinvD2xB = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint )[l];
+         mat_temp += gAinvD2xB;
+
+         // mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
+         //
+         // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
+         //
+         // mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xBStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
+
+         // mat_temp += _xBStorage.getFirstFF( El.getGlobalElementIdx(), QuadPoint );
+         // mat_temp -= _xAStorage.getFirstFF( El.getGlobalElementIdx(), QuadPoint );
+
+
+         mat_temp -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint );
+
+         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 0) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a1tilde( El.getGlobalElementIdx(), QuadPoint );
+
+         mat_temp -= _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l, 1) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint );
+
+         aux +=  mat_temp.squaredNorm( );
+      }
+
+      return materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint ) * aux;
     }
 
 };
@@ -226,11 +224,12 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
 
     void getNonlinearity ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Matrix32 &NL) const{
 
-      // cout << "gradient part 2: getNonlinearity " << endl;
-      //
-      // // TEST MixedDiscreteVectorFunctionStorage
+      cout << "gradient part 2: getNonlinearity " << endl;
+
+      // TEST MixedDiscreteVectorFunctionStorage
       // cout <<  "gAinvSecondFFB = " <<  _xABStorage.getGAInvSecondFFB(El.getGlobalElementIdx(),  QuadPoint ) << endl;
-      // cout << "G[u] = " << _xABStorage.getSemiNonlinearityB(El.getGlobalElementIdx(), QuadPoint)[0] << endl;
+      cout << "test wieso geht das nicht..." << endl;
+      cout << "G[u] = " << _xABStorage.getSemiNonlinearityB(El.getGlobalElementIdx(), QuadPoint ) << endl;
 
       // material factors
       const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
@@ -239,9 +238,8 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
 
       // TODO Christoph replate NL
 
-      // cout << "test 1" << endl;
-      VectorType gAInvGuA0tildeDu (2); gAInvGuA0tildeDu.setZero();
-
+      cout << "test 1" << endl;
+      VectorType gAInvGuA0tildeDu; gAInvGuA0tildeDu.setZero();
       for( int m=0; m<2; ++m){
 
         RealType aux = 0.0;
@@ -263,18 +261,16 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
            aux += w;
 
            }
-        gAInvGuA0tildeDu(m) = aux;
+        gAInvGuA0tildeDu[m] = aux;
+
 
       }
-
-
-
       NL = _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint ) * (_xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * gAInvGuA0tildeDu).transpose();
 
 
       Matrix32 NL1;
 
-      // cout << "test 2" << endl;
+      cout << "test 2" << endl;
       for ( int l = 0; l<3; ++l ) {
          Matrix22 mat_temp; mat_temp.setZero();
 
@@ -291,7 +287,7 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
 
          NL1(l,0) = gAGuA1tilde;
     }
-    // cout << "test 3" << endl;
+    cout << "test 3" << endl;
       for ( int l = 0; l<3; ++l ) {
          Matrix22 mat_temp; mat_temp.setZero();
 
@@ -311,7 +307,7 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
     NL -= NL1;
     NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
 
-    // cout << "finished gradient part 2: getNonlinearity " << endl;
+    cout << "finished gradient part 2: getNonlinearity " << endl;
 
 ///////////////////////////////////
 
@@ -959,16 +955,14 @@ public:
       Dest = 0.;
       VectorType xB ( Displacement.size() ); xB = _xA + Displacement;
       DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( _matOptConf._conf, xB, 3 );
-      MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xABStorage ( _matOptConf._conf, _xAStorage, xBStorage, 3 );
-      SemiNonlinearBendingEnergy<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, xABStorage, _pf, _factorBendingEnergy ).assembleAdd( Dest );
+      SemiNonlinearBendingEnergy<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy ).assembleAdd( Dest );
   }
 
   void evaluateStressOnElements( const VectorType &Displacement, VectorType &bendingStressVec ) const{
       bendingStressVec.setZero();
       VectorType xB ( Displacement.size() ); xB = _xA + Displacement;
       DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( _matOptConf._conf, xB, 3 );
-      MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xABStorage ( _matOptConf._conf, _xAStorage, xBStorage, 3 );
-      SemiNonlinearBendingEnergy<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, xABStorage, _pf, _factorBendingEnergy ).assembleOnElements( bendingStressVec );
+      SemiNonlinearBendingEnergy<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, _factorBendingEnergy ).assembleOnElements( bendingStressVec );
   }
 
   void evaluateGradient(const VectorType& Displacement, VectorType& Dest) const {
