@@ -160,8 +160,8 @@ public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType,
         const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
         const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
         //Zweite Ableitungstest
-        // NL = _xABStorage.getGAInvSemiNonlinearityB( El.getGlobalElementIdx(), QuadPoint);
-        NL.setZero();
+        NL = _xABStorage.getGAInvSemiNonlinearityB( El.getGlobalElementIdx(), QuadPoint);
+        // NL.setZero();
         NL *= materialFactor * 2.0 * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
    }
 };
@@ -828,13 +828,13 @@ public RefTriangleFELinMatrixDiff2Integrator<typename MatOptConfType::Configurat
       const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
 
       // Zweite Ableitungstest
-      // if( _l == _k){
-      //   Matrix = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
-      // }
-      // else{
-      //   Matrix.setZero();
-      // }
-      Matrix.setZero();
+      if( _l == _k){
+        Matrix = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
+      }
+      else{
+        Matrix.setZero();
+      }
+      // Matrix.setZero();
       Matrix *=  2. * materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
 
    }
