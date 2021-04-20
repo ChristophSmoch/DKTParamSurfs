@@ -243,8 +243,8 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
          gAInvGuA2tilde = pesopt::ddProd<RealType,Matrix22> ( _xABStorage.getGAInvSemiNonlinearityB(El.getGlobalElementIdx(), QuadPoint)[l], _xAStorage.getSemiNonlinIsometry_a2tilde( El.getGlobalElementIdx(), QuadPoint ));
          NL1(l,1) =  gAInvGuA2tilde;
        }
-       //
-       //
+
+
        // NL.setZero();
        NL -= NL1;
        // NL.setZero();
@@ -516,6 +516,7 @@ public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType
     _factorBendingEnergy ( factorBendingEnergy ),
     _thicknessHard( matOptConf._materialInfo._thicknessHard ), _thicknessSoft( matOptConf._materialInfo._thicknessSoft ),
     _k(k), _l(l) {}
+    // _k(l), _l(k) {}
 
   inline void getCoeffMatrix ( const typename ConfiguratorType::ElementType &El, const int &QuadPoint, Matrix22 &Matrix ) const{
 
@@ -546,18 +547,18 @@ public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType
 
     //Part 2.1
     Matrix22 Matrix_Part21;
-    Matrix_Part21 = _xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * gAInvGuDotA0TildeDxB * gBInvDxB.row( _k );
+    Matrix_Part21 = (_xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * gAInvGuDotA0TildeDxB) * gBInvDxB.row( _k );
     Matrix_Part21 *= -1. * _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )( _l );
 
     //Part 2.2
-    Matrix22 Matrix_Part22;
-    Matrix_Part22 = _xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
-    Matrix_Part22 *= gBInvDxB.row( _l) *  gAInvGuDotA0TildeDxB ;
-    Matrix_Part22 *= -1. * _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )( _k);
     Matrix22 Matrix_Part221;
-    Matrix_Part221 = _xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * gAInvGuDotA0TildeDxB * gBInvDxB.row( _l );
+    Matrix_Part221 = _xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
+    Matrix_Part221 *= gBInvDxB.row( _l) *  gAInvGuDotA0TildeDxB ;
     Matrix_Part221 *= -1. * _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )( _k);
-    Matrix_Part22 += Matrix_Part221;
+    Matrix22 Matrix_Part222;
+    Matrix_Part222 = gBInvDxB.row( _l ).transpose() * (_xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * gAInvGuDotA0TildeDxB).transpose() ;
+    Matrix_Part222 *= -1. * _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )( _k);
+    // Matrix_Part22 += Matrix_Part221;
 
     //Part 2.3
     Matrix22 Matrix_Part23;
@@ -581,7 +582,7 @@ public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType
     Matrix_Part233 = gBInvDxB.row( _l ).transpose() * gAInv2ApTildeDotA0Tilde.transpose();
     Matrix_Part233 *= -1. * _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint )(_k);
 
-    Matrix_Part23 = Matrix_Part232 + Matrix_Part233;
+    // Matrix_Part23 = Matrix_Part232 + Matrix_Part233;
 
     //Part 2.4
     Matrix22 Matrix_Part24;
@@ -621,11 +622,21 @@ public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType
       Matrix.setZero();
       //Zweite Ableitungstest
       Matrix += Matrix_Part21;
-      Matrix += Matrix_Part22;
-      Matrix += Matrix_Part23;
+      Matrix += Matrix_Part221;
+      Matrix += Matrix_Part222;
+      Matrix += Matrix_Part232;
+      Matrix += Matrix_Part233;
       Matrix += Matrix_Part24;
       Matrix += Matrix_Part32;
       Matrix += Matrix_Part33;
+
+      // cout << "_k = " << _k << endl;
+      // cout << "_l = " << _l << endl;
+      // cout << "norm(Matrix - Matrix^T)^2 = " << (Matrix - Matrix.transpose()).squaredNorm() << endl;
+      // cout << "norm(Matrix_Part221 - Matrix_Part221^T)^2 = " << (Matrix_Part221 - Matrix_Part221.transpose()).squaredNorm() << endl;
+      // cout << "norm(Matrix_Part21 - Matrix_Part222^T)^2 = " << (Matrix_Part21 - Matrix_Part222.transpose()).squaredNorm() << endl;
+      // cout << "norm(Matrix_Part233 - Matrix_Part32^T)^2 = " << (Matrix_Part233 - Matrix_Part32.transpose()).squaredNorm() << endl;
+      // Matrix = Matrix.transpose();
 
 
       Matrix *= 2.0 * materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
@@ -689,7 +700,8 @@ public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator<typename MatOptConfT
       //Zweite Ableitungstest
 
        Matrix = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint);
-       Vector =  _xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint) * _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint).row( _k ).transpose() * _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint)( _l );
+       Vector = _xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint) * _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint).row( _k ).transpose() * _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint)( _l );
+
        Vector *= 2.0 * materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
        // Matrix.setZero();
        // Vector.setZero();
@@ -761,10 +773,16 @@ public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor<typename MatO
             if (_l == _k){
               Tensor.set(p, q, 0, gAInv2A1Tilde(p,q));
               Tensor.set(p, q, 1, gAInv2A2Tilde(p,q));
+
+              // Tensor.set(0, p, q, gAInv2A1Tilde(p,q));
+              // Tensor.set(1, p, q, gAInv2A2Tilde(p,q));
             }
             else {
-              Tensor.set( p, q, 0, 0);
-              Tensor.set( p, q, 1, 0);
+              Tensor.set( p, q, 0, 0.0);
+              Tensor.set( p, q, 1, 0.0);
+
+              // Tensor.set( 0, p, q, 0.0);
+              // Tensor.set( 1, p, q, 0.0);
             }
           }
         // Tensor.setZero();
@@ -886,6 +904,7 @@ class SemiNonlinearBendingEnergySubHessian {
        std::vector<TripletType> tripletList_Part2;
        SemiNonlinearBendingEnergySubHessian_PartDiff1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _xABStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part2, 1. );
 
+       //Zweite Ableitungstest
        //Part 1.3 = 3.1^T
        std::vector<TripletType> tripletList_Part3;
        SemiNonlinearBendingEnergySubHessian_PartDiffMixed2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _pf, _factorBendingEnergy, _k, _l).assembleTripletList( tripletList_Part3, 2. );

@@ -18,6 +18,7 @@ typedef typename ConfiguratorTypePlateTriang::MaskType                          
 typedef pesopt::BoostParser ParameterParserType;
 typedef typename ConfiguratorTypePlateTriang::Point3DType Point3DType;
 typedef typename ConfiguratorTypePlateTriang::TangentVecType TangentVecType;
+typedef typename ConfiguratorTypePlateTriang::SparseMatrixType SparseMatrixType;
 
 int main(int argc, char ** argv) {
 
@@ -110,8 +111,8 @@ int main(int argc, char ** argv) {
 
 
         DiscreteVectorFunctionStorage<ConfiguratorTypePlateTriang,FirstAndSecondOrder> xBStorage ( matOptConf._conf, xB, 3 );
-      
-        SemiNonlinearBendingEnergyOp<MatOptConfTypePlateTriang> testSemiNonlinearEnergyOp ( matOptConf, shellHandlerXA.getChartToUndeformedShell_Cache(), 
+
+        SemiNonlinearBendingEnergyOp<MatOptConfTypePlateTriang> testSemiNonlinearEnergyOp ( matOptConf, shellHandlerXA.getChartToUndeformedShell_Cache(),
                              material,
                              matOptConf._materialInfo._factorBendingEnergy );
 //       SemiNonlinearBendingEnergy<MatOptConfTypePlateTriang> testSemiNonlinearEnergyOp( matOptConf,
@@ -142,7 +143,12 @@ int main(int argc, char ** argv) {
         VectorType grad ( disp.size() );
         testSemiNonlinearEnergyOp.evaluateGradient( disp,  grad );
         cout <<  "grad.norm = " <<  grad.norm() <<  endl;
-            
+
+        // TEST Hessian
+        // cout << "test hessian" << endl;
+        // SparseMatrixType hess ( disp.size());
+        // testSemiNonlinearEnergyOp.evaluateHessian(disp, hess);
+        // cout << "hess.norm = " << hess.norm() << endl;
   }
 
     //! print elapsed time
