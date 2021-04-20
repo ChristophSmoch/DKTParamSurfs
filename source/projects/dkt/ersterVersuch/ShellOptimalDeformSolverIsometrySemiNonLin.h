@@ -232,7 +232,10 @@ protected:
         } 
         DerivativeTester<DataTypeContainer> derivTester ( NonLinearEnergyOp, this->_parser.template get<RealType>( "DerivativeTest.stepSize" ), testPoint_Disp, 1, this->_parser.template get<RealType>( "DerivativeTest.tolerance" ) );
         if( this->_parser.template get<int>( "DerivativeTest.order" ) == 1 ) derivTester.testFirstDerivative_AllDirections( );
-        if( this->_parser.template get<int>( "DerivativeTest.order" ) == 2 ) derivTester.testSecondDerivative_AllDirections( );
+        if( this->_parser.template get<int>( "DerivativeTest.order" ) == 2 ) {
+            derivTester.testSecondDerivative_AllDirections( );
+            derivTester.testSecondDerivative_AllDirections( this->_parser.template get<string>("saving.saveDirectory"), "testHessian" );
+        }
         return true;
     }
 //END DerivativeTest
