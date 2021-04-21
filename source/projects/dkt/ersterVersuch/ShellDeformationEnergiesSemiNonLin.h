@@ -178,6 +178,7 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
   typedef typename ConfiguratorType::RealType RealType;
   typedef typename ConfiguratorType::Point3DType Point3DType;
   typedef typename ConfiguratorType::TangentVecType TangentVecType;
+  typedef typename ConfiguratorType::DomVecType DomVecType;
   typedef typename ConfiguratorType::Matrix22 Matrix22;
   typedef typename ConfiguratorType::Matrix32 Matrix32;
   typedef typename ConfiguratorType::Matrix33 Matrix33;
@@ -221,7 +222,7 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
 
 
        //Zweite Ableitungstest
-       VectorType gAInvGuA0tildeDu (2); gAInvGuA0tildeDu.setZero();
+       DomVecType gAInvGuA0tildeDu; gAInvGuA0tildeDu.setZero();
 
        for( int m=0; m<2; ++m){
          Tensor322Type a0tildedmxB;
@@ -481,6 +482,7 @@ public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType
   typedef typename ConfiguratorType::RealType RealType;
   typedef typename ConfiguratorType::Point3DType Point3DType;
   typedef typename ConfiguratorType::TangentVecType TangentVecType;
+  typedef typename ConfiguratorType::DomVecType DomVecType;
   typedef typename ConfiguratorType::Matrix22 Matrix22;
   typedef typename ConfiguratorType::Matrix32 Matrix32;
   typedef typename ConfiguratorType::Matrix33 Matrix33;
@@ -538,7 +540,7 @@ public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType
           a0Tildextimesd2xB.set ( l, p, q, _xAStorage.getSemiNonlinIsometry_a0tilde( El.getGlobalElementIdx(), QuadPoint )(p,q) * _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint )(l,1));
         }
 
-    VectorType gAInvGuDotA0TildeDxB (2);
+    DomVecType gAInvGuDotA0TildeDxB;
     gAInvGuDotA0TildeDxB(0) = _xABStorage.getGAInvSemiNonlinearityB( El.getGlobalElementIdx(), QuadPoint ).ddprod( a0Tildextimesd1xB);
     gAInvGuDotA0TildeDxB(1) = _xABStorage.getGAInvSemiNonlinearityB( El.getGlobalElementIdx(), QuadPoint ).ddprod( a0Tildextimesd2xB);
 
