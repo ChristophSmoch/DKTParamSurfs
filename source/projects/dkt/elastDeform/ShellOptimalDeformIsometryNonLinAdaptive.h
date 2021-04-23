@@ -63,30 +63,30 @@ public:
 
 
     // TODO Christoph: teste SemiNonlin
-    VectorType xB ( solDisp.size() ); xB = shellHandler.getChartToUndeformedShell() + solDisp;
-    DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( matOptConf._conf, xB, 3 );
-    MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xABStorage ( matOptConf._conf, shellHandler.getChartToUndeformedShell_Cache(), xBStorage, 3 );
-    // seminonlin
-    SemiNonlinearBendingEnergy<MatOptConfigurator> testSemiNonlinearEnergyOp( matOptConf,
-                             shellHandler.getChartToUndeformedShell_Cache(),
-                             xBStorage,
-                             xABStorage,
-                             material,
-                             matOptConf._materialInfo._factorBendingEnergy  );
-    RealType testSemiNonlinearEnergy;
-    testSemiNonlinearEnergyOp.assembleAdd ( testSemiNonlinearEnergy );
-    // full nonlin
-    NonlinearBendingEnergy<MatOptConfigurator> testNonlinearEnergyOp( matOptConf,
-                             shellHandler.getChartToUndeformedShell_Cache(),
-                             xBStorage,
-                             material,
-                             matOptConf._materialInfo._factorBendingEnergy  );
-    RealType testNonlinearEnergy;
-    testNonlinearEnergyOp.assembleAdd ( testNonlinearEnergy );
-    cout << "==========================" <<  endl
-         << "seminonlin energy after optimization = " <<  testSemiNonlinearEnergy  <<  endl
-         << "nonlin energy after optimization     = " <<  testNonlinearEnergy  <<  endl
-         << "==========================" <<  endl;
+    // VectorType xB ( solDisp.size() ); xB = shellHandler.getChartToUndeformedShell() + solDisp;
+    // DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( matOptConf._conf, xB, 3 );
+    // MixedDiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xABStorage ( matOptConf._conf, shellHandler.getChartToUndeformedShell_Cache(), xBStorage, 3 );
+    // // seminonlin
+    // SemiNonlinearBendingEnergy<MatOptConfigurator> testSemiNonlinearEnergyOp( matOptConf,
+    //                          shellHandler.getChartToUndeformedShell_Cache(),
+    //                          xBStorage,
+    //                          xABStorage,
+    //                          material,
+    //                          matOptConf._materialInfo._factorBendingEnergy  );
+    // RealType testSemiNonlinearEnergy;
+    // testSemiNonlinearEnergyOp.assembleAdd ( testSemiNonlinearEnergy );
+    // // full nonlin
+    // NonlinearBendingEnergy<MatOptConfigurator> testNonlinearEnergyOp( matOptConf,
+    //                          shellHandler.getChartToUndeformedShell_Cache(),
+    //                          xBStorage,
+    //                          material,
+    //                          matOptConf._materialInfo._factorBendingEnergy  );
+    // RealType testNonlinearEnergy;
+    // testNonlinearEnergyOp.assembleAdd ( testNonlinearEnergy );
+    // cout << "==========================" <<  endl
+    //      << "seminonlin energy after optimization = " <<  testSemiNonlinearEnergy  <<  endl
+    //      << "nonlin energy after optimization     = " <<  testNonlinearEnergy  <<  endl
+    //      << "==========================" <<  endl;
 
 
     //! print elapsed time

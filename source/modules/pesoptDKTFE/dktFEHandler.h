@@ -178,6 +178,7 @@ public:
             coordsOnNonIsometry(0) = coords(0);
             coordsOnNonIsometry(1) = coords(1);
             coordsOnNonIsometry(2) = 0.5 * ( (coords(0) - 0.5)*(coords(0) - 0.5) - (coords(1) - 0.5)*(coords(1) - 0.5));
+            // coordsOnNonIsometry(2) = 0.5 * ( (coords(0) - 0.5)*(coords(0) - 0.5) + (coords(1) - 0.5)*(coords(1) - 0.5));
             for( int comp=0; comp<3; ++comp )_xA[ nodeIdx + _numGlobalDofs * comp ] = coordsOnNonIsometry[comp];
             if( ConfiguratorType::_ShellFEType == C1Dofs ){
                 TangentVecType firstTangentVecAtNode;
@@ -185,6 +186,7 @@ public:
                 firstTangentVecAtNode(1) = 0.;
                 firstTangentVecAtNode(2) = coords(0) - 0.5;
                 TangentVecType secondTangentVecAtNode; secondTangentVecAtNode(0) = 0.; secondTangentVecAtNode(1) = 1.; secondTangentVecAtNode(2) = - coords(1) + 0.5;
+                // TangentVecType secondTangentVecAtNode; secondTangentVecAtNode(0) = 0.; secondTangentVecAtNode(1) = 1.; secondTangentVecAtNode(2) =  coords(1) - 0.5;
                 for( int comp=0; comp<3; ++comp ){
                   _xA[ nodeIdx +     _numVertices + _numGlobalDofs * comp ] = firstTangentVecAtNode  [comp];
                   _xA[ nodeIdx + 2 * _numVertices + _numGlobalDofs * comp ] = secondTangentVecAtNode [comp];
