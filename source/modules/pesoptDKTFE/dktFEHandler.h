@@ -195,6 +195,35 @@ public:
         }
       }
 
+      // Half Cone Christoph
+      if( chartXAType == "PlateToHalfCone" ){
+          const RealType pi = 4 * atan ( 1.0 );
+          for ( int nodeIdx=0; nodeIdx < _numVertices; ++nodeIdx ) {
+            const Point3DType& coords ( _mesh.getVertex(nodeIdx) );
+            const RealType radius = 1. / pi * (1 - coords(1)/2);
+            Point3DType coordsOnHalfCone;
+            coordsOnHalfCone(0) = radius * cos( coords(0) * pi );
+            coordsOnHalfCone(1) = coords(1);
+            coordsOnHalfCone(2) = radius * sin( coords(0) * pi );
+            for( int comp=0; comp<3; ++comp )_xA[ nodeIdx + _numGlobalDofs * comp ] = coordsOnHalfCone[comp];
+            if( ConfiguratorType::_ShellFEType == C1Dofs ){
+                TangentVecType firstTangentVecAtNode;
+                firstTangentVecAtNode(0) = -1. * pi * radius * sin(coords(0) * pi);
+                firstTangentVecAtNode(1) = 0.;
+                firstTangentVecAtNode(2) = pi * radius * cos(coords(0) * pi);
+                TangentVecType secondTangentVecAtNode;
+                secondTangentVecAtNode(0) = -1. * 1. / 2. * 1. / pi * cos( coords(0) * pi );
+                secondTangentVecAtNode(1) = 1.;
+                secondTangentVecAtNode(2) = -1. * 1. / 2. * 1. / pi * sin( coords(0) * pi );
+                // TangentVecType secondTangentVecAtNode; secondTangentVecAtNode(0) = 0.; secondTangentVecAtNode(1) = 1.; secondTangentVecAtNode(2) =  coords(1) - 0.5;
+                for( int comp=0; comp<3; ++comp ){
+                  _xA[ nodeIdx +     _numVertices + _numGlobalDofs * comp ] = firstTangentVecAtNode  [comp];
+                  _xA[ nodeIdx + 2 * _numVertices + _numGlobalDofs * comp ] = secondTangentVecAtNode [comp];
+                }
+            }
+        }
+      }
+
 
       // chart(x,y) = (x,y, 1/4(2x-1)^2 - 1/4(2y-1)^2)
       // D chart(x,y) =
