@@ -169,11 +169,20 @@ public:
                                                 energyInfo, isometryInfo, saveDirectoryRefinementStep, refinementStep );
 
       //! SAVE
+      // SolutionDisplamentVec.push_back( SolutionDisplacement );
+      // gridSizeVec.push_back( DKTTriangMeshInfo<MeshType> ( mesh ).getMinAreaSqrt() );
+      // membraneStressVector.push_back( membraneStressVec ); bendingStressVector.push_back( bendingStressVec ); totalStressVector.push_back( totalStressVec );
+      // energyInfoVec.push_back( energyInfo );
+      // isometryInfoVec.push_back( isometryInfo );
+
       SolutionDisplamentVec.push_back( SolutionDisplacement );
       gridSizeVec.push_back( DKTTriangMeshInfo<MeshType> ( mesh ).getMinAreaSqrt() );
       membraneStressVector.push_back( membraneStressVec ); bendingStressVector.push_back( bendingStressVec ); totalStressVector.push_back( totalStressVec );
+      // GaussCurvVector.push_back( GaussCurvVec );
       energyInfoVec.push_back( energyInfo );
+      isometryInfo.setGridSize( gridSizeVec[refinementStep] );
       isometryInfoVec.push_back( isometryInfo );
+      isometryInfo.template saveToFile<ParameterParserType>( "isometryInfo", saveDirectoryRefinementStep );
 
     }// end for refinement step
 
