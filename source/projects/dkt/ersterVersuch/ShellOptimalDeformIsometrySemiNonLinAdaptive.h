@@ -31,6 +31,7 @@ public:
                                            const VectorType &initDisp, VectorType &solDisp,
                                            MaskType &DirichletMask,
                                            VectorType &membraneStressVec, VectorType &bendingStressVec, VectorType &totalStressVec,
+                                           VectorType &GaussCurvVec,
                                            DeformationOptimizationShellEnergyInfo<RealType> &energyInfo,
                                            IsometryInfo<RealType> &isometryInfo,
                                            const string saveDirectory,
@@ -85,6 +86,20 @@ public:
                                                         "areaOnElements"};
     this->template saveAllResults<NonLinElastEnergyType::_DiscreteFunctionCacheType,true> ( saveDirectory, matOptConf, shellHandler, material, solDisp, StressOnElementVec, nameStressOnElementVec, totalStressVec, areaOnElementsVec, energyInfo );
 
+    const int numVertices = mesh.getNumVertices();
+    const int numGlobalDofsDeform = conf.getNumGlobalDofs();
+    VectorType xB ( solDisp.size() ); xB = solDisp + shellHandler.getChartToUndeformedShell();
+    DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( matOptConf._conf, xB, 3 );
+
+    //Gauss and Mean Curvature, Relative Shape Operator
+    VectorType GaussCurvVector ( totalStressVec.size() );
+    GaussCurvatureL1<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleOnElements( GaussCurvVector );
+    RealType integralGauss = 0.;
+    GaussCurvatureL1<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleAdd( integralGauss );
+    isometryInfo.setGaussCurvatureL1( integralGauss );
+    GaussCurvVec = GaussCurvVector;
+
+
     //!plot results
     if( parser.template get<int> ( "saving.plotResults" ) == 1 ){
         cout << endl << "plot results" << endl;
@@ -113,6 +128,7 @@ public:
     std::vector<VectorType> SolutionDisplamentVec;
     std::vector<RealType> gridSizeVec;
     std::vector<VectorType> membraneStressVector, bendingStressVector, totalStressVector;
+    std::vector<VectorType> GaussCurvVector;
     std::vector<DeformationOptimizationShellEnergyInfo<RealType>> energyInfoVec;
     std::vector<IsometryInfo<RealType>> isometryInfoVec;
     std::vector<string> saveDirectoryVec;
@@ -162,10 +178,11 @@ public:
 
       //! SOLVE
       VectorType membraneStressVec ( mesh.getNumElements() ), bendingStressVec ( mesh.getNumElements() ), totalStressVec( mesh.getNumElements() );
+      VectorType GaussCurvVec ( mesh.getNumElements() );
       DeformationOptimizationShellEnergyInfo<RealType> energyInfo;
       IsometryInfo<RealType> isometryInfo;
-      computeOptimalDeformation_OnCurrentMesh ( mesh, material, InitDisplacement, SolutionDisplacement, DirichletMask,
-                                                membraneStressVec, bendingStressVec, totalStressVec,
+        computeOptimalDeformation_OnCurrentMesh ( mesh, material, InitDisplacement, SolutionDisplacement, DirichletMask,
+                                                membraneStressVec, bendingStressVec, totalStressVec, GaussCurvVec,
                                                 energyInfo, isometryInfo, saveDirectoryRefinementStep, refinementStep );
 
       //! SAVE
@@ -178,7 +195,7 @@ public:
       SolutionDisplamentVec.push_back( SolutionDisplacement );
       gridSizeVec.push_back( DKTTriangMeshInfo<MeshType> ( mesh ).getMinAreaSqrt() );
       membraneStressVector.push_back( membraneStressVec ); bendingStressVector.push_back( bendingStressVec ); totalStressVector.push_back( totalStressVec );
-      // GaussCurvVector.push_back( GaussCurvVec );
+      GaussCurvVector.push_back( GaussCurvVec );
       energyInfoVec.push_back( energyInfo );
       isometryInfo.setGridSize( gridSizeVec[refinementStep] );
       isometryInfoVec.push_back( isometryInfo );
@@ -195,7 +212,7 @@ public:
 
     VectorType fineSolution = SolutionDisplamentVec[numAdaptiveRefinementSteps];
     std::vector<VectorType> SolutionDisplamentVecProlongated;
-    std::vector<RealType> ErrorD2L2_FineSolutionVec(numAdaptiveRefinementSteps+1), EOCD2L2_FineSolutionVec(numAdaptiveRefinementSteps);
+    std::vector<RealType> ErrorD2L2_FineSolutionVec(numAdaptiveRefinementSteps+1), EOCD2L2_FineSolutionVec(numAdaptiveRefinementSteps), ErrorGaussCurvL1_FineSolutionVec(numAdaptiveRefinementSteps+1);
     for( int refinementStep=0; refinementStep<=numAdaptiveRefinementSteps; ++refinementStep ){
             VectorType currentSolutionProlongated = SolutionDisplamentVec[refinementStep];
             mesh.prolongateVectorFct_DKTLinearly( currentSolutionProlongated );
@@ -206,9 +223,13 @@ public:
         DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> fineSolutionDFD ( conf, fineSolution, 3);
         DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFD( conf, SolutionDisplamentVecProlongated[refinementStep], 3 );
         RealType tmp = 0.;
+        RealType tmp1 = 0.;
         SecondDerivativeEnergy<ConfiguratorType> ( conf, fineSolutionDFD, solDFD ).assembleAdd( tmp );
+        GaussCurvatureL1Diff<ConfiguratorType> ( conf, fineSolutionDFD, solDFD ).assembleAdd( tmp1 );
         ErrorD2L2_FineSolutionVec[refinementStep] = sqrt( tmp );
+        ErrorGaussCurvL1_FineSolutionVec[refinementStep] =  tmp1;
         isometryInfoVec[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(tmp) );
+        isometryInfoVec[refinementStep].setGaussCurvatureL1Diff( tmp1 );
     }
     this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVec );
 

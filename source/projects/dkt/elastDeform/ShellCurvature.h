@@ -9,22 +9,22 @@ class GaussCurvatureL1 :
 public RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1<ConfiguratorType> >
 {
   protected:
-       typedef typename ConfiguratorType::RealType RealType; 
+       typedef typename ConfiguratorType::RealType RealType;
        typedef typename ConfiguratorType::Point3DType Point3DType;
        typedef typename ConfiguratorType::Matrix22  Matrix22;
        typedef typename ConfiguratorType::Matrix32  Matrix32;
        typedef typename ConfiguratorType::Matrix33  Matrix33;
        typedef typename ConfiguratorType::Tensor322Type Tensor322Type;
        typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
-       typedef typename ConfiguratorType::ElementType ElementType; 
+       typedef typename ConfiguratorType::ElementType ElementType;
        typedef typename ConfiguratorType::VectorType VectorType;
  public:
       static const DiscreteFunctionCacheType _DiscreteFunctionCacheType = FirstAndSecondOrder;
  protected:
-       const ConfiguratorType &_conf;   
+       const ConfiguratorType &_conf;
        const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &_xStorage;
   public:
-    GaussCurvatureL1 ( const ConfiguratorType &conf, 
+    GaussCurvatureL1 ( const ConfiguratorType &conf,
                            const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xStorage ) :
       RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1<ConfiguratorType>> (conf),
       _conf ( conf ),
@@ -39,28 +39,70 @@ public RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1<ConfiguratorType
 };
 
 
-// computes int \sqrt(g) |tr(g^-1 h )|
+// computes int \sqrt(g) |det(g_B^-1 h_B) - det(g_A^-1 h_A )|
 template<typename ConfiguratorType>
-class MeanCurvatureL1 :
-public RefTriangleIntegrator<ConfiguratorType, MeanCurvatureL1<ConfiguratorType> >
+class GaussCurvatureL1Diff :
+public RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1Diff<ConfiguratorType> >
 {
   protected:
-       typedef typename ConfiguratorType::RealType RealType; 
+       typedef typename ConfiguratorType::RealType RealType;
        typedef typename ConfiguratorType::Point3DType Point3DType;
        typedef typename ConfiguratorType::Matrix22  Matrix22;
        typedef typename ConfiguratorType::Matrix32  Matrix32;
        typedef typename ConfiguratorType::Matrix33  Matrix33;
        typedef typename ConfiguratorType::Tensor322Type Tensor322Type;
        typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
-       typedef typename ConfiguratorType::ElementType ElementType; 
+       typedef typename ConfiguratorType::ElementType ElementType;
        typedef typename ConfiguratorType::VectorType VectorType;
  public:
       static const DiscreteFunctionCacheType _DiscreteFunctionCacheType = FirstAndSecondOrder;
  protected:
-       const ConfiguratorType &_conf;   
+       const ConfiguratorType &_conf;
+       const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &_xAStorage;
+       const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &_xBStorage;
+  public:
+    GaussCurvatureL1Diff ( const ConfiguratorType &conf,
+                           const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xAStorage,
+                           const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xBStorage ) :
+      RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1Diff<ConfiguratorType>> (conf),
+      _conf ( conf ),
+      _xAStorage ( xAStorage ),
+      _xBStorage ( xBStorage ) {}
+
+    RealType evaluateIntegrand ( const typename ConfiguratorType::ElementType &El, int QuadPoint ) const{
+        const Matrix22& gAInv = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
+        const Matrix22& hA = _xAStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint );
+        const RealType GaussCurvA = ( gAInv * hA ).determinant();
+        const Matrix22& gBInv = _xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
+        const Matrix22& hB = _xBStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint );
+        const RealType GaussCurvB = ( gBInv * hB ).determinant();
+        return _xAStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * std::abs( GaussCurvB - GaussCurvA );
+    }
+};
+
+
+// computes int \sqrt(g) |tr(g^-1 h )|
+template<typename ConfiguratorType>
+class MeanCurvatureL1 :
+public RefTriangleIntegrator<ConfiguratorType, MeanCurvatureL1<ConfiguratorType> >
+{
+  protected:
+       typedef typename ConfiguratorType::RealType RealType;
+       typedef typename ConfiguratorType::Point3DType Point3DType;
+       typedef typename ConfiguratorType::Matrix22  Matrix22;
+       typedef typename ConfiguratorType::Matrix32  Matrix32;
+       typedef typename ConfiguratorType::Matrix33  Matrix33;
+       typedef typename ConfiguratorType::Tensor322Type Tensor322Type;
+       typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
+       typedef typename ConfiguratorType::ElementType ElementType;
+       typedef typename ConfiguratorType::VectorType VectorType;
+ public:
+      static const DiscreteFunctionCacheType _DiscreteFunctionCacheType = FirstAndSecondOrder;
+ protected:
+       const ConfiguratorType &_conf;
        const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &_xStorage;
   public:
-    MeanCurvatureL1 ( const ConfiguratorType &conf, 
+    MeanCurvatureL1 ( const ConfiguratorType &conf,
                            const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xStorage ) :
       RefTriangleIntegrator<ConfiguratorType, MeanCurvatureL1<ConfiguratorType>> (conf),
       _conf ( conf ),
@@ -81,22 +123,22 @@ class RelativeShapeOperatorL2 :
 public RefTriangleIntegrator<ConfiguratorType, RelativeShapeOperatorL2<ConfiguratorType> >
 {
   protected:
-       typedef typename ConfiguratorType::RealType RealType; 
+       typedef typename ConfiguratorType::RealType RealType;
        typedef typename ConfiguratorType::Point3DType Point3DType;
        typedef typename ConfiguratorType::Matrix22  Matrix22;
        typedef typename ConfiguratorType::Matrix32  Matrix32;
        typedef typename ConfiguratorType::Matrix33  Matrix33;
        typedef typename ConfiguratorType::Tensor322Type Tensor322Type;
        typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
-       typedef typename ConfiguratorType::ElementType ElementType; 
+       typedef typename ConfiguratorType::ElementType ElementType;
        typedef typename ConfiguratorType::VectorType VectorType;
  public:
       static const DiscreteFunctionCacheType _DiscreteFunctionCacheType = FirstAndSecondOrder;
  protected:
-       const ConfiguratorType &_conf;   
+       const ConfiguratorType &_conf;
        const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &_xAStorage, &_xBStorage;
   public:
-    RelativeShapeOperatorL2 ( const ConfiguratorType &conf, 
+    RelativeShapeOperatorL2 ( const ConfiguratorType &conf,
                            const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xAStorage,
                            const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xBStorage ) :
       RefTriangleIntegrator<ConfiguratorType, RelativeShapeOperatorL2<ConfiguratorType>> (conf),
@@ -121,22 +163,22 @@ class SecondDerivativeEnergy :
 public RefTriangleIntegrator<ConfiguratorType, SecondDerivativeEnergy<ConfiguratorType> >
 {
   protected:
-       typedef typename ConfiguratorType::RealType RealType; 
+       typedef typename ConfiguratorType::RealType RealType;
        typedef typename ConfiguratorType::Point3DType Point3DType;
        typedef typename ConfiguratorType::Matrix22  Matrix22;
        typedef typename ConfiguratorType::Matrix32  Matrix32;
        typedef typename ConfiguratorType::Matrix33  Matrix33;
        typedef typename ConfiguratorType::Tensor322Type Tensor322Type;
        typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
-       typedef typename ConfiguratorType::ElementType ElementType; 
+       typedef typename ConfiguratorType::ElementType ElementType;
        typedef typename ConfiguratorType::VectorType VectorType;
  public:
       static const DiscreteFunctionCacheType _DiscreteFunctionCacheType = FirstAndSecondOrder;
  protected:
-       const ConfiguratorType &_conf;   
+       const ConfiguratorType &_conf;
        const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &_xAStorage, &_xBStorage;
   public:
-    SecondDerivativeEnergy ( const ConfiguratorType &conf, 
+    SecondDerivativeEnergy ( const ConfiguratorType &conf,
                              const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xAStorage,
                              const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xBStorage ) :
       RefTriangleIntegrator<ConfiguratorType, SecondDerivativeEnergy<ConfiguratorType>> (conf),
@@ -153,7 +195,7 @@ public RefTriangleIntegrator<ConfiguratorType, SecondDerivativeEnergy<Configurat
             for( int j=0; j<3; ++j )
                 for( int k = 0; k <2; ++k )
                     D2u.set(i,j,k, D2xB.get(i,j,k) - D2xA.get(i,j,k) );
-        
+
         const RealType aux =  D2u.normSqr();
         return _xAStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * aux;
     }
