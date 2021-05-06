@@ -39,7 +39,7 @@ public RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1<ConfiguratorType
 };
 
 
-// computes int \sqrt(g) |det(g_B^-1 h_B) - det(g_A^-1 h_A )|
+// computes int \sqrt(g_A) |det(g_B^-1 h_B) - det(g_A^-1 h_A )|
 template<typename ConfiguratorType>
 class GaussCurvatureL1Diff :
 public RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1Diff<ConfiguratorType> >
@@ -77,6 +77,7 @@ public RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1Diff<Configurator
         const Matrix22& hB = _xBStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint );
         const RealType GaussCurvB = ( gBInv * hB ).determinant();
         return _xAStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * std::abs( GaussCurvB - GaussCurvA );
+        // return _xAStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * std::abs( GaussCurvA );
     }
 };
 

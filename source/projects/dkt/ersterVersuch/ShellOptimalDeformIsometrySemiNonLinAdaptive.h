@@ -161,7 +161,11 @@ public:
           if( this->_parser.template get<bool> ( "ConstraintProblem.adaptiveMarkingUseTotalStressVec") ){
               this->template markAndRefineForGivenElementErrorVector<NonLinElastEnergyType::_DiscreteFunctionCacheType> ( mesh, material, InitDisplacement, SolutionDisplacement, DirichletMask, totalStressVector[refinementStep-1], markedElements  );
           }else{
+          if( this->_parser.template get<bool> ( "ConstraintProblem.adaptiveMarkingUseGaussCurvatureVec") ){
+              this->template markAndRefineForGivenElementErrorVector<NonLinElastEnergyType::_DiscreteFunctionCacheType> ( mesh, material, InitDisplacement, SolutionDisplacement, DirichletMask, GaussCurvVector[refinementStep-1], markedElements  );
+          }else{
               this->template markAndRefine<NonLinElastEnergyType::_DiscreteFunctionCacheType> ( mesh, material, InitDisplacement, SolutionDisplacement, DirichletMask, markedElements );
+          }
           }
           std::chrono::duration<RealType> diff = std::chrono::high_resolution_clock::now() - startTime;
           std::cout << endl << "duration for markAndRefine = " << diff.count() << " sec" << endl;
@@ -223,13 +227,20 @@ public:
         DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> fineSolutionDFD ( conf, fineSolution, 3);
         DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFD( conf, SolutionDisplamentVecProlongated[refinementStep], 3 );
         RealType tmp = 0.;
-        RealType tmp1 = 0.;
         SecondDerivativeEnergy<ConfiguratorType> ( conf, fineSolutionDFD, solDFD ).assembleAdd( tmp );
-        GaussCurvatureL1Diff<ConfiguratorType> ( conf, fineSolutionDFD, solDFD ).assembleAdd( tmp1 );
         ErrorD2L2_FineSolutionVec[refinementStep] = sqrt( tmp );
-        ErrorGaussCurvL1_FineSolutionVec[refinementStep] =  tmp1;
         isometryInfoVec[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(tmp) );
+    }
+    for( int refinementStep=0; refinementStep<=numAdaptiveRefinementSteps; ++refinementStep ){
+        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> fineSolutionDFD ( confFine, fineSolution, 3);
+        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFD( confFine, SolutionDisplamentVecProlongated[refinementStep], 3 );
+        RealType tmp1 = 0.;
+        // RealType tmp2 = 0.;
+        GaussCurvatureL1Diff<ConfiguratorType> ( confFine, fineSolutionDFD, solDFD ).assembleAdd( tmp1 );
+        // GaussCurvatureL1<ConfiguratorType> ( conf,  solDFD ).assembleAdd( tmp2 );
+        ErrorGaussCurvL1_FineSolutionVec[refinementStep] =  tmp1;
         isometryInfoVec[refinementStep].setGaussCurvatureL1Diff( tmp1 );
+        // isometryInfoVec[refinementStep].setGaussCurvatureL1( tmp2 );
     }
     this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVec );
 
