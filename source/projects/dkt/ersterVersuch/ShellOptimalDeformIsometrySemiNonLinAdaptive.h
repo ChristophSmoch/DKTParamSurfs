@@ -91,7 +91,7 @@ public:
     VectorType xB ( solDisp.size() ); xB = solDisp + shellHandler.getChartToUndeformedShell();
     DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( matOptConf._conf, xB, 3 );
 
-    //Gauss and Mean Curvature, Relative Shape Operator
+    //Gauss Curvature
     VectorType GaussCurvVector ( totalStressVec.size() );
     GaussCurvatureL1<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleOnElements( GaussCurvVector );
     RealType integralGauss = 0.;

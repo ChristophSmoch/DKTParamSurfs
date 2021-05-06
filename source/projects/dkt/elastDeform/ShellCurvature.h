@@ -77,7 +77,7 @@ public RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1Diff<Configurator
         const Matrix22& hB = _xBStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint );
         const RealType GaussCurvB = ( gBInv * hB ).determinant();
         return _xAStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * std::abs( GaussCurvB - GaussCurvA );
-        // return _xAStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * std::abs( GaussCurvA );
+        // return _xBStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * std::abs( GaussCurvB );
     }
 };
 
