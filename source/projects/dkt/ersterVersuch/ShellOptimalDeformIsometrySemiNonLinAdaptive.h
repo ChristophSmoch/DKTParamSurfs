@@ -230,10 +230,7 @@ public:
         SecondDerivativeEnergy<ConfiguratorType> ( conf, fineSolutionDFD, solDFD ).assembleAdd( tmp );
         ErrorD2L2_FineSolutionVec[refinementStep] = sqrt( tmp );
         isometryInfoVec[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(tmp) );
-    }
-    for( int refinementStep=0; refinementStep<=numAdaptiveRefinementSteps; ++refinementStep ){
-        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> fineSolutionDFD ( confFine, fineSolution, 3);
-        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFD( confFine, SolutionDisplamentVecProlongated[refinementStep], 3 );
+
         RealType tmp1 = 0.;
         // RealType tmp2 = 0.;
         GaussCurvatureL1Diff<ConfiguratorType> ( confFine, fineSolutionDFD, solDFD ).assembleAdd( tmp1 );
@@ -242,6 +239,7 @@ public:
         isometryInfoVec[refinementStep].setGaussCurvatureL1Diff( tmp1 );
         // isometryInfoVec[refinementStep].setGaussCurvatureL1( tmp2 );
     }
+
     this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVec );
 
 
