@@ -1224,6 +1224,79 @@ public:
     _meshSaver.save( pesopt::strprintf (  "%s/%s.%s", _saveDirectory.c_str(), outfile_base_name.c_str(), _VTKFileType.c_str() ), VTKPOLYDATA );
   }
 
+  
+  void saveShellToFile ( const string dispOrDeform,
+                         const VectorType & dispOrDeformVec,
+                         const string outfile_base_name,
+                         const bool plotNormalField = true  ) const{
+
+    // set deformed mesh
+    MeshType meshDeformed ( this->_mesh ); VectorType deformVec ( dispOrDeformVec.size() );
+    this->getDeformedMesh( meshDeformed, deformVec, dispOrDeform, dispOrDeformVec );
+
+    VTKMeshSaver<MeshType> meshSaver ( meshDeformed );
+
+    //boundary
+    VectorType boundary ( this->_numVertices );
+    for( int i=0; i<this->_numVertices; ++i ){
+      if( this->_DirichletMask[i] ) boundary[i] = 1.;
+      else                    boundary[i] = 0.;
+    }
+    meshSaver.addScalarData ( boundary, "boundary", VERTEX_DATA );
+
+    //topological boundary
+    MaskType topologicalBoundaryMask ( this->_numVertices );
+    meshDeformed.findTopologicalBoundaryMask( topologicalBoundaryMask  );
+    VectorType topologicalBoundary ( this->_numVertices );
+    for( int i=0; i<this->_numVertices; ++i ){
+      if( topologicalBoundaryMask[i] ) topologicalBoundary[i] = 1.;
+      else                             topologicalBoundary[i] = 0.;
+    }
+    meshSaver.addScalarData ( topologicalBoundary, "topologicalBoundary", VERTEX_DATA );
+
+    //! normals on deformed surface at nodes
+    VectorType normalAtNodes ( 3 * this->_numVertices ), tangent1AtNodes ( 3 * this->_numVertices ), tangent2AtNodes( 3 * this->_numVertices );
+    if( plotNormalField ){
+        if( ConfiguratorType::_ShellFEType == C1Dofs ){
+            for( int i = 0; i < meshDeformed.getNumVertices(); ++i ){
+                    TangentVecType tangentVec1, tangentVec2;
+                    for( int comp = 0; comp < 3; ++comp ) {
+                        tangentVec1[comp] = deformVec[i + this->_numVertices + comp * this->_numGlobalDofsDeform];
+                        tangentVec2[comp] = deformVec[i + 2 * this->_numVertices + comp * this->_numGlobalDofsDeform];
+                    }
+                    TangentVecType normalVec = tangentVec1.cross( tangentVec2 );
+                    RealType norm = normalVec.norm();
+                    normalVec /= norm;
+                    for( int comp = 0; comp<3; ++comp ){
+                        normalAtNodes[i + comp * this->_numVertices] = normalVec[comp];
+                        tangent1AtNodes[i + comp * this->_numVertices] = tangentVec1[comp];
+                        tangent2AtNodes[i + comp * this->_numVertices] = tangentVec2[comp];
+                    }
+            }
+        }else{
+            meshDeformed.updateAllTriangles();
+            meshDeformed.generateApproximativeTangentSpaceAtNodes();
+            //TODO optional with boundary mask
+            for( int i = 0; i < meshDeformed.getNumVertices(); ++i ){
+                    const TangentVecType & tangentVec1 = meshDeformed.getTangentVec1( i ),
+                                           tangentVec2 = meshDeformed.getTangentVec2( i ),
+                                           normalVec   = meshDeformed.getNormalVec( i );
+                    for( int comp = 0; comp<3; ++comp ){
+                        normalAtNodes[i + comp * this->_numVertices] = normalVec[comp];
+                        tangent1AtNodes[i + comp * this->_numVertices] = tangentVec1[comp];
+                        tangent2AtNodes[i + comp * this->_numVertices] = tangentVec2[comp];
+                    }
+            }
+        }
+        meshSaver.addNormalData ( normalAtNodes, 3, "normalField", VERTEX_DATA );
+        meshSaver.addVectorData ( tangent1AtNodes, 3, "tangentVec1", VERTEX_DATA );
+        meshSaver.addVectorData ( tangent2AtNodes, 3, "tangentVec2", VERTEX_DATA );
+    }
+
+    meshSaver.save( pesopt::strprintf (  "%s/%s.%s", this->_saveDirectory.c_str(), outfile_base_name.c_str(), this->_VTKFileType.c_str() ), VTKPOLYDATA );
+  }
+  
+  
 // TODO
 //   void savePointCloudDeformedToFile (  const VectorType &disp ) const{
 //
