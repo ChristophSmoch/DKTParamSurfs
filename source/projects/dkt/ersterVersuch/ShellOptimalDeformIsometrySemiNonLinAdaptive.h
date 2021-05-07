@@ -214,6 +214,9 @@ public:
     // this->template plotConvergenceOfApdaptiveRefinement<true>( energyInfoVec );
     this->template plotConvergenceOfApdaptiveRefinement<true>( energyInfoVec );
 
+    ShellHandler<ConfiguratorType,NonLinElastEnergyType::_DiscreteFunctionCacheType> shellHandlerFine ( this->_parser, conf );
+
+
     VectorType fineSolution = SolutionDisplamentVec[numAdaptiveRefinementSteps];
     std::vector<VectorType> SolutionDisplamentVecProlongated;
     std::vector<RealType> ErrorD2L2_FineSolutionVec(numAdaptiveRefinementSteps+1), EOCD2L2_FineSolutionVec(numAdaptiveRefinementSteps), ErrorGaussCurvL1_FineSolutionVec(numAdaptiveRefinementSteps+1);
@@ -222,22 +225,29 @@ public:
             mesh.prolongateVectorFct_DKTLinearly( currentSolutionProlongated );
             SolutionDisplamentVecProlongated.push_back( currentSolutionProlongated );
     }
-    ConfiguratorType confFine ( mesh );
     for( int refinementStep=0; refinementStep<=numAdaptiveRefinementSteps; ++refinementStep ){
-        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> fineSolutionDFD ( conf, fineSolution, 3);
-        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFD( conf, SolutionDisplamentVecProlongated[refinementStep], 3 );
+        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> fineSolutionDFD ( conf, shellHandlerFine.getChartToUndeformedShell (  ) + fineSolution, 3);
+        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFD( conf, shellHandlerFine.getChartToUndeformedShell (  ) + SolutionDisplamentVecProlongated[refinementStep], 3 );
         RealType tmp = 0.;
         SecondDerivativeEnergy<ConfiguratorType> ( conf, fineSolutionDFD, solDFD ).assembleAdd( tmp );
         ErrorD2L2_FineSolutionVec[refinementStep] = sqrt( tmp );
         isometryInfoVec[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(tmp) );
 
         RealType tmp1 = 0.;
-        // RealType tmp2 = 0.;
-        GaussCurvatureL1Diff<ConfiguratorType> ( confFine, fineSolutionDFD, solDFD ).assembleAdd( tmp1 );
-        // GaussCurvatureL1<ConfiguratorType> ( conf,  solDFD ).assembleAdd( tmp2 );
+        RealType tmp2 = 0.;
+        GaussCurvatureL1Diff<ConfiguratorType> ( conf, fineSolutionDFD, solDFD ).assembleAdd( tmp1 );
+        GaussCurvatureL1<ConfiguratorType> ( conf,  solDFD ).assembleAdd( tmp2 );
         ErrorGaussCurvL1_FineSolutionVec[refinementStep] =  tmp1;
         isometryInfoVec[refinementStep].setGaussCurvatureL1Diff( tmp1 );
-        // isometryInfoVec[refinementStep].setGaussCurvatureL1( tmp2 );
+        isometryInfoVec[refinementStep].setGaussCurvatureL1( tmp2 );
+
+        ShellPlotter<ConfiguratorType> shellPlotter( conf, shellHandlerFine.getChartToUndeformedShell(), shellHandlerFine.getDirichletMask(), saveDirectoryVec[refinementStep],   this->_parser.template get<string>("saving.VTKFileType")  );
+        shellPlotter.saveShellToFile ( "disp", SolutionDisplamentVecProlongated[refinementStep], pesopt::strprintf( "prolongatedDeformedShell" ).c_str() );
+
+
+        // VectorType GaussCurvVector ( totalStressVec.size() );
+        // GaussCurvatureL1<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleOnElements( GaussCurvVector );
+
     }
 
     this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVec );
