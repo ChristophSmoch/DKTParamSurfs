@@ -571,6 +571,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
         VectorType isometryErrorL1Vec(numAdaptiveRefinementSteps+1);
         VectorType isometryErrorL2Vec(numAdaptiveRefinementSteps+1);
         VectorType GaussCurvatureL1Vec(numAdaptiveRefinementSteps+1);
+        VectorType GaussCurvatureIntVec(numAdaptiveRefinementSteps+1);
         VectorType GaussCurvatureL1DiffVec(numAdaptiveRefinementSteps+1);
         VectorType ConvGaussCurvatureL1Vec(numAdaptiveRefinementSteps+1);
         VectorType errorApproxD2uToFineSolutionL2Vec(numAdaptiveRefinementSteps+1);
@@ -580,6 +581,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
             isometryErrorL1Vec[refinementStep] = isometryInfoVec[refinementStep]._isometryErrorL1;
             isometryErrorL2Vec[refinementStep] = isometryInfoVec[refinementStep]._isometryErrorL2;
             GaussCurvatureL1Vec[refinementStep] = isometryInfoVec[refinementStep]._GaussCurvatureL1;
+            GaussCurvatureIntVec[refinementStep] = isometryInfoVec[refinementStep]._GaussCurvatureInt;
             GaussCurvatureL1DiffVec[refinementStep] = isometryInfoVec[refinementStep]._GaussCurvatureL1Diff;
             ConvGaussCurvatureL1Vec[refinementStep] = isometryInfoVec[refinementStep]._ConvGaussCurvatureL1;
             errorApproxD2uToFineSolutionL2Vec[refinementStep] = isometryInfoVec[refinementStep]._errorApproxD2uToFineSolutionL2;
@@ -588,6 +590,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
         VectorType EOC_isometryErrorL1Vec(numAdaptiveRefinementSteps+1); EOC_isometryErrorL1Vec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_isometryErrorL2Vec(numAdaptiveRefinementSteps+1); EOC_isometryErrorL2Vec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_GaussCurvatureL1Vec(numAdaptiveRefinementSteps+1); EOC_GaussCurvatureL1Vec[0] = 0.; //no previous iteration step to compare
+        VectorType EOC_GaussCurvatureIntVec(numAdaptiveRefinementSteps+1); EOC_GaussCurvatureIntVec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_GaussCurvatureL1DiffVec(numAdaptiveRefinementSteps+1); EOC_GaussCurvatureL1DiffVec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_ConvGaussCurvatureL1Vec(numAdaptiveRefinementSteps+1); EOC_ConvGaussCurvatureL1Vec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_errorApproxD2uToFineSolutionL2Vec(numAdaptiveRefinementSteps+1); EOC_errorApproxD2uToFineSolutionL2Vec[0] = 0.; //no previous iteration step to compare
@@ -597,6 +600,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
           EOC_isometryErrorL1Vec[refinementStep] = std::log( isometryErrorL1Vec[refinementStep] / isometryErrorL1Vec[refinementStep-1] ) / std::log(facGridSize);
           EOC_isometryErrorL2Vec[refinementStep] = std::log( isometryErrorL2Vec[refinementStep] / isometryErrorL2Vec[refinementStep-1] ) / std::log(facGridSize);
           EOC_GaussCurvatureL1Vec[refinementStep] = std::log( GaussCurvatureL1Vec[refinementStep] / GaussCurvatureL1Vec[refinementStep-1] ) / std::log(facGridSize);
+          EOC_GaussCurvatureIntVec[refinementStep] = std::log( GaussCurvatureIntVec[refinementStep] / GaussCurvatureIntVec[refinementStep-1] ) / std::log(facGridSize);
           EOC_GaussCurvatureL1DiffVec[refinementStep] = std::log( GaussCurvatureL1DiffVec[refinementStep] / GaussCurvatureL1DiffVec[refinementStep-1] ) / std::log(facGridSize);
           EOC_ConvGaussCurvatureL1Vec[refinementStep] = std::log( ConvGaussCurvatureL1Vec[refinementStep] / ConvGaussCurvatureL1Vec[refinementStep-1] ) / std::log(facGridSize);
           EOC_errorApproxD2uToFineSolutionL2Vec[refinementStep] = std::log( errorApproxD2uToFineSolutionL2Vec[refinementStep] / errorApproxD2uToFineSolutionL2Vec[refinementStep-1] ) / std::log(facGridSize);
@@ -605,16 +609,18 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
         TexGeneratorTable<RealType, VectorType> tablePlotter ( saveDirectoryConvergenceIsometry );
         std::vector<VectorType> vecs; std::vector<string> describtions;
         vecs.push_back(gridSizeVec), describtions.push_back( "$h$" );
-        vecs.push_back(isometryErrorL1Vec), describtions.push_back( "$|g_B - g_A|_{L^1}$" );
-        vecs.push_back(EOC_isometryErrorL1Vec), describtions.push_back( "EOC $|g_B - g_A|_{L^1}$" );
-        vecs.push_back(isometryErrorL2Vec), describtions.push_back( "$|g_B - g_A|_{L^2}$" );
-        vecs.push_back(EOC_isometryErrorL2Vec), describtions.push_back( "EOC $|g_B - g_A|_{L^2}$" );
+        // vecs.push_back(isometryErrorL1Vec), describtions.push_back( "$|g_B - g_A|_{L^1}$" );
+        // vecs.push_back(EOC_isometryErrorL1Vec), describtions.push_back( "EOC $|g_B - g_A|_{L^1}$" );
+        // vecs.push_back(isometryErrorL2Vec), describtions.push_back( "$|g_B - g_A|_{L^2}$" );
+        // vecs.push_back(EOC_isometryErrorL2Vec), describtions.push_back( "EOC $|g_B - g_A|_{L^2}$" );
         vecs.push_back(GaussCurvatureL1Vec), describtions.push_back( "$|det( \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
         vecs.push_back(EOC_GaussCurvatureL1Vec), describtions.push_back( "EOC $|det( \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
+        vecs.push_back(GaussCurvatureIntVec), describtions.push_back( "Integral $ det( \\nabla \\nabla_h u_h \\cdot n_h) $" );
+        vecs.push_back(EOC_GaussCurvatureIntVec), describtions.push_back( "EOC Integral $ det( \\nabla \\nabla_h u_h \\cdot n_h)$" );
         vecs.push_back(GaussCurvatureL1DiffVec), describtions.push_back( "$|det( \\nabla \\nabla_h u_h \\cdot n_h) - det( D^2 u_{\\text{fine}} \\cdot n_{\\text{fine}})|_{L^1}$" );
         vecs.push_back(EOC_GaussCurvatureL1DiffVec), describtions.push_back( "EOC $|det( \\nabla \\nabla_h u_h \\cdot n_h) - det( D^2 u_{\\text{fine}} \\cdot n_{\\text{fine}})|_{L^1}$" );
-        vecs.push_back(ConvGaussCurvatureL1Vec), describtions.push_back( "$|det( \\hat \\phi_i * \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
-        vecs.push_back(EOC_ConvGaussCurvatureL1Vec), describtions.push_back( "EOC $|det( \\phi_i *  \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
+        // vecs.push_back(ConvGaussCurvatureL1Vec), describtions.push_back( "$|det( \\hat \\phi_i * \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
+        // vecs.push_back(EOC_ConvGaussCurvatureL1Vec), describtions.push_back( "EOC $|det( \\phi_i *  \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
         vecs.push_back(errorApproxD2uToFineSolutionL2Vec), describtions.push_back( "$| \\nabla \\nabla_h u_h - D^2 u_{\\text{fine}}|_{L^2}$" );
         vecs.push_back(EOC_errorApproxD2uToFineSolutionL2Vec), describtions.push_back( "EOC $| \\nabla \\nabla_h u_h - D^2 u_{\\text{fine}}|_{L^2}$" );
         tablePlotter.plotTable ( vecs, "ConvergenceIsometry", "Convergence Isometry", describtions);

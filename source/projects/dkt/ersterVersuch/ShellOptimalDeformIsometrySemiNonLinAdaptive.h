@@ -95,8 +95,11 @@ public:
     VectorType GaussCurvVector ( totalStressVec.size() );
     GaussCurvatureL1<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleOnElements( GaussCurvVector );
     RealType integralGauss = 0.;
+    RealType integralGauss1 = 0.;
     GaussCurvatureL1<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleAdd( integralGauss );
     isometryInfo.setGaussCurvatureL1( integralGauss );
+    GaussCurvatureInt<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleAdd( integralGauss1 );
+    isometryInfo.setGaussCurvatureInt( integralGauss1 );
     GaussCurvVec = GaussCurvVector;
 
 
@@ -239,10 +242,10 @@ public:
         GaussCurvatureL1<ConfiguratorType> ( conf,  solDFD ).assembleAdd( tmp2 );
         ErrorGaussCurvL1_FineSolutionVec[refinementStep] =  tmp1;
         isometryInfoVec[refinementStep].setGaussCurvatureL1Diff( tmp1 );
-        isometryInfoVec[refinementStep].setGaussCurvatureL1( tmp2 );
+        // isometryInfoVec[refinementStep].setGaussCurvatureL1( tmp2 );
 
-        ShellPlotter<ConfiguratorType> shellPlotter( conf, shellHandlerFine.getChartToUndeformedShell(), shellHandlerFine.getDirichletMask(), saveDirectoryVec[refinementStep],   this->_parser.template get<string>("saving.VTKFileType")  );
-        shellPlotter.saveShellToFile ( "disp", SolutionDisplamentVecProlongated[refinementStep], pesopt::strprintf( "prolongatedDeformedShell" ).c_str() );
+        // ShellPlotter<ConfiguratorType> shellPlotter( conf, shellHandlerFine.getChartToUndeformedShell(), shellHandlerFine.getDirichletMask(), saveDirectoryVec[refinementStep],   this->_parser.template get<string>("saving.VTKFileType")  );
+        // shellPlotter.saveShellToFile ( "disp", SolutionDisplamentVecProlongated[refinementStep], pesopt::strprintf( "prolongatedDeformedShell" ).c_str() );
 
 
         // VectorType GaussCurvVector ( totalStressVec.size() );

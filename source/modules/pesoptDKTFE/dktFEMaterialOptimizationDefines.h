@@ -432,7 +432,7 @@ public :
     RealType _gridSize;
 
     RealType _isometryErrorL1, _isometryErrorL2;
-    RealType _GaussCurvatureL1, _ConvGaussCurvatureL1, _GaussCurvatureL1Diff;
+    RealType _GaussCurvatureL1, _ConvGaussCurvatureL1, _GaussCurvatureL1Diff, _GaussCurvatureInt;
 
     RealType _approxD2uL2, _D2uL2, _relativeShapeOpL2;
 
@@ -446,6 +446,7 @@ public :
     void setIsometryErrorL1( const RealType e ) { _isometryErrorL1 = e; };
     void setIsometryErrorL2( const RealType e ) { _isometryErrorL2 = e; };
     void setGaussCurvatureL1( const RealType e ) { _GaussCurvatureL1 = e; };
+    void setGaussCurvatureInt( const RealType e ) { _GaussCurvatureInt = e; };
     void setGaussCurvatureL1Diff( const RealType e ) { _GaussCurvatureL1Diff = e; };
     void setConvGaussCurvatureL1( const RealType e ) { _ConvGaussCurvatureL1 = e; };
 
@@ -465,6 +466,7 @@ public :
         resultsParser.set( "Isometry.isometryErrorL1", _isometryErrorL1 );
         resultsParser.set( "Isometry.isometryErrorL2", _isometryErrorL2 );
         resultsParser.set( "Isometry.GaussCurvatureL1", _GaussCurvatureL1 );
+        resultsParser.set( "Isometry.GaussCurvatureInt", _GaussCurvatureInt );
         resultsParser.set( "Isometry.GaussCurvatureL1Diff", _GaussCurvatureL1Diff );
         resultsParser.set( "Isometry.ConvGaussCurvatureL1", _ConvGaussCurvatureL1 );
 
