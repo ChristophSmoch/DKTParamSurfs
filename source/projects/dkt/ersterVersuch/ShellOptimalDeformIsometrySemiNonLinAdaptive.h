@@ -258,21 +258,22 @@ public:
         isometryInfoVec[refinementStep].setGaussCurvatureL1Diff( tmp1 );
         // isometryInfoVec[refinementStep].setGaussCurvatureL1( tmp2 );
 
-        // ShellPlotter<ConfiguratorType> shellPlotter( conf, shellHandlerFine.getChartToUndeformedShell(), shellHandlerFine.getDirichletMask(), saveDirectoryVec[refinementStep],   this->_parser.template get<string>("saving.VTKFileType")  );
-        // shellPlotter.saveShellToFile ( "disp", SolutionDisplamentVecProlongated[refinementStep], pesopt::strprintf( "prolongatedDeformedShell" ).c_str() );
+        // ! plot prolongated deformed shell
+        ShellPlotter<ConfiguratorType> shellPlotterProlongated( conf, shellHandlerFine.getChartToUndeformedShell(), shellHandlerFine.getDirichletMask(), saveDirectoryVec[refinementStep],   this->_parser.template get<string>("saving.VTKFileType")  );
+        shellPlotterProlongated.saveShellToFile ( "disp", SolutionDisplamentVecProlongated[refinementStep], pesopt::strprintf( "prolongatedDeformedShell" ).c_str() );
 
         
         // ! TODO plot Gauss curvature on elements 
         VectorType GaussCurvVector ( mesh.getNumElements() );
         GaussCurvatureL1<ConfiguratorType> ( conf, solDFD ).assembleOnElements( GaussCurvVector );
-        MeshType undeformedShellMesh ( mesh );
+        MeshType deformedShellMesh ( mesh );
         for( int nodeIdx = 0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ){
             auto coordsChart = mesh.getVertex(nodeIdx);
             Point3DType coords;
-            for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + shellHandlerFine.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()];
-            undeformedShellMesh.setVertex( nodeIdx, coords );
+            for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + shellHandlerFine.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()] + SolutionDisplamentVecProlongated[refinementStep][nodeIdx + comp * conf.getNumGlobalDofs()];
+            deformedShellMesh.setVertex( nodeIdx, coords );
         }
-        VTKMeshSaver<MeshType> gaussCurvSaver ( undeformedShellMesh );
+        VTKMeshSaver<MeshType> gaussCurvSaver ( deformedShellMesh );
         gaussCurvSaver.addScalarData ( GaussCurvVector, "GaussCurv", FACE_DATA );
         gaussCurvSaver.save( pesopt::strprintf( "%s/prolongatedGausscurv.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
         
