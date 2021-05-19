@@ -578,5 +578,96 @@ void switchProlongationOfDisplacement( const int ProlongationType,
     std::cout << endl << "duration for prolongation of displacement = " << diff.count() << " sec" << endl;
 }
             
+            
+            
+template <typename ConfiguratorType>
+void FEMProlongationOfDKTDisplacement(
+    const ConfiguratorType &oldConf,
+    const ConfiguratorType &newConf,
+    typename ConfiguratorType::VectorType &disp
+  ) {
+            
+            
+    typedef typename ConfiguratorType::RealType RealType;
+    typedef typename ConfiguratorType::DomVecType DomVecType;
+    typedef typename ConfiguratorType::VectorType VectorType;
+    typedef typename ConfiguratorType::InitType AdaptiveMeshType;
+    typedef typename ConfiguratorType::Point3DType Point3DType;
+    typedef typename ConfiguratorType::Matrix32 Matrix32;
+            
+    //update of positions and tangent-,normal-space in refined mesh
+    const int oldSize = oldConf.getInitializer().getNumVertices();
+    const int newSize = newConf.getInitializer().getNumVertices();
+    typename std::map< int, typename AdaptiveMeshType::ParentInformation >::const_iterator iter;
+    
+    VectorType oldDisp = disp;
+    disp.resize( 3 * 3 * newSize );
+    for( int i = 0; i < oldSize; ++i ){
+        for(int k=0; k < 3 * 3; ++k )
+            disp[i + k * newSize] = oldDisp[i+k*oldSize];
+    }
+    
+    
+    //find ElementIndex and Refcoords in oldMesh
+    std::vector<int> ElementIndexVec ( newSize - oldSize );
+    std::vector<DomVecType> RefCoordVec ( newSize - oldSize );
+    for( int nodeIdx = oldSize; nodeIdx < newSize; ++nodeIdx ){
+        std::vector<int> nodeIdxVecParents;
+        findParentsInOldMesh<AdaptiveMeshType>( oldConf.getInitializer(), newConf.getInitializer(), nodeIdx, nodeIdxVecParents );
+        std::vector<int> commonElements;
+        oldConf.getInitializer().getCommonElements( nodeIdxVecParents, commonElements );
+        //compute barycentric coords
+        std::vector<RealType> lambda ( 3 );
+        if(nodeIdxVecParents.size() == 2  ){
+            computeBarycentricCoordinates<RealType,Point3DType>( newConf.getInitializer().getVertex(nodeIdx), newConf.getInitializer().getVertex(nodeIdxVecParents[0]), newConf.getInitializer().getVertex(nodeIdxVecParents[1]), lambda[0], lambda[1] );
+            lambda[2] = 0.;
+        }
+        if(nodeIdxVecParents.size() == 3 ){
+            computeBarycentricCoordinates<RealType,Point3DType>( newConf.getInitializer().getVertex(nodeIdx), newConf.getInitializer().getVertex(nodeIdxVecParents[0]), newConf.getInitializer().getVertex(nodeIdxVecParents[1]), newConf.getInitializer().getVertex(nodeIdxVecParents[2]), lambda[0], lambda[1], lambda[2] );
+        }
+        //compute refcoord in commonElements[0]
+        DomVecType RefCoordNewPoint; RefCoordNewPoint.setZero();
+        for(int i=0; i<nodeIdxVecParents.size(); ++i ){
+           int localIdxParent = oldConf.getInitializer().getLocalIdxWrtGlobalElementIdx( nodeIdxVecParents[i], commonElements[0] );
+           DomVecType RefCoordParent; RefCoordParent.setZero();
+           if( localIdxParent == 1 ) RefCoordParent[0] = 1.;
+           if( localIdxParent == 2 ) RefCoordParent[1] = 1.;
+           RefCoordNewPoint += lambda[i] * RefCoordParent;
+        }
+        ElementIndexVec[nodeIdx - oldSize] = commonElements[0];
+        RefCoordVec[nodeIdx - oldSize] = RefCoordNewPoint;
+    }
+        
+    DKTFEVectorFunctionEvaluator<ConfiguratorType> dfd ( oldConf, oldDisp, 3 );
+    for( int nodeIdx = oldSize; nodeIdx < newSize; ++nodeIdx ){
+        // find new node index in map
+        iter = newConf.getInitializer().getInterpolationMap().find( nodeIdx );
+        if( iter == newConf.getInitializer().getInterpolationMap().end() ) 
+            throw std::invalid_argument ( pesopt::strprintf ( "unknown vertex in file %s at line %d.", __FILE__, __LINE__ ).c_str() );
+        //use exact Position in Old Mesh:
+        int ElementIndexOldMesh = ElementIndexVec[nodeIdx - oldSize];
+        DomVecType RefCoordsOldMesh; RefCoordsOldMesh = RefCoordVec[nodeIdx - oldSize];
+       
+        Point3DType newVertex; 
+        dfd.evaluate( oldConf.getInitializer().getTriang(ElementIndexOldMesh), RefCoordsOldMesh, newVertex );
+        for ( int comp = 0; comp<3; ++comp )
+            disp(nodeIdx + comp*newConf.getNumGlobalDofs() )  = newVertex(comp);
+        
+        Matrix32 Dx;
+        dfd.evaluateApproxGradient( oldConf.getInitializer().getTriang(ElementIndexOldMesh), RefCoordsOldMesh, Dx );
+        for ( int comp = 0; comp<3; ++comp ) {
+            disp(nodeIdx + 1*newConf.getInitializer().getNumVertices() + comp*newConf.getNumGlobalDofs() ) = Dx(comp, 0);
+            disp(nodeIdx + 2*newConf.getInitializer().getNumVertices() + comp*newConf.getNumGlobalDofs() ) = Dx(comp, 1);
+        }
+    }//end for old size
+            
+            
+}
+            
+            
+            
+            
+            
+            
 
 #endif
