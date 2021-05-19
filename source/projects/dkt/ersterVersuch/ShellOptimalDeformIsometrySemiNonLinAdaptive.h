@@ -19,6 +19,7 @@ class optimalDeformSolverIsometrySemiNonLinAdaptive
   typedef typename ConfiguratorType::MaskType                   MaskType;
   typedef typename ConfiguratorType::InitType                   MeshType;
   typedef typename ConfiguratorTypePf::DTContainer              DataTypeContainer;
+  typedef typename DataTypeContainer::Point3DType               Point3DType;
   typedef typename ConfiguratorType::VectorType                 VectorType;
   typedef pesopt::BoostParser ParameterParserType;
 
@@ -103,6 +104,19 @@ public:
     GaussCurvVec = GaussCurvVector;
 
 
+    // ! plot Gauss curvature on elements 
+    MeshType undeformedShellMesh ( mesh );
+    for( int nodeIdx = 0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ){
+        auto coordsChart = mesh.getVertex(nodeIdx);
+        Point3DType coords;
+        for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + shellHandler.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()];
+        undeformedShellMesh.setVertex( nodeIdx, coords );
+    }
+    VTKMeshSaver<MeshType> gaussCurvSaver ( undeformedShellMesh );
+    gaussCurvSaver.addScalarData ( GaussCurvVector, "GaussCurv", FACE_DATA );
+    gaussCurvSaver.save( pesopt::strprintf( "%s/gausscurv.%s", saveDirectory.c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
+
+    
     //!plot results
     if( parser.template get<int> ( "saving.plotResults" ) == 1 ){
         cout << endl << "plot results" << endl;
@@ -247,10 +261,21 @@ public:
         // ShellPlotter<ConfiguratorType> shellPlotter( conf, shellHandlerFine.getChartToUndeformedShell(), shellHandlerFine.getDirichletMask(), saveDirectoryVec[refinementStep],   this->_parser.template get<string>("saving.VTKFileType")  );
         // shellPlotter.saveShellToFile ( "disp", SolutionDisplamentVecProlongated[refinementStep], pesopt::strprintf( "prolongatedDeformedShell" ).c_str() );
 
-
-        // VectorType GaussCurvVector ( totalStressVec.size() );
-        // GaussCurvatureL1<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleOnElements( GaussCurvVector );
-
+        
+        // ! TODO plot Gauss curvature on elements 
+        VectorType GaussCurvVector ( mesh.getNumElements() );
+        GaussCurvatureL1<ConfiguratorType> ( conf, solDFD ).assembleOnElements( GaussCurvVector );
+        MeshType undeformedShellMesh ( mesh );
+        for( int nodeIdx = 0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ){
+            auto coordsChart = mesh.getVertex(nodeIdx);
+            Point3DType coords;
+            for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + shellHandlerFine.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()];
+            undeformedShellMesh.setVertex( nodeIdx, coords );
+        }
+        VTKMeshSaver<MeshType> gaussCurvSaver ( undeformedShellMesh );
+        gaussCurvSaver.addScalarData ( GaussCurvVector, "GaussCurv", FACE_DATA );
+        gaussCurvSaver.save( pesopt::strprintf( "%s/prolongatedGausscurv.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
+        
     }
 
     this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVec );

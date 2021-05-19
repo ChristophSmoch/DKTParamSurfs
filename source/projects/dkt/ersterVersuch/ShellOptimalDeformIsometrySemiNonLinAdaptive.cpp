@@ -33,7 +33,7 @@ int main(int argc, char ** argv) {
     ParameterParserType parser;
     if (argc <= 2){
         parser = ParameterParserType ( "../../../../parameters/dkt/OptDeformIsometryNonLin.ini" );
-        parser.addCounterToSaveDirectory( "../../../../parameters/counter.txt", "/OptDeformIsometryNonLin" );
+        parser.addCounterToSaveDirectory( "../../../../parameters/counter.txt", "/OptDeformIsometrySemiNonLin" );
         parser.saveToFile( "ParameterParser.ini" );
     }
     if( argc > 2 ) parser = ParameterParserType ( argv[2] );
