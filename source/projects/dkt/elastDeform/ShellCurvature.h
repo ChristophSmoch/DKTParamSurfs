@@ -193,6 +193,42 @@ public RefTriangleIntegrator<ConfiguratorType, RelativeShapeOperatorL2<Configura
 };
 
 
+// computes int \sqrt(g_A) |h_A |^2
+template<typename ConfiguratorType>
+class SecondFFL2 :
+public RefTriangleIntegrator<ConfiguratorType, SecondFFL2<ConfiguratorType> >
+{
+  protected:
+       typedef typename ConfiguratorType::RealType RealType;
+       typedef typename ConfiguratorType::Point3DType Point3DType;
+       typedef typename ConfiguratorType::Matrix22  Matrix22;
+       typedef typename ConfiguratorType::Matrix32  Matrix32;
+       typedef typename ConfiguratorType::Matrix33  Matrix33;
+       typedef typename ConfiguratorType::Tensor322Type Tensor322Type;
+       typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
+       typedef typename ConfiguratorType::ElementType ElementType;
+       typedef typename ConfiguratorType::VectorType VectorType;
+ public:
+      static const DiscreteFunctionCacheType _DiscreteFunctionCacheType = FirstAndSecondOrder;
+ protected:
+       const ConfiguratorType &_conf;
+       const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &_xStorage;
+  public:
+    SecondFFL2 ( const ConfiguratorType &conf,
+                           const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xStorage) :
+      RefTriangleIntegrator<ConfiguratorType, SecondFFL2<ConfiguratorType>> (conf),
+      _conf ( conf ),
+      _xStorage ( xStorage ) {}
+
+    RealType evaluateIntegrand ( const typename ConfiguratorType::ElementType &El, int QuadPoint ) const{
+        const Matrix22& gInv = _xStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
+        const Matrix22& h = _xStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint );
+        const RealType aux =  h.squaredNorm();
+        return _xStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * aux;
+    }
+};
+
+
 
 // computes int \sqrt(g_A) |D^2 (x_B - x_A)|^2
 template<typename ConfiguratorType>
@@ -235,6 +271,42 @@ public RefTriangleIntegrator<ConfiguratorType, SecondDerivativeEnergy<Configurat
 
         const RealType aux =  D2u.normSqr();
         return _xAStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * aux;
+    }
+};
+
+
+// computes int \sqrt(g_A) |D^2  x_A|^2
+template<typename ConfiguratorType>
+class SecondDerivativeL2:
+public RefTriangleIntegrator<ConfiguratorType, SecondDerivativeL2<ConfiguratorType> >
+{
+  protected:
+       typedef typename ConfiguratorType::RealType RealType;
+       typedef typename ConfiguratorType::Point3DType Point3DType;
+       typedef typename ConfiguratorType::Matrix22  Matrix22;
+       typedef typename ConfiguratorType::Matrix32  Matrix32;
+       typedef typename ConfiguratorType::Matrix33  Matrix33;
+       typedef typename ConfiguratorType::Tensor322Type Tensor322Type;
+       typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
+       typedef typename ConfiguratorType::ElementType ElementType;
+       typedef typename ConfiguratorType::VectorType VectorType;
+ public:
+      static const DiscreteFunctionCacheType _DiscreteFunctionCacheType = FirstAndSecondOrder;
+ protected:
+       const ConfiguratorType &_conf;
+       const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &_xStorage;
+  public:
+    SecondDerivativeL2 ( const ConfiguratorType &conf,
+                             const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xStorage ) :
+      RefTriangleIntegrator<ConfiguratorType, SecondDerivativeL2<ConfiguratorType>> (conf),
+      _conf ( conf ),
+      _xStorage ( xStorage ) {}
+
+    RealType evaluateIntegrand ( const typename ConfiguratorType::ElementType &El, int QuadPoint ) const{
+        const Matrix22& gInv = _xStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
+        const Tensor322Type& D2x = _xStorage.getHessian( El.getGlobalElementIdx(), QuadPoint );
+        const RealType aux =  D2x.normSqr();
+        return _xStorage.getArea(El.getGlobalElementIdx(),QuadPoint) * aux;
     }
 };
 

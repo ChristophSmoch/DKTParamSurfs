@@ -104,19 +104,36 @@ public:
     GaussCurvVec = GaussCurvVector;
 
 
-    // ! plot Gauss curvature on elements 
-    MeshType undeformedShellMesh ( mesh );
+
+    MeshType deformedShellMesh ( mesh );
     for( int nodeIdx = 0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ){
         auto coordsChart = mesh.getVertex(nodeIdx);
         Point3DType coords;
-        for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + shellHandler.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()];
-        undeformedShellMesh.setVertex( nodeIdx, coords );
+        for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + xB[nodeIdx + comp * conf.getNumGlobalDofs()];
+        deformedShellMesh.setVertex( nodeIdx, coords );
     }
-    VTKMeshSaver<MeshType> gaussCurvSaver ( undeformedShellMesh );
+
+    // ! plot Gauss curvature on elements
+    VTKMeshSaver<MeshType> gaussCurvSaver ( deformedShellMesh );
     gaussCurvSaver.addScalarData ( GaussCurvVector, "GaussCurv", FACE_DATA );
     gaussCurvSaver.save( pesopt::strprintf( "%s/gausscurv.%s", saveDirectory.c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
 
-    
+
+    // ! plot Second Derivative L2 on elements
+    VectorType SecondDerivL2Vector ( totalStressVec.size() );
+    SecondDerivativeL2<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleOnElements( SecondDerivL2Vector );
+    VTKMeshSaver<MeshType> secondDerivL2Saver ( deformedShellMesh );
+    secondDerivL2Saver.addScalarData ( SecondDerivL2Vector, "SecondDerivL2", FACE_DATA );
+    secondDerivL2Saver.save( pesopt::strprintf( "%s/secondderivl2.%s", saveDirectory.c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
+
+    // ! plot Second FF L2 on elements
+    VectorType SecondFFL2Vector ( totalStressVec.size() );
+    SecondFFL2<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleOnElements( SecondFFL2Vector );
+    VTKMeshSaver<MeshType> secondFFL2Saver ( deformedShellMesh );
+    secondFFL2Saver.addScalarData ( SecondFFL2Vector, "SecondDerivL2", FACE_DATA );
+    secondFFL2Saver.save( pesopt::strprintf( "%s/secondffl2.%s", saveDirectory.c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
+
+
     //!plot results
     if( parser.template get<int> ( "saving.plotResults" ) == 1 ){
         cout << endl << "plot results" << endl;
@@ -262,8 +279,8 @@ public:
         ShellPlotter<ConfiguratorType> shellPlotterProlongated( conf, shellHandlerFine.getChartToUndeformedShell(), shellHandlerFine.getDirichletMask(), saveDirectoryVec[refinementStep],   this->_parser.template get<string>("saving.VTKFileType")  );
         shellPlotterProlongated.saveShellToFile ( "disp", SolutionDisplamentVecProlongated[refinementStep], pesopt::strprintf( "prolongatedDeformedShell" ).c_str() );
 
-        
-        // ! TODO plot Gauss curvature on elements 
+
+        // ! TODO plot Gauss curvature on elements
         VectorType GaussCurvVector ( mesh.getNumElements() );
         GaussCurvatureL1<ConfiguratorType> ( conf, solDFD ).assembleOnElements( GaussCurvVector );
         MeshType deformedShellMesh ( mesh );
@@ -276,7 +293,20 @@ public:
         VTKMeshSaver<MeshType> gaussCurvSaver ( deformedShellMesh );
         gaussCurvSaver.addScalarData ( GaussCurvVector, "GaussCurv", FACE_DATA );
         gaussCurvSaver.save( pesopt::strprintf( "%s/prolongatedGausscurv.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
-        
+
+        // ! plot Second Derivative L2 on elements
+        VectorType SecondDerivL2Vector ( mesh.getNumElements() );
+        SecondDerivativeL2<ConfiguratorType> ( conf, solDFD ).assembleOnElements( SecondDerivL2Vector );
+        VTKMeshSaver<MeshType> secondDerivL2Saver ( deformedShellMesh );
+        secondDerivL2Saver.addScalarData ( SecondDerivL2Vector, "SecondDerivL2", FACE_DATA );
+        secondDerivL2Saver.save( pesopt::strprintf( "%s/prolongatedSecondderivl2.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
+
+        // ! plot Second FF L2 on elements
+        VectorType SecondFFL2Vector ( mesh.getNumElements() );
+        SecondFFL2<ConfiguratorType> ( conf, solDFD ).assembleOnElements( SecondFFL2Vector );
+        VTKMeshSaver<MeshType> secondFFL2Saver ( deformedShellMesh );
+        secondFFL2Saver.addScalarData ( SecondFFL2Vector, "SecondFFL2", FACE_DATA );
+        secondFFL2Saver.save( pesopt::strprintf( "%s/prolongatedSecondffl2.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
     }
 
     this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVec );
