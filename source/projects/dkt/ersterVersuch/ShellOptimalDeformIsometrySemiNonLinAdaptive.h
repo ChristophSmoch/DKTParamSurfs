@@ -149,6 +149,7 @@ public:
     std::vector<DeformationOptimizationShellEnergyInfo<RealType>> energyInfoVec;
     std::vector<IsometryInfo<RealType>> isometryInfoVec;
     std::vector<string> saveDirectoryVec;
+    std::vector<MeshType> oldMeshVec;
 
 
     ConfiguratorType conf ( mesh );
@@ -167,7 +168,7 @@ public:
       saveDirectoryVec.push_back( saveDirectoryRefinementStep );
 
       VectorType InitDisplacement, SolutionDisplacement;
-      MeshType oldMesh( mesh ); VectorType markedElements;
+      VectorType markedElements;
 
       //! MARK and REFINE
       if( refinementStep > 0 ){
@@ -202,7 +203,7 @@ public:
       VectorType GaussCurvVec ( mesh.getNumElements() );
       DeformationOptimizationShellEnergyInfo<RealType> energyInfo;
       IsometryInfo<RealType> isometryInfo;
-        computeOptimalDeformation_OnCurrentMesh ( mesh, material, InitDisplacement, SolutionDisplacement, DirichletMask,
+      computeOptimalDeformation_OnCurrentMesh ( mesh, material, InitDisplacement, SolutionDisplacement, DirichletMask,
                                                 membraneStressVec, bendingStressVec, totalStressVec, GaussCurvVec,
                                                 energyInfo, isometryInfo, saveDirectoryRefinementStep, refinementStep );
 
@@ -222,6 +223,8 @@ public:
       isometryInfoVec.push_back( isometryInfo );
       isometryInfo.template saveToFile<ParameterParserType>( "isometryInfo", saveDirectoryRefinementStep );
 
+      const MeshType oldMesh( mesh );
+      oldMeshVec.push_back( oldMesh );
     }// end for refinement step
 
 
@@ -235,6 +238,9 @@ public:
 
 
     VectorType fineSolution = SolutionDisplamentVec[numAdaptiveRefinementSteps];
+    
+    // linear DKT-Prolongation
+    cout << "compute DKT-Linear-Prolongations" << endl;
     std::vector<VectorType> SolutionDisplamentVecProlongated;
     std::vector<RealType> ErrorD2L2_FineSolutionVec(numAdaptiveRefinementSteps+1), EOCD2L2_FineSolutionVec(numAdaptiveRefinementSteps), ErrorGaussCurvL1_FineSolutionVec(numAdaptiveRefinementSteps+1);
     for( int refinementStep=0; refinementStep<=numAdaptiveRefinementSteps; ++refinementStep ){
@@ -242,18 +248,36 @@ public:
             mesh.prolongateVectorFct_DKTLinearly( currentSolutionProlongated );
             SolutionDisplamentVecProlongated.push_back( currentSolutionProlongated );
     }
+    
+    // DKT-FEM-Prolongation
+    cout << "compute DKT-FEM-Prolongations" << endl;
+    std::vector<VectorType> SolutionDisplamentVecFEMProlongated;
+    //     std::vector<RealType> ErrorGaussCurvL1_FineSolutionVec_FEM(numAdaptiveRefinementSteps+1);
     for( int refinementStep=0; refinementStep<=numAdaptiveRefinementSteps; ++refinementStep ){
+        ConfiguratorType oldConf( oldMeshVec[refinementStep] );
+        VectorType currentSolutionFEMProlongated = SolutionDisplamentVec[refinementStep];
+        FEMProlongationOfDKTDisplacement<ConfiguratorType> ( oldConf, conf, currentSolutionFEMProlongated );
+        SolutionDisplamentVecFEMProlongated.push_back( currentSolutionFEMProlongated );
+    }
+    
+    
+    cout << "start to compute error vectors" << endl;
+    for( int refinementStep=0; refinementStep<=numAdaptiveRefinementSteps; ++refinementStep ){
+        
+        //========================================================================================
+        // linear DKT-Prolongation
+        //========================================================================================
         DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> fineSolutionDFD ( conf, shellHandlerFine.getChartToUndeformedShell (  ) + fineSolution, 3);
-        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFD( conf, shellHandlerFine.getChartToUndeformedShell (  ) + SolutionDisplamentVecProlongated[refinementStep], 3 );
+        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFDProlongated( conf, shellHandlerFine.getChartToUndeformedShell (  ) + SolutionDisplamentVecProlongated[refinementStep], 3 );
         RealType tmp = 0.;
-        SecondDerivativeEnergy<ConfiguratorType> ( conf, fineSolutionDFD, solDFD ).assembleAdd( tmp );
+        SecondDerivativeEnergy<ConfiguratorType> ( conf, fineSolutionDFD, solDFDProlongated ).assembleAdd( tmp );
         ErrorD2L2_FineSolutionVec[refinementStep] = sqrt( tmp );
         isometryInfoVec[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(tmp) );
 
         RealType tmp1 = 0.;
         RealType tmp2 = 0.;
-        GaussCurvatureL1Diff<ConfiguratorType> ( conf, fineSolutionDFD, solDFD ).assembleAdd( tmp1 );
-        GaussCurvatureL1<ConfiguratorType> ( conf,  solDFD ).assembleAdd( tmp2 );
+        GaussCurvatureL1Diff<ConfiguratorType> ( conf, fineSolutionDFD, solDFDProlongated ).assembleAdd( tmp1 );
+        GaussCurvatureL1<ConfiguratorType> ( conf,  solDFDProlongated ).assembleAdd( tmp2 );
         ErrorGaussCurvL1_FineSolutionVec[refinementStep] =  tmp1;
         isometryInfoVec[refinementStep].setGaussCurvatureL1Diff( tmp1 );
         // isometryInfoVec[refinementStep].setGaussCurvatureL1( tmp2 );
@@ -263,9 +287,9 @@ public:
         shellPlotterProlongated.saveShellToFile ( "disp", SolutionDisplamentVecProlongated[refinementStep], pesopt::strprintf( "prolongatedDeformedShell" ).c_str() );
 
         
-        // ! TODO plot Gauss curvature on elements 
+        // ! plot Gauss curvature on elements 
         VectorType GaussCurvVector ( mesh.getNumElements() );
-        GaussCurvatureL1<ConfiguratorType> ( conf, solDFD ).assembleOnElements( GaussCurvVector );
+        GaussCurvatureL1<ConfiguratorType> ( conf, solDFDProlongated ).assembleOnElements( GaussCurvVector );
         MeshType deformedShellMesh ( mesh );
         for( int nodeIdx = 0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ){
             auto coordsChart = mesh.getVertex(nodeIdx);
@@ -276,6 +300,27 @@ public:
         VTKMeshSaver<MeshType> gaussCurvSaver ( deformedShellMesh );
         gaussCurvSaver.addScalarData ( GaussCurvVector, "GaussCurv", FACE_DATA );
         gaussCurvSaver.save( pesopt::strprintf( "%s/prolongatedGausscurv.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
+        
+        
+        //========================================================================================
+        // FEM-Prolonagaton
+        //========================================================================================
+        DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFDFEMProlongated( conf, shellHandlerFine.getChartToUndeformedShell (  ) + SolutionDisplamentVecFEMProlongated[refinementStep], 3 );
+        shellPlotterProlongated.saveShellToFile ( "disp", SolutionDisplamentVecFEMProlongated[refinementStep], pesopt::strprintf( "FEMProlongatedDeformedShell" ).c_str() );
+        
+        // ! plot Gauss curvature on elements 
+        VectorType GaussCurvVectorFEMProlongation ( mesh.getNumElements() );
+        GaussCurvatureL1<ConfiguratorType> ( conf, solDFDFEMProlongated ).assembleOnElements( GaussCurvVectorFEMProlongation );
+        MeshType deformedShellMeshFEMProlongation ( mesh );
+        for( int nodeIdx = 0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ){
+            auto coordsChart = mesh.getVertex(nodeIdx);
+            Point3DType coords;
+            for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + shellHandlerFine.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()] + SolutionDisplamentVecProlongated[refinementStep][nodeIdx + comp * conf.getNumGlobalDofs()];
+            deformedShellMeshFEMProlongation.setVertex( nodeIdx, coords );
+        }
+        VTKMeshSaver<MeshType> gaussCurvSaverFEMProlongation ( deformedShellMeshFEMProlongation );
+        gaussCurvSaverFEMProlongation.addScalarData ( GaussCurvVectorFEMProlongation, "GaussCurv", FACE_DATA );
+        gaussCurvSaverFEMProlongation.save( pesopt::strprintf( "%s/FEMProlongatedGausscurv.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
         
     }
 
