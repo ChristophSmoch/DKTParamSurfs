@@ -571,6 +571,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
         VectorType isometryErrorL1Vec(numAdaptiveRefinementSteps+1);
         VectorType isometryErrorL2Vec(numAdaptiveRefinementSteps+1);
         VectorType GaussCurvatureL1Vec(numAdaptiveRefinementSteps+1);
+        VectorType FEMProlongatedGaussCurvatureL1Vec(numAdaptiveRefinementSteps+1);
         VectorType GaussCurvatureIntVec(numAdaptiveRefinementSteps+1);
         VectorType GaussCurvatureL1DiffVec(numAdaptiveRefinementSteps+1);
         VectorType ConvGaussCurvatureL1Vec(numAdaptiveRefinementSteps+1);
@@ -581,6 +582,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
             isometryErrorL1Vec[refinementStep] = isometryInfoVec[refinementStep]._isometryErrorL1;
             isometryErrorL2Vec[refinementStep] = isometryInfoVec[refinementStep]._isometryErrorL2;
             GaussCurvatureL1Vec[refinementStep] = isometryInfoVec[refinementStep]._GaussCurvatureL1;
+            FEMProlongatedGaussCurvatureL1Vec[refinementStep] = isometryInfoVec[refinementStep]._FEMProlongatedGaussCurvatureL1;
             GaussCurvatureIntVec[refinementStep] = isometryInfoVec[refinementStep]._GaussCurvatureInt;
             GaussCurvatureL1DiffVec[refinementStep] = isometryInfoVec[refinementStep]._GaussCurvatureL1Diff;
             ConvGaussCurvatureL1Vec[refinementStep] = isometryInfoVec[refinementStep]._ConvGaussCurvatureL1;
@@ -590,6 +592,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
         VectorType EOC_isometryErrorL1Vec(numAdaptiveRefinementSteps+1); EOC_isometryErrorL1Vec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_isometryErrorL2Vec(numAdaptiveRefinementSteps+1); EOC_isometryErrorL2Vec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_GaussCurvatureL1Vec(numAdaptiveRefinementSteps+1); EOC_GaussCurvatureL1Vec[0] = 0.; //no previous iteration step to compare
+        VectorType EOC_FEMProlongatedGaussCurvatureL1Vec(numAdaptiveRefinementSteps+1); EOC_FEMProlongatedGaussCurvatureL1Vec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_GaussCurvatureIntVec(numAdaptiveRefinementSteps+1); EOC_GaussCurvatureIntVec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_GaussCurvatureL1DiffVec(numAdaptiveRefinementSteps+1); EOC_GaussCurvatureL1DiffVec[0] = 0.; //no previous iteration step to compare
         VectorType EOC_ConvGaussCurvatureL1Vec(numAdaptiveRefinementSteps+1); EOC_ConvGaussCurvatureL1Vec[0] = 0.; //no previous iteration step to compare
@@ -600,6 +603,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
           EOC_isometryErrorL1Vec[refinementStep] = std::log( isometryErrorL1Vec[refinementStep] / isometryErrorL1Vec[refinementStep-1] ) / std::log(facGridSize);
           EOC_isometryErrorL2Vec[refinementStep] = std::log( isometryErrorL2Vec[refinementStep] / isometryErrorL2Vec[refinementStep-1] ) / std::log(facGridSize);
           EOC_GaussCurvatureL1Vec[refinementStep] = std::log( GaussCurvatureL1Vec[refinementStep] / GaussCurvatureL1Vec[refinementStep-1] ) / std::log(facGridSize);
+          EOC_FEMProlongatedGaussCurvatureL1Vec[refinementStep] = std::log( FEMProlongatedGaussCurvatureL1Vec[refinementStep] / FEMProlongatedGaussCurvatureL1Vec[refinementStep-1] ) / std::log(facGridSize);
           EOC_GaussCurvatureIntVec[refinementStep] = std::log( GaussCurvatureIntVec[refinementStep] / GaussCurvatureIntVec[refinementStep-1] ) / std::log(facGridSize);
           EOC_GaussCurvatureL1DiffVec[refinementStep] = std::log( GaussCurvatureL1DiffVec[refinementStep] / GaussCurvatureL1DiffVec[refinementStep-1] ) / std::log(facGridSize);
           EOC_ConvGaussCurvatureL1Vec[refinementStep] = std::log( ConvGaussCurvatureL1Vec[refinementStep] / ConvGaussCurvatureL1Vec[refinementStep-1] ) / std::log(facGridSize);
@@ -615,6 +619,8 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
         // vecs.push_back(EOC_isometryErrorL2Vec), describtions.push_back( "EOC $|g_B - g_A|_{L^2}$" );
         vecs.push_back(GaussCurvatureL1Vec), describtions.push_back( "$|det( \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
         vecs.push_back(EOC_GaussCurvatureL1Vec), describtions.push_back( "EOC $|det( \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
+        vecs.push_back(FEMProlongatedGaussCurvatureL1Vec), describtions.push_back( "FEM-prolongated $|det( \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
+        vecs.push_back(EOC_FEMProlongatedGaussCurvatureL1Vec), describtions.push_back( "EOC FEM-prolongated $|det( \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
         vecs.push_back(GaussCurvatureIntVec), describtions.push_back( "Integral $ det( \\nabla \\nabla_h u_h \\cdot n_h) $" );
         vecs.push_back(EOC_GaussCurvatureIntVec), describtions.push_back( "EOC Integral $ det( \\nabla \\nabla_h u_h \\cdot n_h)$" );
         vecs.push_back(GaussCurvatureL1DiffVec), describtions.push_back( "$|det( \\nabla \\nabla_h u_h \\cdot n_h) - det( D^2 u_{\\text{fine}} \\cdot n_{\\text{fine}})|_{L^1}$" );

@@ -432,7 +432,7 @@ public :
     RealType _gridSize;
 
     RealType _isometryErrorL1, _isometryErrorL2;
-    RealType _GaussCurvatureL1, _ConvGaussCurvatureL1, _GaussCurvatureL1Diff, _GaussCurvatureInt, _SecondFFL2, _SecondDerivativeL2;
+    RealType _GaussCurvatureL1, _FEMProlongatedGaussCurvatureL1, _ConvGaussCurvatureL1, _GaussCurvatureL1Diff, _GaussCurvatureInt, _SecondFFL2, _SecondDerivativeL2;
 
     RealType _approxD2uL2, _D2uL2, _relativeShapeOpL2;
 
@@ -446,6 +446,7 @@ public :
     void setIsometryErrorL1( const RealType e ) { _isometryErrorL1 = e; };
     void setIsometryErrorL2( const RealType e ) { _isometryErrorL2 = e; };
     void setGaussCurvatureL1( const RealType e ) { _GaussCurvatureL1 = e; };
+    void setFEMProlongatedGaussCurvatureL1( const RealType e ) { _FEMProlongatedGaussCurvatureL1 = e; };
     void setGaussCurvatureInt( const RealType e ) { _GaussCurvatureInt = e; };
     void setGaussCurvatureL1Diff( const RealType e ) { _GaussCurvatureL1Diff = e; };
     void setConvGaussCurvatureL1( const RealType e ) { _ConvGaussCurvatureL1 = e; };

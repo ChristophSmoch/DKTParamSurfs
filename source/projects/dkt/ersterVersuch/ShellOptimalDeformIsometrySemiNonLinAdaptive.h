@@ -350,6 +350,7 @@ public:
         GaussCurvatureL1<ConfiguratorType> ( conf,  solDFDFEMProlongated ).assembleAdd( tmp2 );
         ErrorGaussCurvL1_FineSolutionVec[refinementStep] =  tmp1;
         isometryInfoVec[refinementStep].setGaussCurvatureL1Diff( tmp1 );
+        isometryInfoVec[refinementStep].setFEMProlongatedGaussCurvatureL1( tmp2 );
 
 
         // ! plot Gauss curvature on elements
