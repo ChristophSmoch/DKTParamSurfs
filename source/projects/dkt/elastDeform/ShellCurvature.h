@@ -39,6 +39,122 @@ public RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1<ConfiguratorType
 };
 
 
+
+// computes int \sqrt(g) |det(g^-1 h )|
+template<typename ConfiguratorType>
+class GaussCurvatureL1DiffConf :
+public RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1DiffConf<ConfiguratorType> >
+{
+  protected:
+       typedef typename ConfiguratorType::RealType RealType;
+       typedef typename ConfiguratorType::DomVecType DomVecType;
+       typedef typename ConfiguratorType::TangentVecType TangentVecType;
+       typedef typename ConfiguratorType::Point3DType Point3DType;
+       typedef typename ConfiguratorType::Matrix22  Matrix22;
+       typedef typename ConfiguratorType::Matrix32  Matrix32;
+       typedef typename ConfiguratorType::Matrix33  Matrix33;
+       typedef typename ConfiguratorType::Tensor322Type Tensor322Type;
+       typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
+       typedef typename ConfiguratorType::ElementType ElementType;
+       typedef typename ConfiguratorType::VectorType VectorType;
+       typedef typename ConfiguratorType::QuadRuleType QuadType;
+ public:
+      QuadType _quadRule;
+      static const DiscreteFunctionCacheType _DiscreteFunctionCacheType = FirstAndSecondOrder;
+ protected:
+       const ConfiguratorType &_confCoarse,  &_confFine;
+       const DKTFEVectorFunctionEvaluator<ConfiguratorType> _xDFEvaluatorCoarse;
+       const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &_xStorageFine;
+       
+       vtkSmartPointer<vtkPolyData> _coarseMeshData;
+       vtkSmartPointer<vtkCellLocator> _coarseMeshCellLocator;
+       
+  public:
+    GaussCurvatureL1DiffConf ( 
+        const ConfiguratorType &confCoarse,
+        const VectorType &FEDofsCoarse, 
+        const ConfiguratorType &confFine,
+        const DiscreteVectorFunctionStorage<ConfiguratorType,_DiscreteFunctionCacheType> &xStorageFine ) :
+      RefTriangleIntegrator<ConfiguratorType, GaussCurvatureL1DiffConf<ConfiguratorType>> (confFine),
+      _confCoarse( confCoarse ), _confFine ( confFine ), 
+      _xDFEvaluatorCoarse ( confCoarse,  FEDofsCoarse, 3 ), 
+      _xStorageFine( xStorageFine ), 
+      _coarseMeshData( vtkSmartPointer<vtkPolyData>::New() ), 
+      _coarseMeshCellLocator ( vtkSmartPointer<vtkCellLocator>::New() ) 
+      {
+          
+        // save mesh data on fine scale to vtk
+        const int numVerticesCoarse = _confCoarse.getInitializer().getNumVertices();
+        const int numCellsCoarse = _confCoarse.getInitializer().getNumElements();
+        auto points = vtkSmartPointer<vtkPoints>::New();
+        for( int nodeIter=0; nodeIter<numVerticesCoarse; ++nodeIter ){ 
+            auto point = _confCoarse.getInitializer().getVertex ( nodeIter );
+            if( point.size() == 1 ) points->InsertNextPoint ( point[0], 0., 0. );
+            if( point.size() == 2 ) points->InsertNextPoint ( point[0], point[1], 0. );
+            if( point.size() == 3 ) points->InsertNextPoint ( point[0], point[1], point[2] );
+        }
+        auto cells = vtkSmartPointer<vtkCellArray>::New();   
+        for( int elIdx=0; elIdx<numCellsCoarse; ++elIdx ){
+            const int numNodesOfElement = _confCoarse.getInitializer().getNumNodesOfElement(elIdx);
+            vtkIdType nodesOfElement [numNodesOfElement];
+            for( int i=0; i<numNodesOfElement; ++i ) nodesOfElement[i] = _confCoarse.getInitializer().getElementNodeIdx( elIdx, i );
+            cells->InsertNextCell ( numNodesOfElement, nodesOfElement );
+        }
+        _coarseMeshData->SetPoints ( points );
+        _coarseMeshData->SetPolys ( cells );
+
+        // Create the cell locator
+        _coarseMeshCellLocator->SetDataSet(_coarseMeshData);
+        _coarseMeshCellLocator->BuildLocator();     
+    }
+
+    RealType evaluateIntegrand ( const typename ConfiguratorType::ElementType &El, int QuadPoint ) const{
+        // evaluate on fine element
+        auto gInvFine = _xStorageFine.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
+        auto hFine = _xStorageFine.getSecondFF( El.getGlobalElementIdx(), QuadPoint );
+        const RealType GaussCurvFine = ( gInvFine * hFine ).determinant();
+        // find coarseElIdx, coarseRefCoord
+        Point3DType globalCoordsChartFineTmp;
+        auto refCoordFine = _quadRule.getRefCoord ( QuadPoint );
+        El.getGlobalCoord ( refCoordFine, globalCoordsChartFineTmp );
+        double globalCoordsChartFine[3] = {globalCoordsChartFineTmp[0], globalCoordsChartFineTmp[1], globalCoordsChartFineTmp[2] };
+        double closestPoint[3];   
+        double closestPointDistSqr;
+        vtkIdType closestPointCellIdx;
+        int closestPointSubIdx;
+        _coarseMeshCellLocator->FindClosestPoint(globalCoordsChartFine, closestPoint, closestPointCellIdx, closestPointSubIdx, closestPointDistSqr);
+        int coarseElIdx = closestPointCellIdx;
+        Point3DType closestPointTmp; 
+        closestPointTmp(0) = closestPoint[0]; 
+        closestPointTmp(1) = closestPoint[1];
+        closestPointTmp(2) = closestPoint[2];
+        DomVecType coarseRefCoord;
+        _confCoarse.getInitializer().getTriang(coarseElIdx).getRefCoordFromGlobalCoord( closestPointTmp , coarseRefCoord);
+        if ( closestPointDistSqr > 1.e-8 )
+            std::cout << "Error: Squared distance to closest point: " << closestPointDistSqr << std::endl;
+        // evaluate on coarse element
+        Matrix32 DxCoarse;
+        _xDFEvaluatorCoarse.evaluateGradient ( _confCoarse.getInitializer().getTriang(coarseElIdx), coarseRefCoord, DxCoarse );
+        Tensor322Type DDxCoarse;
+        _xDFEvaluatorCoarse.evaluateApproxHessianSym ( _confCoarse.getInitializer().getTriang(coarseElIdx), coarseRefCoord, DDxCoarse );
+        PointWiseVectorFunctionEvaluatorShellFE<ConfiguratorType> pointwiseEvaluator;
+        TangentVecType normalCoarse;
+        pointwiseEvaluator.evaluateNormal ( DxCoarse, normalCoarse  );
+        Matrix22 gCoarse;
+        pointwiseEvaluator.evaluateFirstFundamentalForm ( DxCoarse, gCoarse );
+        Matrix22 gInvCoarse;
+        gInvCoarse = gCoarse.inverse();
+        Matrix22 hCoarse;
+        pointwiseEvaluator.evaluateSecondFundamentalForm ( DDxCoarse, normalCoarse, hCoarse );
+        const RealType GaussCurvCoarse = ( gInvCoarse * hCoarse ).determinant();
+        // summarize
+        return _xStorageFine.getArea(El.getGlobalElementIdx(),QuadPoint) * std::abs( GaussCurvFine - GaussCurvCoarse );
+    }
+};
+
+
+
+
 // computes int \sqrt(g) det(g^-1 h )
 template<typename ConfiguratorType>
 class GaussCurvatureInt :

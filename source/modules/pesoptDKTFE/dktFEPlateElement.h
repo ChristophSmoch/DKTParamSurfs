@@ -27,7 +27,7 @@ public :
     //****************************************
     //Flat triangle in R^3
     //****************************************  
-    // global indices of element an nodes
+    // global indices of element and nodes
     int _globIdx;
     Indices3DType _globNodeIdx;
     Point3DType _nodes[3];
@@ -49,17 +49,17 @@ public :
     //******************************************
     
     
-    //****************************************
-    //DKT Reference triangle (with edges projected on the tangent space 
-    //****************************************
-    TangentVecType _projectedEdgesRefTriang[3][2]; //
-    RealType _projectedEdgesRefTriangLengthSqr[3][2]; 
-    Matrix22 _projectedGinvRefTriang[3]; // (Dx^T Dx)^-1
-
-    // corresponding coefficients: projVec = projCoeff1 v_1 + projCoeff2 v_2. Save as projcoeff(localNodeIndex)(Direction)
-    RealType _projCoeff1[3][2];
-    RealType _projCoeff2[3][2];
-    //******************************************
+//     //****************************************
+//     //DKT Reference triangle (with edges projected on the tangent space 
+//     //****************************************
+//     TangentVecType _projectedEdgesRefTriang[3][2]; //
+//     RealType _projectedEdgesRefTriangLengthSqr[3][2]; 
+//     Matrix22 _projectedGinvRefTriang[3]; // (Dx^T Dx)^-1
+// 
+//     // corresponding coefficients: projVec = projCoeff1 v_1 + projCoeff2 v_2. Save as projcoeff(localNodeIndex)(Direction)
+//     RealType _projCoeff1[3][2];
+//     RealType _projCoeff2[3][2];
+//     //******************************************
 
     
 public:
@@ -82,18 +82,18 @@ public:
   
   
   //Let v1, v2 basis of tangent space, write w as linear combination of v1, v2 and (v1 x v2): w = a1 * v1 + a2 * v2 + a3 * (v1 x v2), return coefficient a1 and a2
-  void computeCoefficientsOfProjection (const TangentVecType& v1, const TangentVecType& v2, const TangentVecType& w, 
-                                        RealType& a1, RealType& a2 ){
-    RealType normV1Squared = v1.dot(v1); RealType normV2Squared = v2.dot(v2);
-    RealType scalarProductV1V2 = v1.dot(v2); RealType scalarProductV1W = v1.dot(w); RealType scalarProductV2W = v2.dot(w);
-    RealType scalarProductV1V2Squared = scalarProductV1V2 * scalarProductV1V2;
-    
-    a1 = normV2Squared * scalarProductV1W - scalarProductV1V2 * scalarProductV2W;
-    a1 /= (normV1Squared * normV2Squared - scalarProductV1V2Squared);
-    
-    a2 = scalarProductV2W * normV1Squared - scalarProductV1W * scalarProductV1V2;
-    a2 /= (normV1Squared * normV2Squared - scalarProductV1V2Squared);
-  }
+//   void computeCoefficientsOfProjection (const TangentVecType& v1, const TangentVecType& v2, const TangentVecType& w, 
+//                                         RealType& a1, RealType& a2 ){
+//     RealType normV1Squared = v1.dot(v1); RealType normV2Squared = v2.dot(v2);
+//     RealType scalarProductV1V2 = v1.dot(v2); RealType scalarProductV1W = v1.dot(w); RealType scalarProductV2W = v2.dot(w);
+//     RealType scalarProductV1V2Squared = scalarProductV1V2 * scalarProductV1V2;
+//     
+//     a1 = normV2Squared * scalarProductV1W - scalarProductV1V2 * scalarProductV2W;
+//     a1 /= (normV1Squared * normV2Squared - scalarProductV1V2Squared);
+//     
+//     a2 = scalarProductV2W * normV1Squared - scalarProductV1W * scalarProductV1V2;
+//     a2 /= (normV1Squared * normV2Squared - scalarProductV1V2Squared);
+//   }
 
   
   
@@ -119,46 +119,46 @@ public:
   
   
   //TODO
-  void updateProjectionCoefficients( const TangentVecIterator &tangentVec1, const TangentVecIterator &tangentVec2 ){ 
-    
-    // project edges to tangent space
-    RealType tmpCoeff1, tmpCoeff2;
-    TangentVecType vecToProject;
-    
-    // at node N_0 = (0,0) TODO -> replace by RefNode!!!
-    // vec corresponding to (1,0)
-    computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[0] ], tangentVec2 [ _globNodeIdx[0] ], _edges[2], _projCoeff1[0][0], _projCoeff2[0][0] );
-    // vec corresponding to (0,1)
-    vecToProject = -1.0 * _edges[1];
-    computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[0] ], tangentVec2 [ _globNodeIdx[0] ], vecToProject, _projCoeff1[0][1], _projCoeff2[0][1] );
-    
-    // at node N_1 = (1,0) TODO -> replace by RefNode!!!
-    // vec corresponding to (1,0)
-    vecToProject = -1.0 * _edges[2];
-    computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[1] ], tangentVec2 [ _globNodeIdx[1] ], vecToProject, tmpCoeff1 , tmpCoeff2  );
-    _projCoeff1 [1][0] = - 1.0 * tmpCoeff1;
-    _projCoeff2 [1][0] = - 1.0 * tmpCoeff2;
-    // vec corresponding to (0,1)
-    _projCoeff1 [1][1] = - 1.0 * tmpCoeff1;
-    _projCoeff2 [1][1] = - 1.0 * tmpCoeff2;
-    computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[1] ], tangentVec2 [ _globNodeIdx[1] ], _edges[0], tmpCoeff1 , tmpCoeff2 );
-    _projCoeff1 [1][1] +=  tmpCoeff1;
-    _projCoeff2 [1][1] +=  tmpCoeff2;
-
-    // at node N_2 = (0,1) TODO -> replace by RefNode!!!
-    // vec corresponding to (0,1)
-    computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[2] ], tangentVec2 [ _globNodeIdx[2] ], _edges[1], tmpCoeff1 , tmpCoeff2  );
-    _projCoeff1 [2][1] = - 1.0 * tmpCoeff1;
-    _projCoeff2 [2][1] = - 1.0 * tmpCoeff2;
-    // vec corresponding to (1,0)
-    _projCoeff1 [2][0] = -1.0 * tmpCoeff1;
-    _projCoeff2 [2][0] = -1.0 * tmpCoeff2;
-    vecToProject = -1.0 * _edges[0];
-    computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[2] ], tangentVec2 [ _globNodeIdx[2] ], vecToProject, tmpCoeff1 , tmpCoeff2 );
-    _projCoeff1 [2][0] +=  tmpCoeff1;
-    _projCoeff2 [2][0] +=  tmpCoeff2;
-    
-  }
+//   void updateProjectionCoefficients( const TangentVecIterator &tangentVec1, const TangentVecIterator &tangentVec2 ){ 
+//     
+//     // project edges to tangent space
+//     RealType tmpCoeff1, tmpCoeff2;
+//     TangentVecType vecToProject;
+//     
+//     // at node N_0 = (0,0) TODO -> replace by RefNode!!!
+//     // vec corresponding to (1,0)
+//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[0] ], tangentVec2 [ _globNodeIdx[0] ], _edges[2], _projCoeff1[0][0], _projCoeff2[0][0] );
+//     // vec corresponding to (0,1)
+//     vecToProject = -1.0 * _edges[1];
+//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[0] ], tangentVec2 [ _globNodeIdx[0] ], vecToProject, _projCoeff1[0][1], _projCoeff2[0][1] );
+//     
+//     // at node N_1 = (1,0) TODO -> replace by RefNode!!!
+//     // vec corresponding to (1,0)
+//     vecToProject = -1.0 * _edges[2];
+//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[1] ], tangentVec2 [ _globNodeIdx[1] ], vecToProject, tmpCoeff1 , tmpCoeff2  );
+//     _projCoeff1 [1][0] = - 1.0 * tmpCoeff1;
+//     _projCoeff2 [1][0] = - 1.0 * tmpCoeff2;
+//     // vec corresponding to (0,1)
+//     _projCoeff1 [1][1] = - 1.0 * tmpCoeff1;
+//     _projCoeff2 [1][1] = - 1.0 * tmpCoeff2;
+//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[1] ], tangentVec2 [ _globNodeIdx[1] ], _edges[0], tmpCoeff1 , tmpCoeff2 );
+//     _projCoeff1 [1][1] +=  tmpCoeff1;
+//     _projCoeff2 [1][1] +=  tmpCoeff2;
+// 
+//     // at node N_2 = (0,1) TODO -> replace by RefNode!!!
+//     // vec corresponding to (0,1)
+//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[2] ], tangentVec2 [ _globNodeIdx[2] ], _edges[1], tmpCoeff1 , tmpCoeff2  );
+//     _projCoeff1 [2][1] = - 1.0 * tmpCoeff1;
+//     _projCoeff2 [2][1] = - 1.0 * tmpCoeff2;
+//     // vec corresponding to (1,0)
+//     _projCoeff1 [2][0] = -1.0 * tmpCoeff1;
+//     _projCoeff2 [2][0] = -1.0 * tmpCoeff2;
+//     vecToProject = -1.0 * _edges[0];
+//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[2] ], tangentVec2 [ _globNodeIdx[2] ], vecToProject, tmpCoeff1 , tmpCoeff2 );
+//     _projCoeff1 [2][0] +=  tmpCoeff1;
+//     _projCoeff2 [2][0] +=  tmpCoeff2;
+//     
+//   }
 
   void printNodes() const {
       for(int localIdx=0;localIdx<3;++localIdx){
@@ -183,10 +183,10 @@ public:
            << "---------------------------------------------------" << endl;
       this->printNodes();
       this->printEdges();
-      cout << "projcoeff = " << endl;
-      for( int i=0; i<3; ++i )
-          for( int j=0; j<2; ++j )
-           cout << _projCoeff1[i][j] << "  ,    " << _projCoeff2[i][j] << endl;   
+//       cout << "projcoeff = " << endl;
+//       for( int i=0; i<3; ++i )
+//           for( int j=0; j<2; ++j )
+//            cout << _projCoeff1[i][j] << "  ,    " << _projCoeff2[i][j] << endl;   
         
       cout << "area of FlattenedTriang = " << this->getAreaOfFlattenedTriangle() << endl;
       cout << "area of RefTriang = " << this->getAreaOfRefTriangle() << endl;
@@ -230,26 +230,45 @@ public:
   void setNode ( int i, const Point3DType& node ) {_nodes[i] = node;}
   
   const TangentVecType& getEdge( int localEdgeIndex ) const { return _edges[localEdgeIndex];};
+  const TangentVecType getEdge ( const int locNode1, const int locNode2 ) const { return (this->getNode(locNode2) - this->getNode(locNode1) );  }
+  
   
   const Point3DType& getMidPoint (  ) const { return _midPoint;}
   
   const TangentVecType& operator[] ( int i ) const { return getNode(i);}
   TangentVecType& operator[] ( int i ) {return getNode(i);}
   
-  
-  RealType getProjCoeff1 ( const int BaseFuncNum ) const {
-    int localNodeIndex = std::floor(BaseFuncNum/3);
-    int direction = BaseFuncNum%3;
-    direction -= 1;
-    return _projCoeff1[localNodeIndex][direction];
+  //LocalCoord wrt. unit triangle (0,0) - (1,0) - (0,1)
+  void getGlobalCoord ( const DomVecType &LocalCoord, TangentVecType &Coord ) const {
+      TangentVecType dx1 = this->getEdge(0,1), dx2 = this->getEdge(0,2);
+      Coord = LocalCoord[0] * dx1 + LocalCoord[1] * dx2;
+      Coord += this->getNode(0);                            //Coord w.r.t. 0, 0
   }
   
-  RealType getProjCoeff2 ( const int BaseFuncNum ) const {
-    int localNodeIndex = std::floor(BaseFuncNum/3);
-    int direction = BaseFuncNum%3;
-    direction -= 1;
-    return _projCoeff2[localNodeIndex][direction];
+  void getRefCoordFromGlobalCoord ( const TangentVecType &Coord,  DomVecType &LocalCoord ) const {
+      Matrix33 mat;
+      mat.col(0) = this->getEdge(0,1);
+      mat.col(1) = this->getEdge(0,2);
+      mat.col(2) = this->getEdge(0,1).cross( this->getEdge(0,2) );
+      Matrix33 matInv = mat.inverse();
+      TangentVecType tmp = matInv * ( Coord - this->getNode(0) );
+      LocalCoord(0) = tmp(0); LocalCoord(1) = tmp(1);
   }
+  
+  
+//   RealType getProjCoeff1 ( const int BaseFuncNum ) const {
+//     int localNodeIndex = std::floor(BaseFuncNum/3);
+//     int direction = BaseFuncNum%3;
+//     direction -= 1;
+//     return _projCoeff1[localNodeIndex][direction];
+//   }
+//   
+//   RealType getProjCoeff2 ( const int BaseFuncNum ) const {
+//     int localNodeIndex = std::floor(BaseFuncNum/3);
+//     int direction = BaseFuncNum%3;
+//     direction -= 1;
+//     return _projCoeff2[localNodeIndex][direction];
+//   }
   
   void getRefCoordsFromLocalIndex( const int localNodeIndex, DomVecType &RefCoords ) const{
       RefCoords.setZero();

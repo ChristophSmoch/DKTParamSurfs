@@ -174,7 +174,7 @@ public:
     MaskType DirichletMask ( shellHandler.getDirichletMask() );
     if( this->_parser.template get<int> ( "InputMesh.tangentSpaceType" ) == 2 ){
         mesh.generateApproximativeTangentSpaceAtNodes( DirichletMask ); //! \todo should be done directly in triangleMesh?
-        mesh.updateAllProjectionCoefficients();
+//         mesh.updateAllProjectionCoefficients();
     }
 
 
@@ -334,7 +334,7 @@ public:
 
 
         //========================================================================================
-        // FEM-Prolonagaton
+        // FEM-Prolongation
         //========================================================================================
         DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> solDFDFEMProlongated( conf, shellHandlerFine.getChartToUndeformedShell (  ) + SolutionDisplamentVecFEMProlongated[refinementStep], 3 );
         shellPlotterProlongated.saveShellToFile ( "disp", SolutionDisplamentVecFEMProlongated[refinementStep], pesopt::strprintf( "FEMProlongatedDeformedShell" ).c_str() );
@@ -380,7 +380,18 @@ public:
         VTKMeshSaver<MeshType> secondFFL2SaverFEMProlongation ( deformedShellMeshFEMProlongation );
         secondFFL2SaverFEMProlongation.addScalarData ( SecondFFL2VectorFEMProlongation, "SecondFFL2", FACE_DATA );
         secondFFL2SaverFEMProlongation.save( pesopt::strprintf( "%s/FEMProlongatedSecondFFL2.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
-
+ 
+ 
+        //========================================================================================
+        // Quadrature on fine mesh 
+        //========================================================================================
+        ConfiguratorType oldConf( oldMeshVec[refinementStep] );    
+        ShellHandler<ConfiguratorType,NonLinElastEnergyType::_DiscreteFunctionCacheType> shellHandlerCoarse ( this->_parser, oldConf );
+        VectorType coarseDeformDofs ( SolutionDisplamentVec[refinementStep].size() );
+        coarseDeformDofs = shellHandlerCoarse.getChartToUndeformedShell() + SolutionDisplamentVec[refinementStep];
+        
+        VectorType GaussCurvVectorQuadrature ( mesh.getNumElements() );
+        GaussCurvatureL1DiffConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleOnElements( GaussCurvVectorQuadrature );
 
     }
 

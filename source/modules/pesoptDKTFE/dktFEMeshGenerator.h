@@ -102,7 +102,7 @@ public:
       }
       
       mesh.updateAllTriangles ( );
-      mesh.updateAllProjectionCoefficients();
+//       mesh.updateAllProjectionCoefficients();
   }
   
   // (x,y,z) mapsto (x,y cos(phi) - z sin(phi), y sin(phi) + z cos(phi) )
@@ -116,7 +116,7 @@ public:
       }
       
       mesh.updateAllTriangles ( );
-      mesh.updateAllProjectionCoefficients();
+//       mesh.updateAllProjectionCoefficients();
   }
  
   
@@ -246,7 +246,7 @@ public:
 //     }
 
       mesh.updateAllTriangles ( );
-      mesh.updateAllProjectionCoefficients();
+//       mesh.updateAllProjectionCoefficients();
     
   }
   

@@ -182,7 +182,8 @@ public :
         
         std::ofstream out ( pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outFileName.c_str()  ).c_str ()  );
         
-        _tikzHelper.generateIncludes( out, 21, 29.7, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateArticle( out, 21, 29.7, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         
         _tikzHelper.generateComment( out, "Deformation" );
@@ -204,7 +205,8 @@ public :
         
         std::ofstream out ( pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outFileName.c_str()  ).c_str ()  );
         
-        _tikzHelper.generateIncludes( out, 21, 8, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateArticle( out, 21, 8, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         
         out << "\\bigskip" << endl << endl 
@@ -288,7 +290,8 @@ public :
         
         std::ofstream out ( pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outFileName.c_str()  ).c_str ()  );
         
-        _tikzHelper.generateIncludes( out, 21, 29.7, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateArticle( out, 21, 29.7, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         
         _tikzHelper.generateComment( out, "Summary" );

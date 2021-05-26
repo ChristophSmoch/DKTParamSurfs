@@ -84,7 +84,8 @@ public :
     = { "Apricot", "Cyan", "Mahogany", "Aquamarine", "DarkOrchid", "Gray", "Red", "Periwinkle", "Melon", "Brown",
         "Goldenrod", "Green", "OrangeRed", "RoyalPurple", "Turquoise", "Tan", "Thistle", "YellowOrange", "SeaGreen", "Sepia"  };
         
-    void generateIncludes ( std::ofstream &out,
+        
+    void generateArticle ( std::ofstream &out,
          const RealType paperwidth, const RealType paperheight,
          const RealType leftBorder = 0.0, const RealType rightBorder = 0.0, const RealType topBorder = 0.0, const RealType bottomBorder = 0.0) const {
 
@@ -94,8 +95,16 @@ public :
             << "left=" << leftBorder << "cm," 
             << "right=" << rightBorder << "cm,"
             << "top=" << topBorder << "cm,"
-            << "bottom=" << bottomBorder << "cm}" << endl
-            << "\\usepackage{amsmath}" << endl
+            << "bottom=" << bottomBorder << "cm}" << endl;
+    }
+    
+    void generateStandalone ( std::ofstream &out ) const {
+        out << "\\documentclass{standalone}" << endl;
+    }
+        
+    void generateIncludes ( std::ofstream &out ) const {
+            
+         out << "\\usepackage{amsmath}" << endl
             << "\\usepackage[dvipsnames]{xcolor}" << endl
             << "\\usepackage{pdfpages}" << endl
             << "\\usepackage{pgfplots}" << endl
@@ -252,7 +261,8 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateIncludes( out, 10, 10, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
         
@@ -295,7 +305,8 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateIncludes( out, 10, 10, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
         
@@ -361,7 +372,8 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateIncludes( out, 10, 10, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
         
@@ -431,7 +443,8 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateIncludes( out, 10, 10, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
         
@@ -537,7 +550,8 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateIncludes( out, 10, 10, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
         _tikzHelper.generateBarChartAxis( out );
@@ -594,7 +608,8 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateIncludes( out, 10, 10, 0.5, 0.5, 0.5, 0.5 );
+        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         
         out << "\\begin{tcolorbox}[width=\\textwidth,colback={white},title={\\centering \\large " << title.c_str() << "},colbacktitle=yellow,coltitle=black]" << endl

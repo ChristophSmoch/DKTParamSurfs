@@ -118,7 +118,7 @@ public:
     MaskType DirichletMask ( shellHandler.getDirichletMask() );
     if( this->_parser.template get<int> ( "InputMesh.tangentSpaceType" ) == 2 ){
         mesh.generateApproximativeTangentSpaceAtNodes( DirichletMask ); //! \todo should be done directly in triangleMesh?
-        mesh.updateAllProjectionCoefficients(); 
+//         mesh.updateAllProjectionCoefficients(); 
     }
     
     

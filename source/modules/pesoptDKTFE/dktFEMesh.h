@@ -52,7 +52,7 @@ public:
         generateDirichletBoundaryMaskUponShellBoundaryType<TriangMeshWithTangentSpace<DataTypeContainer,TriangleType>, ShellFETypeC1Dofs> ( static_cast<ShellBoundaryType>( 100 ), *this, boundaryMask, numBoundaryNodes );   
         this->generateApproximativeTangentSpaceAtNodes(boundaryMask);
       }
-      updateAllProjectionCoefficients();
+//       updateAllProjectionCoefficients();
       updateAllAdjacentElementsForNodes();
   }
   
@@ -62,7 +62,7 @@ public:
       for( int i=0; i<triangles.size(); ++i ) this->pushBackTriang( triangles[i] );
       makeOrientationConsistent();
       generateApproximativeTangentSpaceAtNodes();
-      updateAllProjectionCoefficients();
+//       updateAllProjectionCoefficients();
       updateAllAdjacentElementsForNodes();
   }
     
@@ -196,13 +196,13 @@ public:
   void updateAllTriangles ( ) {
     for ( int elementIndex = 0; elementIndex < getNumTriangs(); ++elementIndex  ) 
         _triangIterator[elementIndex].updateNodesAndEdges( _vertexIterator );
-    for ( int elementIndex = 0; elementIndex < getNumTriangs(); ++elementIndex  ) 
-        _triangIterator[elementIndex].updateProjectionCoefficients( _tangentSpaceVec1, _tangentSpaceVec2 );   
+//     for ( int elementIndex = 0; elementIndex < getNumTriangs(); ++elementIndex  ) 
+//         _triangIterator[elementIndex].updateProjectionCoefficients( _tangentSpaceVec1, _tangentSpaceVec2 );   
   }
   
-  void updateAllProjectionCoefficients ( ) {
-    for ( int elementIndex = 0; elementIndex < getNumTriangs(); ++elementIndex  ) _triangIterator[elementIndex].updateProjectionCoefficients( _tangentSpaceVec1, _tangentSpaceVec2 );   
-  }
+//   void updateAllProjectionCoefficients ( ) {
+//     for ( int elementIndex = 0; elementIndex < getNumTriangs(); ++elementIndex  ) _triangIterator[elementIndex].updateProjectionCoefficients( _tangentSpaceVec1, _tangentSpaceVec2 );   
+//   }
   
   void printBasicInfo( ) const{
       cout << endl << "Mesh has " << endl 

@@ -143,7 +143,7 @@ protected:
 
   const MeshType &_mesh;
   
-public:
+public: 
 
   static const int maxNumLocalDofs = 9;
   static const ShellFEType _ShellFEType = C1Dofs;

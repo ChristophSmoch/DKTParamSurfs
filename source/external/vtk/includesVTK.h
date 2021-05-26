@@ -14,6 +14,7 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkCellLocator.h>
 #include <vtkCellTypes.h>
 #include <vtkClipPolyData.h>
 #include <vtkColorTransferFunction.h>

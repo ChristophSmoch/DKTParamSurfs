@@ -182,14 +182,16 @@ public:
       
       TikzPlotterHelperClass<RealType> tikzHelper;
         
-      tikzHelper.generateIncludes( out, 400, 100, 0.5, 0.5, 0.5, 0.5 );
+      tikzHelper.generateStandalone( out );
+      tikzHelper.generateIncludes( out );
       tikzHelper.generateBeginDocument( out );
       out << "\\setcounter{MaxMatrixCols}{" << numDirections << "}" << endl;
       out << "\\begin{align}" << endl
           << "\\begin{pmatrix}" << endl;
           
           
-      tikzHelper.generateIncludes( outDiff, 400, 100, 0.5, 0.5, 0.5, 0.5 );
+      tikzHelper.generateStandalone( out );
+      tikzHelper.generateIncludes( outDiff );
       tikzHelper.generateBeginDocument( outDiff );   
       outDiff << "\\setcounter{MaxMatrixCols}{" << numDirections << "}" << endl;
       outDiff << "\\begin{align}" << endl
