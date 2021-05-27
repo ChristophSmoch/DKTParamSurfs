@@ -164,7 +164,7 @@ public:
     std::vector<VectorType> membraneStressVector, bendingStressVector, totalStressVector;
     std::vector<VectorType> GaussCurvVector;
     std::vector<DeformationOptimizationShellEnergyInfo<RealType>> energyInfoVec;
-    std::vector<IsometryInfo<RealType>> isometryInfoVec;
+    std::vector<IsometryInfo<RealType>> isometryInfoVec,  isometryInfoVecQuad;
     std::vector<string> saveDirectoryVec;
     std::vector<MeshType> oldMeshVec;
 
@@ -238,6 +238,7 @@ public:
       energyInfoVec.push_back( energyInfo );
       isometryInfo.setGridSize( gridSizeVec[refinementStep] );
       isometryInfoVec.push_back( isometryInfo );
+      isometryInfoVecQuad.push_back( isometryInfo );
       isometryInfo.template saveToFile<ParameterParserType>( "isometryInfo", saveDirectoryRefinementStep );
 
       const MeshType oldMesh( mesh );
@@ -392,10 +393,14 @@ public:
         
         VectorType GaussCurvVectorQuadrature ( mesh.getNumElements() );
         GaussCurvatureL1DiffConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleOnElements( GaussCurvVectorQuadrature );
+        RealType gaussCurvL1DiffQuad = 0.;
+        GaussCurvatureL1DiffConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAdd( gaussCurvL1DiffQuad );
+        isometryInfoVecQuad[refinementStep].setGaussCurvatureL1Diff( gaussCurvL1DiffQuad );
 
     }
 
-    this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVec );
+    this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVec,  "FEMProlong");
+    this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVecQuad,  "Quad");
 
 
     if( this->_parser.template get<bool> ("saving.removeOldRefinementSteps") ){

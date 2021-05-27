@@ -564,7 +564,8 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
     }
 
 
-    void plotConvergenceIsometryOfApdaptiveRefinement( const std::vector<IsometryInfo<RealType>> &isometryInfoVec ) const {
+    void plotConvergenceIsometryOfApdaptiveRefinement( const std::vector<IsometryInfo<RealType>> &isometryInfoVec, 
+                                                       const string addOutputName = "" ) const {
         const string saveDirectoryConvergenceIsometry = this->_parser.createSubDirectory( "ConvergenceIsometryAdaptiveRef" );
         const int numAdaptiveRefinementSteps = isometryInfoVec.size() - 1;
         VectorType gridSizeVec(numAdaptiveRefinementSteps+1);
@@ -629,7 +630,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
         // vecs.push_back(EOC_ConvGaussCurvatureL1Vec), describtions.push_back( "EOC $|det( \\phi_i *  \\nabla \\nabla_h u_h \\cdot n_h) |_{L^1}$" );
         vecs.push_back(errorApproxD2uToFineSolutionL2Vec), describtions.push_back( "$| \\nabla \\nabla_h u_h - D^2 u_{\\text{fine}}|_{L^2}$" );
         vecs.push_back(EOC_errorApproxD2uToFineSolutionL2Vec), describtions.push_back( "EOC $| \\nabla \\nabla_h u_h - D^2 u_{\\text{fine}}|_{L^2}$" );
-        tablePlotter.plotTable ( vecs, "ConvergenceIsometry", "Convergence Isometry", describtions);
+        tablePlotter.plotTable ( vecs, pesopt::strprintf( "ConvergenceIsometry_%s",  addOutputName.c_str() ), "Convergence Isometry", describtions);
     }
 
 
