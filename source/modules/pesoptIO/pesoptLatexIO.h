@@ -261,7 +261,7 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateArticle( out,  20, 20 );
         _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
@@ -305,7 +305,7 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateArticle( out,  20, 20 );
         _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
@@ -372,7 +372,7 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateArticle( out,  20, 20 );
         _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
@@ -443,7 +443,7 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateArticle( out,  20, 20 );
         _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
@@ -550,7 +550,7 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateArticle( out,  20, 20 );
         _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         _tikzHelper.generateBeginTikzPicture( out, 0.9 );
@@ -608,7 +608,7 @@ public :
         std::string texFileName = pesopt::strprintf ( "%s/%s.tex", _saveDirectory.c_str(), outputFileName.c_str()  ).c_str ();
         std::ofstream out ( texFileName.c_str()  );
         
-        _tikzHelper.generateStandalone( out );
+        _tikzHelper.generateArticle( out,  20, 20 );
         _tikzHelper.generateIncludes( out );
         _tikzHelper.generateBeginDocument( out );
         

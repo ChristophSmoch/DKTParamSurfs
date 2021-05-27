@@ -190,7 +190,7 @@ public:
           << "\\begin{pmatrix}" << endl;
           
           
-      tikzHelper.generateStandalone( out );
+      tikzHelper.generateStandalone( outDiff );
       tikzHelper.generateIncludes( outDiff );
       tikzHelper.generateBeginDocument( outDiff );   
       outDiff << "\\setcounter{MaxMatrixCols}{" << numDirections << "}" << endl;
