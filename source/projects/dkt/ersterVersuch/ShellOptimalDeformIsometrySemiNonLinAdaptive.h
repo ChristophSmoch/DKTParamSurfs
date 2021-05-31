@@ -344,6 +344,7 @@ public:
         SecondDerivativeEnergy<ConfiguratorType> ( conf, fineSolutionDFD, solDFDFEMProlongated ).assembleAdd( tmp );
         ErrorD2L2_FineSolutionVec[refinementStep] = sqrt( tmp );
         isometryInfoVec[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(tmp) );
+        // isometryInfoVecQuad[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(tmp) );
 
         RealType tmp1 = 0.;
         RealType tmp2 = 0.;
@@ -351,7 +352,7 @@ public:
         GaussCurvatureL1<ConfiguratorType> ( conf,  solDFDFEMProlongated ).assembleAdd( tmp2 );
         ErrorGaussCurvL1_FineSolutionVec[refinementStep] =  tmp1;
         isometryInfoVec[refinementStep].setGaussCurvatureL1Diff( tmp1 );
-        isometryInfoVec[refinementStep].setFEMProlongatedGaussCurvatureL1( tmp2 );
+        isometryInfoVec[refinementStep].setFineGaussCurvatureL1( tmp2 );
 
 
         // ! plot Gauss curvature on elements
@@ -381,21 +382,29 @@ public:
         VTKMeshSaver<MeshType> secondFFL2SaverFEMProlongation ( deformedShellMeshFEMProlongation );
         secondFFL2SaverFEMProlongation.addScalarData ( SecondFFL2VectorFEMProlongation, "SecondFFL2", FACE_DATA );
         secondFFL2SaverFEMProlongation.save( pesopt::strprintf( "%s/FEMProlongatedSecondFFL2.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
- 
- 
+
+
         //========================================================================================
-        // Quadrature on fine mesh 
+        // Quadrature on fine mesh
         //========================================================================================
-        ConfiguratorType oldConf( oldMeshVec[refinementStep] );    
+        ConfiguratorType oldConf( oldMeshVec[refinementStep] );
         ShellHandler<ConfiguratorType,NonLinElastEnergyType::_DiscreteFunctionCacheType> shellHandlerCoarse ( this->_parser, oldConf );
         VectorType coarseDeformDofs ( SolutionDisplamentVec[refinementStep].size() );
         coarseDeformDofs = shellHandlerCoarse.getChartToUndeformedShell() + SolutionDisplamentVec[refinementStep];
-        
+
         VectorType GaussCurvVectorQuadrature ( mesh.getNumElements() );
         GaussCurvatureL1DiffConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleOnElements( GaussCurvVectorQuadrature );
         RealType gaussCurvL1DiffQuad = 0.;
         GaussCurvatureL1DiffConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAdd( gaussCurvL1DiffQuad );
         isometryInfoVecQuad[refinementStep].setGaussCurvatureL1Diff( gaussCurvL1DiffQuad );
+        RealType gaussCurvL1Quad = 0.;
+        GaussCurvatureL1Conf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf ).assembleAdd( gaussCurvL1Quad );
+        isometryInfoVecQuad[refinementStep].setFineGaussCurvatureL1( gaussCurvL1Quad );
+
+        RealType SecondDerivDiffL2 = 0.;
+        SecondDerivativeEnergyConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAdd( SecondDerivDiffL2 );
+        isometryInfoVecQuad[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(SecondDerivDiffL2) );
+
 
     }
 

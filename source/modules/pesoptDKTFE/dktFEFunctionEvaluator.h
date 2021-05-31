@@ -313,6 +313,15 @@ public:
           ddX.set ( c, j, k, hessian_c( j, k ) );
     }
   }
+  void evaluateApproxHessian ( const ElementType &El, const DomVecType& RefCoord, Tensor322Type & ddX ) const {
+    Matrix22 hessian_c;
+    for ( int c = 0; c < 3; ++c ) {
+      _discrFuncs[c].evaluateApproxHessian ( El , RefCoord, hessian_c );
+      for( int j=0; j<2; ++j )
+        for( int k=0; k<2; ++k )
+          ddX.set ( c, j, k, hessian_c( j, k ) );
+    }
+  }
   void evaluateApproxHessianSymAtQuadPoint ( const ElementType &El, int QuadPoint, Tensor322Type & ddX ) const {
     Matrix22 hessian_c;
     for ( int c = 0; c < 3; ++c ) {
