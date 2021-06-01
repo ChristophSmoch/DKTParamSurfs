@@ -164,7 +164,7 @@ public:
     std::vector<VectorType> membraneStressVector, bendingStressVector, totalStressVector;
     std::vector<VectorType> GaussCurvVector;
     std::vector<DeformationOptimizationShellEnergyInfo<RealType>> energyInfoVec;
-    std::vector<IsometryInfo<RealType>> isometryInfoVec,  isometryInfoVecQuad;
+    std::vector<IsometryInfo<RealType>> isometryInfoVec,  isometryInfoVecQuad, isometryInfoVecWithoutLeft;
     std::vector<string> saveDirectoryVec;
     std::vector<MeshType> oldMeshVec;
 
@@ -239,6 +239,7 @@ public:
       isometryInfo.setGridSize( gridSizeVec[refinementStep] );
       isometryInfoVec.push_back( isometryInfo );
       isometryInfoVecQuad.push_back( isometryInfo );
+      isometryInfoVecWithoutLeft.push_back( isometryInfo );
       isometryInfo.template saveToFile<ParameterParserType>( "isometryInfo", saveDirectoryRefinementStep );
 
       const MeshType oldMesh( mesh );
@@ -405,11 +406,20 @@ public:
         SecondDerivativeEnergyConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAdd( SecondDerivDiffL2 );
         isometryInfoVecQuad[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(SecondDerivDiffL2) );
 
+        RealType gaussCurvL1DiffWithoutLeft = 0.;
+        GaussCurvatureL1DiffConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAddWithoutLeft( gaussCurvL1DiffWithoutLeft );
+        isometryInfoVecWithoutLeft[refinementStep].setGaussCurvatureL1Diff( gaussCurvL1DiffWithoutLeft );
+        RealType SecondDerivDiffL2WithoutLeft = 0.;
+        SecondDerivativeEnergyConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAddWithoutLeft( SecondDerivDiffL2WithoutLeft );
+        isometryInfoVecWithoutLeft[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(SecondDerivDiffL2WithoutLeft) );
+        isometryInfoVecWithoutLeft[refinementStep].setFineGaussCurvatureL1( gaussCurvL1Quad );
+
 
     }
 
     this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVec,  "FEMProlong");
     this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVecQuad,  "Quad");
+    this->plotConvergenceIsometryOfApdaptiveRefinement( isometryInfoVecWithoutLeft,  "WithoutLeft");
 
 
     if( this->_parser.template get<bool> ("saving.removeOldRefinementSteps") ){

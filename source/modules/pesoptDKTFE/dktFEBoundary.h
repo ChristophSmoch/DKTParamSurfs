@@ -15,6 +15,8 @@ enum ShellBoundaryType {
       PlateLeftAndRight = 5,
       PlateTopAndBottom = 6,
       PlateEpsilonLeft = 7,
+      PlateRight = 8,
+      PlateRightBottom = 9,
   //Cylinder
       CylinderTopBottom = 11,
       CylinderBottom = 12,
@@ -37,22 +39,22 @@ enum ShellBoundaryType {
 
 template< typename MeshType, bool ShellFETypeC1Dofs >
 void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryType ShellType, const MeshType &mesh,
-                                                          typename MeshType::MaskType & mask, int & numBoundaryNodes, 
+                                                          typename MeshType::MaskType & mask, int & numBoundaryNodes,
                                                           const bool clampedBoundaryCondition = false ) {
-      
+
 //   typedef typename ConfiguratorType::InitType MeshType;
   typedef typename MeshType::RealType RealType;
   typedef typename MeshType::Point3DType    Point3DType;
   typedef typename MeshType::MaskType MaskType;
-  
+
   numBoundaryNodes = 0;
   const int numVertices = mesh.getNumVertices();
-  
+
   switch ( ShellType ){
-      
+
       case NOBOUNDARY : {
       } break;
-      
+
       case ALLBOUNDARY : {
             mesh.makeNeighbour();
             for( int ElementIndex = 0; ElementIndex < mesh.getNumTriangs(); ++ElementIndex ){
@@ -64,11 +66,11 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
                 }
             }
             for( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ){
-               if( mask[nodeIdx] ) ++numBoundaryNodes;    
+               if( mask[nodeIdx] ) ++numBoundaryNodes;
             }
       } break;
-      
-      
+
+
       //--------------------------------------------------------------------------------
       // Plates
       //---------------------------------------------------------------------------------
@@ -81,7 +83,7 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
               }
             }
       } break;
-      
+
       case PlateLeftTop : {
             for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
               const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -91,7 +93,7 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
               }
             }
       } break;
-      
+
      case PlateAll : {
             for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
               const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -101,7 +103,7 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
               }
             }
       } break;
-      
+
       case PlateHalfLeft : {
             for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
               const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -111,7 +113,7 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
               }
             }
       } break;
-      
+
       case PlateLeftAndRight : {
             for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
               const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -121,7 +123,7 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
               }
             }
       } break;
-      
+
      case PlateTopAndBottom : {
             for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
               const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -131,7 +133,7 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
               }
             }
       } break;
-      
+
       case PlateEpsilonLeft : {
             for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
               const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -141,8 +143,28 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
               }
             }
       } break;
-      
-      
+
+      case PlateRight : {
+            for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
+              const Point3DType& coords ( mesh.getVertex(nodeIdx) );
+              if (coords [0] == 1. ){
+                ++numBoundaryNodes;
+                mask[nodeIdx] = true;
+              }
+            }
+      } break;
+
+      case PlateRightBottom : {
+            for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
+              const Point3DType& coords ( mesh.getVertex(nodeIdx) );
+              if (coords [0] == 1. || coords[1] == 0. ){
+                ++numBoundaryNodes;
+                mask[nodeIdx] = true;
+              }
+            }
+      } break;
+
+
       //--------------------------------------------------------------------------------
       // Cylinder
       //---------------------------------------------------------------------------------
@@ -153,9 +175,9 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
                 ++numBoundaryNodes;
                 mask[nodeIdx] = true;
               }
-            } 
-      } break;     
-      
+            }
+      } break;
+
       case CylinderBottom : {
             for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
               const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -163,9 +185,9 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
                 ++numBoundaryNodes;
                 mask[nodeIdx] = true;
               }
-            } 
-      } break;   
-      
+            }
+      } break;
+
       //--------------------------------------------------------------------------------
       // Sphere
       //---------------------------------------------------------------------------------
@@ -176,9 +198,9 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
                 ++numBoundaryNodes;
                 mask[nodeIdx] = true;
               }
-            } 
+            }
       } break;
-      
+
       case SphereEquator : {
             for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
               const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -186,11 +208,11 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
                 ++numBoundaryNodes;
                 mask[nodeIdx] = true;
               }
-            } 
+            }
       } break;
-      
-      
-      
+
+
+
       //--------------------------------------------------------------------------------
       // Circle
       //---------------------------------------------------------------------------------
@@ -202,10 +224,10 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
                 ++numBoundaryNodes;
                 mask[nodeIdx] = true;
               }
-            } 
+            }
       } break;
 
-      
+
       case CircleLeftAndRight : {
            // first get topological boundary
             mesh.makeNeighbour();
@@ -225,10 +247,10 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
                 ++numBoundaryNodes;
                 mask[nodeIdx] = true;
               }
-            } 
+            }
       } break;
-      
-      
+
+
      case CircleLeft : {
            // first get topological boundary
             mesh.makeNeighbour();
@@ -248,14 +270,14 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
                 ++numBoundaryNodes;
                 mask[nodeIdx] = true;
               }
-            } 
+            }
       } break;
-      
-      
+
+
     case CircleMidpoint : {
         Point3DType midpoint ( 0.,0.,0.);
         int midpointVertexIndex;
-        mesh.findClosestVertex( midpoint, midpointVertexIndex ); 
+        mesh.findClosestVertex( midpoint, midpointVertexIndex );
         mask[midpointVertexIndex] = true;
         ++numBoundaryNodes;
     } break;
@@ -263,10 +285,10 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
     case CircleMidpointOneRing : {
         Point3DType midpoint ( 0.,0.,0.);
         int midpointVertexIndex;
-        mesh.findClosestVertex( midpoint, midpointVertexIndex ); 
+        mesh.findClosestVertex( midpoint, midpointVertexIndex );
         mask[midpointVertexIndex] = true;
         ++numBoundaryNodes;
-        
+
         std::vector<int> commonElements;
         mesh.getCommonElements( midpointVertexIndex, commonElements );
         for( int elIdx=0; elIdx < commonElements.size(); ++ elIdx ){
@@ -279,7 +301,7 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
             }
         }
     } break;
-      
+
        //--------------------------------------------------------------------------------
       // other
       //---------------------------------------------------------------------------------
@@ -296,7 +318,7 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
 //              }
 //          }
 //       } break;
-//       
+//
 //       case DragonTail : {
 //          for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
 //              const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -306,8 +328,8 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
 //              }
 //          }
 //       } break;
-//       
-//       
+//
+//
 //        case DragonHead : {
 //          for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
 //              const Point3DType& coords ( mesh.getVertex(nodeIdx) );
@@ -317,12 +339,12 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
 //              }
 //          }
 //       } break;
-      
+
       default :
         throw std::invalid_argument( pesopt::strprintf ( "Wrong boundary condition. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
         break;
     }
-    
+
     //--------------------------------------------------------------------------------
     // clamped boundary condition
     //---------------------------------------------------------------------------------
@@ -334,7 +356,7 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
           }
         }
     }
-    
+
     //if non c1 dofs fix neighbouring nodes of all Dirichlet Boundary nodes
     if( (!ShellFETypeC1Dofs) && clampedBoundaryCondition  ){
         MaskType DirichletMask ( mask.size() ); DirichletMask = mask;
@@ -349,8 +371,8 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
           }
         }
     }
-    
-    
+
+
 }
 
 

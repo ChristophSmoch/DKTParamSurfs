@@ -2,8 +2,8 @@
 #define __DKTFEINTEGRATOR_H
 
 #include <dktFEFunctionEvaluator.h>
-  
-  
+
+
 //!===========================================================================================================================
 //! FE OPERATOR INTERFACES (for any quadrature type specified in the template argument)
 //!===========================================================================================================================
@@ -12,7 +12,7 @@
 //!===========================================================================================================================
 //! Scalar-Valued Intefaces
 //!===========================================================================================================================
-  
+
 //! Integrator to compute \f$\int_\Omega f(...) dx\f$, where \f$\f$ is the argument of the operator.
 template <typename ConfiguratorType, typename Imp>
 class RefTriangleIntegrator{
@@ -24,7 +24,7 @@ protected:
 public:
 
   RefTriangleIntegrator ( const ConfiguratorType & Config ) : _config( Config ) {}
-  
+
   virtual ~RefTriangleIntegrator( ) {}
 
   void assembleAdd ( RealType &Dest ) const {
@@ -39,7 +39,28 @@ public:
     }
     Dest += res;
   }
-  
+  void assembleAddWithoutLeft ( RealType &Dest ) const {
+    RealType res = 0.;
+    for ( int elementIdx = 0; elementIdx < _config.getInitializer().getNumTriangs(); ++elementIdx){
+      const ElementType& El ( _config.getInitializer().getTriang( elementIdx ) );
+      bool isRight = true;
+      for (int vertexIdx = 0; vertexIdx < 3; ++vertexIdx){
+        // const Point3DType& vertexCoord = El.getVertex(vertexIdx);
+        if (El.getNode(vertexIdx)[0] < 0.25){
+          isRight = false;
+        }
+      }
+      if (isRight){
+        const typename ConfiguratorType::BaseFuncSetType &bfs = _config.getBaseFunctionSet ( El );
+        const int numQuadPoints = bfs.numQuadPoints( );
+        RealType a = 0.;
+        for ( int q = 0; q < numQuadPoints; ++q ) a += this->asImp().evaluateIntegrand ( El, q ) * bfs.getWeight ( q );
+        res += El.getAreaOfRefTriangle() * a;
+      }
+    }
+    Dest += res;
+  }
+
   //assembles vector with \int_El f(...)
   template<typename VectorType>
   void assembleOnElements ( VectorType &Dest ) const {
@@ -78,9 +99,9 @@ protected:
 // public:
 //   typedef typename ConfiguratorType::RealType   RealType;
 //   typedef typename ConfiguratorType::ElementType ElementType;
-// 
+//
 //   explicit VectorValuedIntegratorBase ( const ConfiguratorType &conf ) : _conf ( conf ) {}
-// 
+//
 //   template <typename VectorType>
 //   void assembleAdd ( VectorType &Dest, const RealType Factor = 1.0 ) const {
 //     VectorType localVec (ConfiguratorType::maxNumLocalDofs);
@@ -91,12 +112,12 @@ protected:
 //           Dest[_config.localToGlobal ( El, dof )] += localVec[dof] * Factor;
 //     }
 //   }
-// 
+//
 // protected:
 //   // barton-nackman
 //   inline Imp& asImp() { return static_cast<Imp&> ( *this ); }
 //   inline const Imp& asImp() const { return static_cast<const Imp&> ( *this ); }
-//   
+//
 //   const ConfiguratorType &_conf;
 // };
 
@@ -110,7 +131,7 @@ class RefTriangleFENonlinOpIntegrator  {
   typedef typename ConfiguratorType::VectorType VectorType;
   typedef typename ConfiguratorType::ElementType ElementType;
   const ConfiguratorType & _config;
-  
+
 public:
   RefTriangleFENonlinOpIntegrator( const ConfiguratorType & Conf ) : _config( Conf){ }
 
@@ -126,14 +147,14 @@ public:
       for ( int q = 0; q < numQuadPoints; ++q ) nl_cache[q] = this->asImp().getNonlinearity ( El, q );
       RealType aux;
       for ( int dof = 0; dof < numLocalDofs; ++dof ) {
-        aux = 0.;   
+        aux = 0.;
         for ( int q = 0; q < numQuadPoints; ++q ) aux += nl_cache[q] * bfs.evaluateOnRefTriang( dof, q ) * bfs.getWeight ( q );
         Dest[ _config.localToGlobal ( El, dof ) ] += El.getAreaOfRefTriangle() * aux;
       }
     }
     delete[] nl_cache;
   }
-  
+
   void assembleDirichlet ( VectorType &Dest, const typename ConfiguratorType::MaskType &boundaryMask ) const {
      Dest.setZero();
      this->assembleAdd(Dest);
@@ -165,7 +186,7 @@ class RefTriangleFENonlinDiffOpIntegrator  {
   typedef typename ConfiguratorType::ElementType ElementType;
   typedef typename ConfiguratorType::DomVecType DomVecType;
   const ConfiguratorType & _config;
-  
+
 public:
   RefTriangleFENonlinDiffOpIntegrator ( const ConfiguratorType & Conf ) : _config( Conf ){ }
 
@@ -186,10 +207,10 @@ public:
         this->asImp().getNonlinearity (  El, q, nl_cache[q] );
 
       RealType aux;
-  
+
       for ( int dof = 0; dof < numLocalDofs; ++dof ) {
-        aux = 0.0;   
-        
+        aux = 0.0;
+
         for ( int q = 0; q < numQuadPoints; ++q )
           aux += bfs.getWeight ( q ) * ( nl_cache[q].dot(bfs.evaluateGradientOnRefTriang( dof, q ) ) );
 
@@ -198,7 +219,7 @@ public:
     }
     delete[] nl_cache;
   }
-  
+
   void assembleDirichlet ( VectorType &Dest, const typename ConfiguratorType::MaskType &boundaryMask ) const {
      Dest.setZero();
      this->assembleAdd(Dest);
@@ -232,9 +253,9 @@ protected:
 // public:
 //   typedef typename ConfiguratorType::RealType   RealType;
 //   typedef typename ConfiguratorType::ElementType ElementType;
-// 
+//
 //   explicit MultiVectorValuedIntegratorBase ( const ConfiguratorType &conf ) : _conf ( conf ) {}
-// 
+//
 //   template <typename MultiVectorType>
 //   void assembleAdd ( MultiVectorType &Dest, const RealType Factor = 1.0 ) const {
 //     MultiVectorType localMultiVec ( ConfiguratorType::maxNumLocalDofs, 3 );
@@ -245,12 +266,12 @@ protected:
 //           Dest[comp][_conf.localToGlobal ( El, dof )] += localMultiVec[dof][comp] * Factor;
 //     }
 //   }
-// 
+//
 // protected:
 //   // barton-nackman
 //   inline Imp& asImp() { return static_cast<Imp&> ( *this ); }
 //   inline const Imp& asImp() const { return static_cast<const Imp&> ( *this ); }
-//   
+//
 //   const ConfiguratorType &_conf;
 // };
 
@@ -264,17 +285,17 @@ class RefTriangleFENonlinVectorOpIntegrator  {
   typedef typename ConfiguratorType::ElementType ElementType;
   typedef typename ConfiguratorType::MaskType MaskType;
   const ConfiguratorType & _config;
-  
+
 public:
   RefTriangleFENonlinVectorOpIntegrator ( const ConfiguratorType & Conf ) : _config( Conf){ }
 
   virtual ~RefTriangleFENonlinVectorOpIntegrator( ) {}
 
   void assembleAdd ( typename ConfiguratorType::VectorType &Dest ) const {
-    
+
     TangentVecType *nl_cache = new TangentVecType[ _config.maxNumQuadPoints() ];
     const int numGlobalDofs = _config.getNumGlobalDofs();
-    
+
     for ( int elementIdx = 0; elementIdx < _config.getInitializer().getNumTriangs(); ++elementIdx){
       const ElementType& El ( _config.getInitializer().getTriang( elementIdx ) );
       const int numLocalDofs = _config.getNumLocalDofs ( El );
@@ -286,9 +307,9 @@ public:
         this->asImp().getNonlinearity ( El, q, nl_cache[q] );
 
       TangentVecType aux;
-  
+
       for ( int dof = 0; dof < numLocalDofs; ++dof ) {
-        aux.setZero();    
+        aux.setZero();
 
         for ( int q = 0; q < numQuadPoints; ++q )
           aux += bfs.evaluateOnRefTriang( dof, q ) * bfs.getWeight ( q ) * nl_cache[q];
@@ -308,9 +329,9 @@ public:
           if ( boundaryMask[i] ){
             for( int comp=0; comp<3; ++comp ) Dest[i + comp * numGlobalDofs] = 0.0;
           }
-      } 
+      }
   }
-  
+
   //! interface function, has to be provided in derived classes.
   void getNonlinearity ( const typename ConfiguratorType::ElementType & El, int QuadPoint, TangentVecType &NL ) const {
     throw std::invalid_argument( pesopt::strprintf ( "Called the interface function. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
@@ -338,28 +359,28 @@ class RefTriangleMVDiffOpIntegrator  {
   typedef typename ConfiguratorType::DomVecType DomVecType;
   typedef typename ConfiguratorType::Matrix32 Matrix32;
   const ConfiguratorType & _config;
-  
+
 public:
   RefTriangleMVDiffOpIntegrator ( const ConfiguratorType & Conf ) :  _config( Conf ) { }
 
   virtual ~RefTriangleMVDiffOpIntegrator( ) {}
 
-  void assembleAdd ( VectorType &Dest ) const {       
-    
+  void assembleAdd ( VectorType &Dest ) const {
+
     const int numGlobalDofs = _config.getNumGlobalDofs();
     Matrix32 *nl_cache = new Matrix32[ _config.maxNumQuadPoints() ];
 
     for ( int elementIdx = 0; elementIdx < _config.getInitializer().getNumTriangs(); ++elementIdx){
       const ElementType& El ( _config.getInitializer().getTriang( elementIdx ) );
       const int numLocalDofs = _config.getNumLocalDofs( El );
-      
+
       const typename ConfiguratorType::BaseFuncSetType &bfs = _config.getBaseFunctionSet ( El );
       const int numQuadPoints = bfs.numQuadPoints( );
 
       // pre-assemble for all quadrature points (for efficiency)
       for ( int q = 0; q < numQuadPoints; ++q )
         this->asImp().getNonlinearity ( El, q, nl_cache[q] );
-      
+
       TangentVecType aux;
       for ( int dof = 0; dof < numLocalDofs; dof++ ) {
         aux.setZero();
@@ -410,7 +431,7 @@ public:
 
   virtual ~RefTriangleMVDiff2OpIntegrator( ) {}
 
-  void assembleAdd ( VectorType &Dest ) const {   
+  void assembleAdd ( VectorType &Dest ) const {
     const int numGlobalDofs = _config.getNumGlobalDofs();
     Tensor322Type *nl_cache = new Tensor322Type[ _config.maxNumQuadPoints() ];
 
@@ -425,17 +446,17 @@ public:
       // pre-assemble for all quadrature points (for efficiency)
       for ( int q = 0; q < numQuadPoints; ++q )
         this->asImp().getNonlinearity ( El, q, nl_cache[q] );
-      
+
       TangentVecType aux;
       for ( int dof = 0; dof < numLocalDofs; dof++ ) {
         aux.setZero();
         for ( int q = 0; q < numQuadPoints; ++q ) {
-          Matrix22 hessian; hessian = approxBfs.evaluateApproxHessianSymOnRefTriang( dof, q ); 
+          Matrix22 hessian; hessian = approxBfs.evaluateApproxHessianSymOnRefTriang( dof, q );
           Tensor322Type nl ( nl_cache[q] );
-          
+
           TangentVecType tmp;
           for( int i=0; i<3; i++ ) tmp[i] = pesopt::ddProd<RealType,Matrix22>(nl[i], hessian );
-           
+
           tmp *= bfs.getWeight ( q );
           aux += tmp;
         }
@@ -474,63 +495,63 @@ protected:
 //   typedef typename ConfiguratorType::TangentVecType TangentVecType;
 //   typedef typename ConfiguratorType::ElementType ElementType;
 //   const ConfiguratorType &_config;
-//   
+//
 // public:
 //   RefTriangleFELinSymMatrixWeightedVecIntegrator ( const ConfiguratorType & Config ) :
 //   _config ( Config ) {}
-// 
+//
 //    virtual ~RefTriangleFELinSymMatrixWeightedVecIntegrator( ) {}
-// 
-//   void assembleAdd ( pesopt::MultiVector<RealType, typename ConfiguratorType::VectorType> &Dest ) const {       
-//     
+//
+//   void assembleAdd ( pesopt::MultiVector<RealType, typename ConfiguratorType::VectorType> &Dest ) const {
+//
 //     Matrix22 *nl_cache = new Matrix22[ _config.maxNumQuadPoints() ];
-// 
+//
 //     for ( ElementIteratorType it = _config.begin(); it != _config.end(); ++it ) {
 //       const int numLocalDofs = _config.getNumLocalDofs( El );
-//       
+//
 //       const typename ConfiguratorType::BaseFuncSetType &bfs = _config.getBaseFunctionSet ( El );
 //       const int numQuadPoints = bfs.numQuadPoints( );
-// 
+//
 //       // pre-assemble for all quadrature points (for efficiency)
 //       for ( int q = 0; q < numQuadPoints; ++q )
 //         this->asImp().getNonlinearity ( El, q, nl_cache[q] );
-//       
+//
 //       TangentVecType aux;
 //       for ( int dof = 0; dof < numLocalDofs; dof++ ) {
 //         aux.setZero();
 //         for ( int q = 0; q < numQuadPoints; ++q ) {
-//           RealType valuebf = bfs.evaluateOnRefTriang( dof, q ); 
+//           RealType valuebf = bfs.evaluateOnRefTriang( dof, q );
 //           Matrix22 nl;
 //           nl = nl_cache[q];
-//           
+//
 //           TangentVecType tmp;
 //           tmp[0] = valuebf * nl[0][0];
 //           tmp[1] = valuebf * nl[1][1];
 //           tmp[2] = 2.0 * valuebf * nl[1][0];
-//            
+//
 //           tmp *= bfs.getWeight ( q );
 //           aux += tmp;
 //         }
-// 
+//
 //         for ( int d = 0; d < 3; ++d )
 //           Dest[d][ _config.localToGlobal ( El, dof ) ] += 0.5 * aux[d];
 //       }
 //     }
 //     delete[] nl_cache;
-// 
+//
 //   }
-// 
+//
 //   //! interface function, has to be provided in derived classes.
 //   void getNonlinearity ( const typename ConfiguratorType::ElementType & El, int QuadPoint,
 //                          Matrix22 &NL ) const {
 //     throw std::invalid_argument( pesopt::strprintf ( "Called the interface function. In File %s at line %d.", __FILE__, __LINE__ ).c_str() );
 //     this->asImp().getNonlinearity ( El, QuadPoint,  NL );
 //   }
-// 
+//
 // protected:
 //   inline Imp &asImp() { return static_cast<Imp&> ( *this ); }
 //   inline const Imp &asImp() const { return static_cast<const Imp&> ( *this ); }
-// 
+//
 // };
 
 
@@ -573,26 +594,26 @@ public:
       }
     }
   }
-  
+
   void assembleTripletListDirichlet ( std::vector<TripletType> & tripletListMasked, const MaskType& boundaryMask, const RealType Factor ) const {
     std::vector<TripletType> tripletList;
     assembleTripletList ( tripletList, Factor );
-      
+
     tripletListMasked.reserve(_config.getInitializer().getNumTriangs() * pesopt::Sqr( _config.getNumLocalDofs() ) );
 
     for( unsigned iter=0; iter < tripletList.size(); ++iter ){
       if( (boundaryMask[tripletList[iter].row()]) || (boundaryMask[tripletList[iter].col()]) ){
-       //Boundary node!        
+       //Boundary node!
       } else {
         tripletListMasked.push_back( tripletList[iter] );
       }
     }
-    
+
     for ( int i = 0; i < _config.getNumGlobalDofs(); ++i ){
       if ( boundaryMask[i] )
          tripletListMasked.push_back( TripletType( i, i, 1.0 ) );
     }
-    
+
   }
 
   template <typename SparseMatrixType>
@@ -601,37 +622,37 @@ public:
     assembleTripletList ( tripletList, Factor );
     Dest.setFromTriplets( tripletList.cbegin(), tripletList.cend() );
   }
-  
+
   template <typename SparseMatrixType>
   void assembleDirichlet ( SparseMatrixType &Dest, const MaskType& boundaryMask, const RealType Factor = 1.0 ) const {
-       
+
     std::vector<TripletType> tripletList;
     assembleTripletList ( tripletList, Factor );
-    
+
     std::vector<TripletType> tripletListMasked;
     tripletListMasked.reserve(_config.getInitializer().getNumTriangs() * pesopt::Sqr( _config.getNumLocalDofs() ) );
 
     for( unsigned iter=0; iter < tripletList.size(); ++iter ){
       if( (boundaryMask[tripletList[iter].row()]) || (boundaryMask[tripletList[iter].col()]) ){
-       //Boundary node!        
+       //Boundary node!
       } else {
         tripletListMasked.push_back( tripletList[iter] );
       }
     }
-    
+
     for ( int i = 0; i < _config.getNumGlobalDofs(); ++i ){
       if ( boundaryMask[i] )
          tripletListMasked.push_back( TripletType( i, i, 1.0 ) );
     }
-    
+
     Dest.setFromTriplets( tripletListMasked.begin(), tripletListMasked.end() );
   }
-  
+
 protected:
   // barton-nackman
   inline Imp& asImp() { return static_cast<Imp&> ( *this ); }
   inline const Imp& asImp() const { return static_cast<const Imp&> ( *this ); }
-  
+
   const ConfiguratorType &_config;
 };
 
@@ -639,7 +660,7 @@ protected:
 
 
 //! \brief provides an interface to Finite Element operators of the form
-//! The corresponding matrix assembly yields \f$ \left(\int_\Omega  A(x)\nabla\phi_j\cdot \nabla\phi_i dx\right)_{ij} \f$ 
+//! The corresponding matrix assembly yields \f$ \left(\int_\Omega  A(x)\nabla\phi_j\cdot \nabla\phi_i dx\right)_{ij} \f$
 //! for FE basis functions \f$ \phi_i,\phi_j \f$.
 template <typename ConfiguratorType, typename Imp >
 class RefTriangleFELinAsymMatrixWeightedStiffIntegrator :
@@ -651,9 +672,9 @@ protected:
   typedef typename ConfiguratorType::DomVecType DomVecType;
   typedef typename ConfiguratorType::Matrix22 Matrix22;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinAsymMatrixWeightedStiffIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinAsymMatrixWeightedStiffIntegrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase< ConfiguratorType, RefTriangleFELinAsymMatrixWeightedStiffIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -664,10 +685,10 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                   LocalMatrixType &LocalMatrix ) const {
     const int numLocalDofs = _config.getNumLocalDofs ( El );
-    
+
     for ( int i = 0; i < numLocalDofs; ++i )
       for ( int j = 0; j < numLocalDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -681,10 +702,10 @@ public:
 
     for ( int q = 0; q < numQuadPoints; ++q ) {
       getCoeffMatrix ( El, q, mat );
-      
-      for( int locIdx = 0; locIdx < numLocalDofs; ++locIdx ) 
+
+      for( int locIdx = 0; locIdx < numLocalDofs; ++locIdx )
           gradbf[locIdx] = bfs.evaluateGradientOnRefTriang( locIdx, q );
-      
+
       for ( int i = 0; i < numLocalDofs; ++i ) {
           MatGrad1 = mat * gradbf[i];
         for ( int j = 0; j < numLocalDofs; ++j ) {
@@ -704,7 +725,7 @@ protected:
 
 
 //! \brief provides an interface to Finite Element operators of the form
-//! The corresponding matrix assembly yields \f$ \left(\int_\Omega  A(x)\nabla_h \phi_j\cdot \nabla_h \phi_i dx\right)_{ij} \f$ 
+//! The corresponding matrix assembly yields \f$ \left(\int_\Omega  A(x)\nabla_h \phi_j\cdot \nabla_h \phi_i dx\right)_{ij} \f$
 //! for FE basis functions \f$ \phi_i,\phi_j \f$.
 template <typename ConfiguratorType, typename Imp >
 class RefTriangleFELinAsymMatrixWeightedApproxStiffIntegrator :
@@ -716,9 +737,9 @@ protected:
   typedef typename ConfiguratorType::DomVecType DomVecType;
   typedef typename ConfiguratorType::Matrix22 Matrix22;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinAsymMatrixWeightedApproxStiffIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinAsymMatrixWeightedApproxStiffIntegrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase< ConfiguratorType, RefTriangleFELinAsymMatrixWeightedApproxStiffIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -730,10 +751,10 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                   LocalMatrixType &LocalMatrix ) const {
     const int numLocalDofs = _config.getNumLocalDofs ( El );
-    
+
     for ( int i = 0; i < numLocalDofs; ++i )
       for ( int j = 0; j < numLocalDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -747,9 +768,9 @@ public:
 
     for ( int q = 0; q < numQuadPoints; ++q ) {
       getCoeffMatrix ( El, q, mat );
-      
+
       for( int locIdx = 0; locIdx < numLocalDofs; ++locIdx ) gradbf[locIdx] = approxBfs.evaluateApproxGradientOnRefTriang( locIdx, q );
-      
+
       for ( int i = 0; i < numLocalDofs; ++i ) {
           MatGrad1 = mat * gradbf[i];
         for ( int j = 0; j < numLocalDofs; ++j ) {
@@ -775,9 +796,9 @@ protected:
   typedef typename ConfiguratorType::RealType RealType;
   typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinWeightedMassIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinWeightedMassIntegrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase<  ConfiguratorType, RefTriangleFELinWeightedMassIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -788,10 +809,10 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                   LocalMatrixType &LocalMatrix ) const {
-    const int numDofs = _config.getNumLocalDofs ( El );	
-    
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -831,9 +852,9 @@ protected:
   typedef typename ConfiguratorType::ElementType ElementType;
   typedef typename ConfiguratorType::DomVecType DomVecType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinScalarWeightedStiffIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinScalarWeightedStiffIntegrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase<  ConfiguratorType, RefTriangleFELinScalarWeightedStiffIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -844,10 +865,10 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                   LocalMatrixType &LocalMatrix ) const {
-    const int numDofs = _config.getNumLocalDofs ( El );	
-    
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -894,9 +915,9 @@ protected:
   typedef typename ConfiguratorType::ElementType ElementType;
   typedef typename ConfiguratorType::DomVecType DomVecType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinScalarWeightedSemiDiffIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinScalarWeightedSemiDiffIntegrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase< ConfiguratorType, RefTriangleFELinScalarWeightedSemiDiffIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -907,11 +928,11 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                    LocalMatrixType &LocalMatrix ) const {
-    
-    const int numDofs = _config.getNumLocalDofs ( El ); 
-    
+
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -951,9 +972,9 @@ protected:
   typedef typename ConfiguratorType::ElementType ElementType;
   typedef typename ConfiguratorType::DomVecType DomVecType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinSeperatedVectorWeightedStiffIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinSeperatedVectorWeightedStiffIntegrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase<  ConfiguratorType, RefTriangleFELinSeperatedVectorWeightedStiffIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -965,11 +986,11 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                    LocalMatrixType &LocalMatrix ) const {
-    
-    const int numDofs = _config.getNumLocalDofs ( El ); 
-    
+
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -1013,9 +1034,9 @@ protected:
   typedef typename ConfiguratorType::ElementType ElementType;
   typedef typename ConfiguratorType::DomVecType DomVecType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase< ConfiguratorType, RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -1027,9 +1048,9 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                    LocalMatrixType &LocalMatrix ) const {
-    const int numDofs = _config.getNumLocalDofs ( El );    
+    const int numDofs = _config.getNumLocalDofs ( El );
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -1071,9 +1092,9 @@ protected:
   typedef typename ConfiguratorType::ElementType ElementType;
   typedef typename ConfiguratorType::DomVecType DomVecType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase<  ConfiguratorType, RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator_Tensor<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -1084,11 +1105,11 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                    LocalMatrixType &LocalMatrix ) const {
-    
-    const int numDofs = _config.getNumLocalDofs ( El );      
-    
+
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -1109,7 +1130,7 @@ public:
           for( int a=0; a<2; a++ )
               for( int b=0; b<2; b++ )
                   for( int c=0; c<2; c++ )
-                      aux += tensor.get(a,b,c) * hessian_j(a,b) * grad_i( c );    
+                      aux += tensor.get(a,b,c) * hessian_j(a,b) * grad_i( c );
           LocalMatrix(j,i) += aux * bfs.getWeight ( q );
         }
       }
@@ -1135,9 +1156,9 @@ protected:
   typedef typename ConfiguratorType::Matrix22 Matrix22;
   typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinWeightedDiff2Integrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinWeightedDiff2Integrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase< ConfiguratorType, RefTriangleFELinWeightedDiff2Integrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -1148,12 +1169,12 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                    LocalMatrixType &LocalMatrix ) const {
-    
-    
-    const int numDofs = _config.getNumLocalDofs ( El );    
-    
+
+
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -1171,7 +1192,7 @@ public:
         for ( int j = 0; j < numDofs; ++j ) {
           Matrix22 hessian_j = approxBfs.evaluateApproxHessianSymOnRefTriang( j, q );
           RealType aux = pesopt::ddProd<RealType, Matrix22> ( hessian_i, hessian_j );
-         
+
           LocalMatrix(j,i) += scalar * aux * bfs.getWeight ( q );
         }
       }
@@ -1195,9 +1216,9 @@ protected:
   typedef typename ConfiguratorType::Matrix22 Matrix22;
   typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinMatrixDiff2Integrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinMatrixDiff2Integrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase<  ConfiguratorType, RefTriangleFELinMatrixDiff2Integrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -1209,9 +1230,9 @@ public:
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
   inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,  LocalMatrixType &LocalMatrix ) const {
-    
-    const int numDofs = _config.getNumLocalDofs ( El );        
-    
+
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -1231,7 +1252,7 @@ public:
         for ( int j = 0; j < numDofs; ++j ) {
           Matrix22 hessian_j = approxBfs.evaluateApproxHessianSymOnRefTriang( j, q );
           RealType aux = pesopt::ddProd<RealType, Matrix22> ( mathessiani, hessian_j );
-         
+
           LocalMatrix(j,i) += aux * bfs.getWeight ( q );
         }
       }
@@ -1256,9 +1277,9 @@ protected:
   typedef typename ConfiguratorType::Matrix22 Matrix22;
   typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinMatrixSeperatedDiff2Integrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinMatrixSeperatedDiff2Integrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase< ConfiguratorType, RefTriangleFELinMatrixSeperatedDiff2Integrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -1269,11 +1290,11 @@ public:
   }
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
-  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, 
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,
                                    LocalMatrixType &LocalMatrix ) const {
-   
-    const int numDofs = _config.getNumLocalDofs ( El );        
-    
+
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -1292,7 +1313,7 @@ public:
         for ( int j = 0; j < numDofs; ++j ) {
           Matrix22 hessian_j = approxBfs.evaluateApproxHessianSymOnRefTriang( j, q );
           RealType auxB = pesopt::ddProd<RealType, Matrix22>( matB, hessian_j );
-         
+
           LocalMatrix(j,i) += auxA * auxB * bfs.getWeight ( q );
         }
       }
@@ -1317,9 +1338,9 @@ protected:
   typedef typename ConfiguratorType::TangentVecType TangentVecType;
   typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinMatrixSeperatedDiff2AsVecIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinMatrixSeperatedDiff2AsVecIntegrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase< ConfiguratorType, RefTriangleFELinMatrixSeperatedDiff2AsVecIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -1330,9 +1351,9 @@ public:
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
   inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, LocalMatrixType &LocalMatrix ) const {
-   
-    const int numDofs = _config.getNumLocalDofs ( El );        
-    
+
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -1376,9 +1397,9 @@ protected:
   typedef typename ConfiguratorType::Matrix33 Matrix33;
   typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinMatrixDiff2AsVecIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinMatrixDiff2AsVecIntegrator ( const ConfiguratorType & Config ) :
    MatrixValuedIntegratorBase< ConfiguratorType, RefTriangleFELinMatrixDiff2AsVecIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -1389,9 +1410,9 @@ public:
 
   //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
   inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El, LocalMatrixType &LocalMatrix ) const {
-   
-    const int numDofs = _config.getNumLocalDofs ( El );        
-    
+
+    const int numDofs = _config.getNumLocalDofs ( El );
+
     for ( int i = 0; i < numDofs; ++i )
       for ( int j = 0; j < numDofs; ++j )
         LocalMatrix(i,j) = 0.;
@@ -1460,7 +1481,7 @@ protected:
 
             for ( int i = 0; i < numLocalDofs; ++i )
                 globalDofs[ i ] = _config.localToGlobal ( El, i );
-            
+
             for ( int argComp = 0; argComp < NumVecCompsArg; ++argComp )
                 for ( int destComp = 0; destComp < NumVecCompsDest; ++destComp )
                  for ( int i = 0; i < numLocalDofs; ++i ) {
@@ -1472,19 +1493,19 @@ protected:
                 }
         }
     }
-  
+
 public:
 
   template <typename BlockMatrixType>
   void assemble ( BlockMatrixType &Dest, const RealType Factor = 1.0 ) const {
     std::vector<TripletType> tripletList;
     assembleTripletList ( tripletList, Factor );
-    Dest.setFromTriplets( tripletList.begin(), tripletList.end() ); 
+    Dest.setFromTriplets( tripletList.begin(), tripletList.end() );
   }
-  
+
   template <typename BlockMatrixType>
   void assembleDirichlet ( BlockMatrixType &Dest, const MaskType& boundaryMask, const RealType Factor = 1.0 ) const {
-    
+
     std::vector<TripletType> tripletList;
     assembleTripletList ( tripletList, Factor );
 
@@ -1495,23 +1516,23 @@ public:
 
     for( unsigned int iter=0; iter < tripletList.size(); ++iter ){
       if( (boundaryMask[tripletList[iter].row() % numGlobalDofs] ) || (boundaryMask[tripletList[iter].col() % numGlobalDofs] ) ){
-       //Boundary node!        
+       //Boundary node!
       } else {
         tripletListMasked.push_back( tripletList[iter] );
       }
     }
-    
+
     for ( int i = 0; i < _config.getNumGlobalDofs(); ++i ){
       if ( boundaryMask[i] ){
         for ( int Comp = 0; Comp < 3; ++Comp )
             tripletListMasked.push_back( TripletType( i + Comp * numGlobalDofs, i + Comp * numGlobalDofs, 1.0 ) );
       }
     }
-    
+
     Dest.setFromTriplets( tripletListMasked.begin(), tripletListMasked.end() );
-    
+
   }
-  
+
   //TODO so far only for LagrangianOp
   void assembleTripletListDirichlet ( std::vector<TripletType> & tripletListMasked, const MaskType& boundaryMask, const RealType Factor = 1.0 ) const {
     std::vector<TripletType> tripletList;
@@ -1523,27 +1544,27 @@ public:
 
     for( unsigned int iter=0; iter < tripletList.size(); ++iter ){
       if( (boundaryMask[tripletList[iter].row() % numGlobalDofs] ) || (boundaryMask[tripletList[iter].col() % numGlobalDofs] ) ){
-       //Boundary node!        
+       //Boundary node!
       } else {
         tripletListMasked.push_back( tripletList[iter] );
       }
     }
-    
+
     for ( int i = 0; i < _config.getNumGlobalDofs(); ++i ){
       if ( boundaryMask[i] ){
         for ( int Comp = 0; Comp < 3; ++Comp )
             tripletListMasked.push_back( TripletType( i + Comp * numGlobalDofs, i + Comp * numGlobalDofs, 1.0 ) );
       }
     }
-    
+
   }
-  
+
 
 protected:
   // barton-nackman
   inline Imp& asImp() { return static_cast<Imp&> ( *this ); }
   inline const Imp& asImp() const { return static_cast<const Imp&> ( *this ); }
-  
+
   const ConfiguratorType &_config;
 };
 
@@ -1558,9 +1579,9 @@ protected:
   typedef typename ConfiguratorType::RealType RealType;
   typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
   const ConfiguratorType &_config;
-  
+
 public:
-  RefTriangleFELinWeightedBlockMassIntegrator ( const ConfiguratorType & Config ) : 
+  RefTriangleFELinWeightedBlockMassIntegrator ( const ConfiguratorType & Config ) :
    BlockMatrixValuedIntegratorBase< ConfiguratorType, RefTriangleFELinWeightedBlockMassIntegrator<ConfiguratorType, Imp> > ( Config ),
   _config ( Config ) {}
 
@@ -1571,15 +1592,15 @@ public:
   }
 
   void prepareLocalMatrix( const typename ConfiguratorType::ElementType &El, LocalMatrixType (&localMatrix)[3][3]) const {
-      
+
       for (int argComp = 0; argComp < 3; ++argComp)
           for (int destComp = 0; destComp < 3; ++destComp)
               localMatrix[argComp][destComp].setZero();
-            
+
       const typename ConfiguratorType::BaseFuncSetType &bfs = _config.getBaseFunctionSet(El);
       const int numDofs = _config.getNumLocalDofs ( El );
-      RealType nonlinearity = 0.;    
-      
+      RealType nonlinearity = 0.;
+
       for (int quadPoint = 0; quadPoint < _config.maxNumQuadPoints(); ++quadPoint) {
           nonlinearity = getNonlinearity ( El, quadPoint );
           for ( int i = 0; i < numDofs; ++i ) {
@@ -1591,7 +1612,7 @@ public:
               }
           }
       }
-        
+
   }
 
 protected:
