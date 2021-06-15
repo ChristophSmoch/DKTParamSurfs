@@ -39,27 +39,6 @@ public:
     }
     Dest += res;
   }
-  void assembleAddWithoutLeft ( RealType &Dest ) const {
-    RealType res = 0.;
-    for ( int elementIdx = 0; elementIdx < _config.getInitializer().getNumTriangs(); ++elementIdx){
-      const ElementType& El ( _config.getInitializer().getTriang( elementIdx ) );
-      bool isRight = true;
-      for (int vertexIdx = 0; vertexIdx < 3; ++vertexIdx){
-        // const Point3DType& vertexCoord = El.getVertex(vertexIdx);
-        if (El.getNode(vertexIdx)[0] < 0.25){
-          isRight = false;
-        }
-      }
-      if (isRight){
-        const typename ConfiguratorType::BaseFuncSetType &bfs = _config.getBaseFunctionSet ( El );
-        const int numQuadPoints = bfs.numQuadPoints( );
-        RealType a = 0.;
-        for ( int q = 0; q < numQuadPoints; ++q ) a += this->asImp().evaluateIntegrand ( El, q ) * bfs.getWeight ( q );
-        res += El.getAreaOfRefTriangle() * a;
-      }
-    }
-    Dest += res;
-  }
 
   //assembles vector with \int_El f(...)
   template<typename VectorType>

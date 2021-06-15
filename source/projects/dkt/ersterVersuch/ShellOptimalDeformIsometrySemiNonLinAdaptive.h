@@ -407,10 +407,10 @@ public:
         isometryInfoVecQuad[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(SecondDerivDiffL2) );
 
         RealType gaussCurvL1DiffWithoutLeft = 0.;
-        GaussCurvatureL1DiffConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAddWithoutLeft( gaussCurvL1DiffWithoutLeft );
+        GaussCurvatureL1DiffConfWithoutLeft<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAdd( gaussCurvL1DiffWithoutLeft );
         isometryInfoVecWithoutLeft[refinementStep].setGaussCurvatureL1Diff( gaussCurvL1DiffWithoutLeft );
         RealType SecondDerivDiffL2WithoutLeft = 0.;
-        SecondDerivativeEnergyConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAddWithoutLeft( SecondDerivDiffL2WithoutLeft );
+        SecondDerivativeEnergyConfWithoutLeft<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleAdd( SecondDerivDiffL2WithoutLeft );
         isometryInfoVecWithoutLeft[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(SecondDerivDiffL2WithoutLeft) );
         isometryInfoVecWithoutLeft[refinementStep].setFineGaussCurvatureL1( gaussCurvL1Quad );
 
