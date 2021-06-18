@@ -223,6 +223,35 @@ public:
             }
         }
       }
+      // Half Cone Christoph
+      if( chartXAType == "PlateToWobbly" ){
+          const RealType pi = 4 * atan ( 1.0 );
+          for ( int nodeIdx=0; nodeIdx < _numVertices; ++nodeIdx ) {
+            const Point3DType& coords ( _mesh.getVertex(nodeIdx) );
+            const RealType radius = 1. / pi ;
+            const RealType oszfac = 10. ;
+            Point3DType coordsOnHalfCone;
+            coordsOnHalfCone(0) = coords(0);
+            coordsOnHalfCone(1) = coords(1);
+            coordsOnHalfCone(2) =  1/oszfac -1. * radius * sin( coords(1) * pi * oszfac ) * cos( coords(0) * pi * oszfac);
+            for( int comp=0; comp<3; ++comp )_xA[ nodeIdx + _numGlobalDofs * comp ] = coordsOnHalfCone[comp];
+            if( ConfiguratorType::_ShellFEType == C1Dofs ){
+                TangentVecType firstTangentVecAtNode;
+                firstTangentVecAtNode(0) = 1.;
+                firstTangentVecAtNode(1) = 0.;
+                firstTangentVecAtNode(2) =   pi * radius * sin( coords(1) * pi* oszfac ) * sin( coords(0) * pi* oszfac);
+                TangentVecType secondTangentVecAtNode;
+                secondTangentVecAtNode(0) = 0.;
+                secondTangentVecAtNode(1) = 1.;
+                secondTangentVecAtNode(2) =  -1. * pi * radius * cos( coords(1) * pi* oszfac ) * cos( coords(0) * pi)* oszfac;
+                // TangentVecType secondTangentVecAtNode; secondTangentVecAtNode(0) = 0.; secondTangentVecAtNode(1) = 1.; secondTangentVecAtNode(2) =  coords(1) - 0.5;
+                for( int comp=0; comp<3; ++comp ){
+                  _xA[ nodeIdx +     _numVertices + _numGlobalDofs * comp ] = firstTangentVecAtNode  [comp];
+                  _xA[ nodeIdx + 2 * _numVertices + _numGlobalDofs * comp ] = secondTangentVecAtNode [comp];
+                }
+            }
+        }
+      }
 
 
       // chart(x,y) = (x,y, 1/4(2x-1)^2 - 1/4(2y-1)^2)
@@ -1224,7 +1253,7 @@ public:
     _meshSaver.save( pesopt::strprintf (  "%s/%s.%s", _saveDirectory.c_str(), outfile_base_name.c_str(), _VTKFileType.c_str() ), VTKPOLYDATA );
   }
 
-  
+
   void saveShellToFile ( const string dispOrDeform,
                          const VectorType & dispOrDeformVec,
                          const string outfile_base_name,
@@ -1295,8 +1324,8 @@ public:
 
     meshSaver.save( pesopt::strprintf (  "%s/%s.%s", this->_saveDirectory.c_str(), outfile_base_name.c_str(), this->_VTKFileType.c_str() ), VTKPOLYDATA );
   }
-  
-  
+
+
 // TODO
 //   void savePointCloudDeformedToFile (  const VectorType &disp ) const{
 //

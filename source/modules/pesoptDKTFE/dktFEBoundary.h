@@ -17,6 +17,7 @@ enum ShellBoundaryType {
       PlateEpsilonLeft = 7,
       PlateRight = 8,
       PlateRightBottom = 9,
+      PlateMiddleRightL = 1111,
   //Cylinder
       CylinderTopBottom = 11,
       CylinderBottom = 12,
@@ -158,6 +159,16 @@ void generateDirichletBoundaryMaskUponShellBoundaryType ( const ShellBoundaryTyp
             for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
               const Point3DType& coords ( mesh.getVertex(nodeIdx) );
               if (coords [0] == 1. || coords[1] == 0. ){
+                ++numBoundaryNodes;
+                mask[nodeIdx] = true;
+              }
+            }
+      } break;
+
+      case PlateMiddleRightL : {
+            for ( int nodeIdx=0; nodeIdx < numVertices; ++nodeIdx ) {
+              const Point3DType& coords ( mesh.getVertex(nodeIdx) );
+              if (coords [0] > 0.5 && coords[1] == 0.5 ){
                 ++numBoundaryNodes;
                 mask[nodeIdx] = true;
               }
