@@ -109,7 +109,8 @@ public:
     for( int nodeIdx = 0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ){
         auto coordsChart = mesh.getVertex(nodeIdx);
         Point3DType coords;
-        for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + xB[nodeIdx + comp * conf.getNumGlobalDofs()];
+        // for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + xB[nodeIdx + comp * conf.getNumGlobalDofs()];
+        for( int comp = 0; comp < 3; ++comp ) coords[comp] = xB[nodeIdx + comp * conf.getNumGlobalDofs()];
         deformedShellMesh.setVertex( nodeIdx, coords );
     }
 
@@ -130,7 +131,7 @@ public:
     VectorType SecondFFL2Vector ( totalStressVec.size() );
     SecondFFL2<ConfiguratorType> ( matOptConf._conf, xBStorage ).assembleOnElements( SecondFFL2Vector );
     VTKMeshSaver<MeshType> secondFFL2Saver ( deformedShellMesh );
-    secondFFL2Saver.addScalarData ( SecondFFL2Vector, "SecondDerivL2", FACE_DATA );
+    secondFFL2Saver.addScalarData ( SecondFFL2Vector, "SecondFFL2", FACE_DATA );
     secondFFL2Saver.save( pesopt::strprintf( "%s/secondffl2.%s", saveDirectory.c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
 
 
