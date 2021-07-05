@@ -314,7 +314,8 @@ public:
         for( int nodeIdx = 0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ){
             auto coordsChart = mesh.getVertex(nodeIdx);
             Point3DType coords;
-            for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + shellHandlerFine.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()] + SolutionDisplamentVecProlongated[refinementStep][nodeIdx + comp * conf.getNumGlobalDofs()];
+            // for( int comp = 0; comp < 3; ++comp ) coords[comp] = coordsChart[comp] + shellHandlerFine.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()] + SolutionDisplamentVecProlongated[refinementStep][nodeIdx + comp * conf.getNumGlobalDofs()];
+            for( int comp = 0; comp < 3; ++comp ) coords[comp] = shellHandlerFine.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()] + SolutionDisplamentVecProlongated[refinementStep][nodeIdx + comp * conf.getNumGlobalDofs()];
             deformedShellMesh.setVertex( nodeIdx, coords );
         }
         VTKMeshSaver<MeshType> gaussCurvSaver ( deformedShellMesh );
@@ -415,6 +416,22 @@ public:
         isometryInfoVecWithoutLeft[refinementStep].setErrorApproxD2uToFineSolutionL2( sqrt(SecondDerivDiffL2WithoutLeft) );
         isometryInfoVecWithoutLeft[refinementStep].setFineGaussCurvatureL1( gaussCurvL1Quad );
 
+        //========================================================================================
+        // Plot Quadrature on fine mesh
+        //========================================================================================
+
+        MeshType deformedShellMeshQuad ( mesh );
+        for( int nodeIdx = 0; nodeIdx < mesh.getNumVertices(); ++nodeIdx ){
+            auto coordsChart = mesh.getVertex(nodeIdx);
+            Point3DType coords;
+            for( int comp = 0; comp < 3; ++comp ) coords[comp] =  shellHandlerFine.getChartToUndeformedShell()[nodeIdx + comp * conf.getNumGlobalDofs()] + SolutionDisplamentVecProlongated[refinementStep][nodeIdx + comp * conf.getNumGlobalDofs()];
+            deformedShellMeshQuad.setVertex( nodeIdx, coords );
+        }
+        VectorType SecondDerivVectorQuad ( mesh.getNumElements() );
+        SecondDerivativeEnergyConf<ConfiguratorType> ( oldConf, coarseDeformDofs, conf, fineSolutionDFD ).assembleOnElements( SecondDerivVectorQuad );
+        VTKMeshSaver<MeshType> secondDerivL2SaverQuad ( deformedShellMeshQuad );
+        secondDerivL2SaverQuad.addScalarData ( SecondDerivVectorQuad, "SecondDerivL2", FACE_DATA );
+        secondDerivL2SaverQuad.save( pesopt::strprintf( "%s/QuadSecondDerivL2.%s", saveDirectoryVec[refinementStep].c_str(),  this->_VTKFileType.c_str() ),  VTKPOLYDATA );
 
     }
 
