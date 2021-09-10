@@ -103,6 +103,10 @@ public:
     isometryInfo.setGaussCurvatureInt( integralGauss1 );
     GaussCurvVec = GaussCurvVector;
 
+    //Isometry error L1
+    IsometryConstraintL1<MatOptConfigurator> isoOpL1 ( matOptConf._conf, shellHandler.getChartToUndeformedShell_Cache() );
+    RealType isometryErrorL1 = 0.; isoOpL1.apply( solDisp, isometryErrorL1 );
+    isometryInfo.setIsometryErrorL1( isometryErrorL1 );
 
 
     MeshType deformedShellMesh ( mesh );

@@ -614,7 +614,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
         TexGeneratorTable<RealType, VectorType> tablePlotter ( saveDirectoryConvergenceIsometry );
         std::vector<VectorType> vecs; std::vector<string> describtions;
         vecs.push_back(gridSizeVec), describtions.push_back( "$h$" );
-        // vecs.push_back(isometryErrorL1Vec), describtions.push_back( "$|g_B - g_A|_{L^1}$" );
+        vecs.push_back(isometryErrorL1Vec), describtions.push_back( "$|g_B - g_A|_{L^1}$" );
         // vecs.push_back(EOC_isometryErrorL1Vec), describtions.push_back( "EOC $|g_B - g_A|_{L^1}$" );
         // vecs.push_back(isometryErrorL2Vec), describtions.push_back( "$|g_B - g_A|_{L^2}$" );
         // vecs.push_back(EOC_isometryErrorL2Vec), describtions.push_back( "EOC $|g_B - g_A|_{L^2}$" );
