@@ -20,7 +20,7 @@ SET ( SELECTED_EXTERNALS
       
 # projects that have their own CMakeLists.txt.
 SET ( SELECTED_PROJECTS ${SELECTED_PROJECTS}
-      projects/dkt/elastDeform
+      projects/dkt/paramSurfaces
 )
 
  

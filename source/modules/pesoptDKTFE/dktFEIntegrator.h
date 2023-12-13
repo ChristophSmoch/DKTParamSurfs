@@ -1246,6 +1246,67 @@ protected:
 };
 
 
+//! provides an interface to Finite Element operators of the form \f$ ([A(x) D^2 u_j B(x)] : D^2 u_i) \f$, where \f$A,B\f$ are 2x2 Matrices
+template <typename ConfiguratorType, typename Imp >
+class RefTriangleFELinMatrixMatrixDiff2Integrator :
+      public MatrixValuedIntegratorBase<  ConfiguratorType, RefTriangleFELinMatrixMatrixDiff2Integrator<ConfiguratorType, Imp> > {
+protected:
+  typedef typename ConfiguratorType::RealType RealType;
+  typedef typename ConfiguratorType::Matrix22 Matrix22;
+  typedef typename ConfiguratorType::LocalMatrixType LocalMatrixType;
+  const ConfiguratorType &_config;
+
+public:
+  RefTriangleFELinMatrixMatrixDiff2Integrator ( const ConfiguratorType & Config ) :
+   MatrixValuedIntegratorBase<  ConfiguratorType, RefTriangleFELinMatrixMatrixDiff2Integrator<ConfiguratorType, Imp> > ( Config ),
+  _config ( Config ) {}
+
+
+  //! this function has to be provided in the implementation (derived class) of the interface
+  inline void getCoeffMatrix ( const typename ConfiguratorType::ElementType &El, int QuadPoint, Matrix22 &Matrix1, Matrix22 &Matrix2 ) const {
+    this->asImp().getCoeffMatrix ( El, QuadPoint, Matrix1, Matrix2 );
+  }
+
+  //! this function computes the numerical quadrature of the bilinear form and saves the values locally.
+  inline void prepareLocalMatrix ( const typename ConfiguratorType::ElementType &El,  LocalMatrixType &LocalMatrix ) const {
+
+    const int numDofs = _config.getNumLocalDofs ( El );
+
+    for ( int i = 0; i < numDofs; ++i )
+      for ( int j = 0; j < numDofs; ++j )
+        LocalMatrix(i,j) = 0.;
+
+    Matrix22 mat1;
+    Matrix22 mat2;
+
+    const typename ConfiguratorType::BaseFuncSetType &bfs = _config.getBaseFunctionSet ( El );
+    const typename ConfiguratorType::ApproxGradientBaseFuncSetType &approxBfs = _config.getApproxGradientBaseFunctionSet( El );
+    const int numQuadPoints = bfs.numQuadPoints( );
+
+    for ( int q = 0; q < numQuadPoints; ++q ) {
+      getCoeffMatrix( El, q, mat1, mat2 );
+      for ( int i = 0; i < numDofs; ++i ) {
+        Matrix22 hessian_i = approxBfs.evaluateApproxHessianSymOnRefTriang( i, q );
+        Matrix22 mat1hessianimat2 ( mat1 );
+        mat1hessianimat2 *= hessian_i;
+        mat1hessianimat2 *= mat2;
+        for ( int j = 0; j < numDofs; ++j ) {
+          Matrix22 hessian_j = approxBfs.evaluateApproxHessianSymOnRefTriang( j, q );
+          RealType aux = pesopt::ddProd<RealType, Matrix22> ( mat1hessianimat2, hessian_j );
+
+          LocalMatrix(j,i) += aux * bfs.getWeight ( q );
+        }
+      }
+    }
+
+  }
+
+protected:
+  inline Imp &asImp() { return static_cast<Imp&> ( *this ); }
+  inline const Imp &asImp() const { return static_cast<const Imp&> ( *this ); }
+
+};
+
 
 //! provides an interface to Finite Element operators of the form \f$ (A(x) : D^2 u_j  B(x) D^2 u_i) \f$, where \f$A,B\f$ are 2x2 Matrix
 template <typename ConfiguratorType, typename Imp >

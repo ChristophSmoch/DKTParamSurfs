@@ -7,10 +7,10 @@
 #include <lineSearchMethods.h>
 #include <derivativeTest.h>
 
-#include "../elastDeform/ShellOptimalDeformSolverInterface.h"
-#include "../elastDeform/ShellForces.h"
+#include "ShellOptimalDeformSolverInterface.h"
+#include "ShellForces.h"
 #include "ShellDeformationEnergiesSemiNonLin.h"
-#include "../elastDeform/ShellIsometryConstraint.h"
+#include "ShellIsometryConstraint.h"
 
 
 template <typename MatOptConfigurator, typename NonLinElastEnergyType>

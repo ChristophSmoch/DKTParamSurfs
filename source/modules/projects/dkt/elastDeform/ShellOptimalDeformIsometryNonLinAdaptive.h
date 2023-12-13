@@ -8,7 +8,7 @@
 
 // TEST 
 # include "ShellDeformationEnergiesNonLin.h"
-# include "../ersterVersuch/ShellDeformationEnergiesSemiNonLin.h"
+# include "../paramSurfaces/ShellDeformationEnergiesSemiNonLin.h"
 
 template<typename MatOptConfigurator, typename NonLinElastEnergyType>
 class optimalDeformSolverIsometryNonLinAdaptive 

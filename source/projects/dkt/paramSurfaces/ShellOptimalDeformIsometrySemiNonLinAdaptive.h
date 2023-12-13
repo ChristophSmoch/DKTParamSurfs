@@ -4,9 +4,9 @@
 #include <pesopt_VTK.h>
 #include <energyDefines.h>
 
-#include "../elastDeform/ShellOptimalDeformSolverInterfaceAdaptive.h"
+#include "ShellOptimalDeformSolverInterfaceAdaptive.h"
 #include "ShellOptimalDeformSolverIsometrySemiNonLin.h"
-#include "../elastDeform/ShellCurvature.h"
+#include "ShellCurvature.h"
 
 
 template<typename MatOptConfigurator, typename NonLinElastEnergyType>

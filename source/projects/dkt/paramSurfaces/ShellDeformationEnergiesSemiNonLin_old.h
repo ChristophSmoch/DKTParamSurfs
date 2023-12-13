@@ -3,8 +3,8 @@
 
 # include <energyDefines.h>
 
-#include "../elastDeform/ShellDeformationEnergiesInterfaces.h"
-#include "../elastDeform/ShellDeformationEnergiesNonLin.h"
+#include "ShellDeformationEnergiesInterfaces.h"
+#include "ShellDeformationEnergiesNonLin.h"
 
 
 
