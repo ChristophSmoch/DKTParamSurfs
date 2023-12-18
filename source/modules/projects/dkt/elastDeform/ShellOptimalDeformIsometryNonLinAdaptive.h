@@ -62,7 +62,6 @@ public:
     OptDeformFinder.getLastStressOnElements( membraneStressVec, bendingStressVec, totalStressVec );
     
     
-    // TODO Christoph: teste SemiNonlin
     VectorType xB ( solDisp.size() ); xB = shellHandler.getChartToUndeformedShell() + solDisp;
     DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( matOptConf._conf, xB, 3 );    
     // seminonlin

@@ -82,7 +82,6 @@ class SemiNonlinearBendingEnergy
         //   }
       }
 
-      // LinsenBolog
       return materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint ) * ( temp - 2 * pesopt::ddProd<RealType,Matrix22>( _xBStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) , _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) ) ) ;
       // return materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint ) * (  (- 2) * pesopt::ddProd<RealType,Matrix22>( _xBStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) , _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) ) ) ;
       // return materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint ) * ( temp  ) ;
@@ -146,7 +145,6 @@ public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType,
         for ( int l = 0; l<3; ++l){
           NL[l] = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint) * _xBStorage.getHessian( El.getGlobalElementIdx(), QuadPoint)[l] * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint);
           // NL[l].setZero();
-          // LinsenBolog
           NL[l] -= _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint)[l] * (_xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint) * _xAStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint));
         }
         // NL.setZero();
@@ -268,7 +266,6 @@ class SemiNonlinearBendingEnergyGradient {
 
   void assembleAdd( VectorType &Deriv ) const {
     SemiNonlinearBendingEnergyGradient_Part1<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _xABStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
-    // LinsenBolog
     SemiNonlinearBendingEnergyGradient_Part2<MatOptConfType> ( _matOptConf, _xAStorage, _xBStorage, _xABStorage, _pf, _factorBendingEnergy ).assembleAdd( Deriv );
   }
 };
@@ -374,7 +371,6 @@ public RefTriangleFELinAsymMatrixWeightedStiffIntegrator<typename MatOptConfType
 
 
       Matrix *= 2.0 * materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
-      // LinsenBolog
       // Matrix.setZero();
     }
  };
@@ -433,13 +429,11 @@ public RefTriangleFELinMatrixMixedFirstSecondDiffIntegrator<typename MatOptConfT
       const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
       const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
 
-      //Zweite Ableitungstest
 
        Matrix = _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getSecondFF( El.getGlobalElementIdx(), QuadPoint ) * _xAStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint );
        Vector = _xBStorage.getFirstFFInv( El.getGlobalElementIdx(), QuadPoint) * _xBStorage.getGradient( El.getGlobalElementIdx(), QuadPoint).row( _k ).transpose() * _xBStorage.getNormal( El.getGlobalElementIdx(), QuadPoint)( _l );
 
        Vector *= 2.0 * materialFactor * _xAStorage.getArea( El.getGlobalElementIdx(), QuadPoint );
-      //  LinsenBolog
       //  Matrix.setZero();
       //  Vector.setZero();
      }

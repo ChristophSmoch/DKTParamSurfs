@@ -155,7 +155,6 @@ public RefTriangleMVDiff2OpIntegrator<typename MatOptConfType::ConfiguratorType,
       const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
       const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
 
-      // TODO Christoph: werte richtig NL aus
 
       for ( int l = 0; l<3; ++l ) {
          Matrix22 mat_temp; mat_temp.setZero();
@@ -235,8 +234,6 @@ public RefTriangleMVDiffOpIntegrator< typename MatOptConfType::ConfiguratorType,
       const RealType chi = _matOptConf.approxCharFct_material ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _HardMaterial.getElastModulus(), _SoftMaterial.getElastModulus() );
       const RealType deltaSqr = _matOptConf.approxCharFct_thicknessSqr ( _pf.evaluateAtQuadPoint( El, QuadPoint ), _thicknessHard, _thicknessSoft );
       const RealType materialFactor = 1./24. * chi * _factorBendingEnergy * deltaSqr;
-
-      // TODO Christoph replate NL
 
       cout << "test 1" << endl;
       VectorType gAInvGuA0tildeDu; gAInvGuA0tildeDu.setZero();

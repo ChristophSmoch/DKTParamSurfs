@@ -547,7 +547,6 @@ public:
           a2tilde( i , j ) = (a2.dot( ddX_ij ))/a2hat.norm();
         }
   }
-  // TODO Christoph: schreibe punktweise Auswertungsfunktionen
 
 };
 
@@ -1095,7 +1094,6 @@ protected:
     DFDStorageStructure <Matrix22>      _SemiNonlinIsometry_a0tilde;
     DFDStorageStructure <Matrix22>      _SemiNonlinIsometry_a1tilde;
     DFDStorageStructure <Matrix22>      _SemiNonlinIsometry_a2tilde;
-    // TODO Christoph: member variablen fuer a1tilde, ... anlegen
 
   public:
     DiscreteVectorFunctionStorage ( const ConfiguratorType &conf, const VectorType &dofs, const int numComponents ) :
@@ -1124,7 +1122,6 @@ protected:
       _SemiNonlinIsometry_a0tilde ( _numberOfElements, _numberOfQuadPointsPerElement),
       _SemiNonlinIsometry_a1tilde ( _numberOfElements, _numberOfQuadPointsPerElement),
       _SemiNonlinIsometry_a2tilde ( _numberOfElements, _numberOfQuadPointsPerElement)
-      // TODO Christoph: initialisiere von der groesse ( _numberOfElements, _numberOfQuadPointsPerElement )
 
     {
         for ( int elementIdx = 0; elementIdx < _conf.getInitializer().getNumTriangs(); ++elementIdx){
@@ -1159,7 +1156,6 @@ protected:
 
                 _semiNonlinIsometryPointwiseEvaluator.evaluateA2Tilde( this->_Hessian.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2hat.at(elementIdx, localQuadPointIndex), _SemiNonlinIsometry_a2tilde.at(elementIdx, localQuadPointIndex)  );
 
-                // TODO Christoph: greife auf punktweise Auswertungen in SemiNonlinIsometryPointWiseVectorFunctionEvaluatorShellFE zu
 
             }
         }
@@ -1179,7 +1175,6 @@ public:
     const Matrix22& getSecondFF ( const int elementIdx, const int QuadPoint ) const {return _secondFF[elementIdx][QuadPoint];}
     const DomVecType& getGInvChristoffel2 ( const int elementIdx, const int QuadPoint ) const {return _gInvChristoffel2[elementIdx][QuadPoint];}
 
-    // TODO Christoph: get-Funktionen
     const TangentVecType& getSemiNonlinIsometry_a1 ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a1[elementIdx][QuadPoint];}
     const TangentVecType& getSemiNonlinIsometry_a2hat ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a2hat[elementIdx][QuadPoint];}
     const TangentVecType& getSemiNonlinIsometry_a2 ( const int elementIdx, const int QuadPoint ) const {return _SemiNonlinIsometry_a2[elementIdx][QuadPoint];}

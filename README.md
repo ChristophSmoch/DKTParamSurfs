@@ -259,3 +259,9 @@ $ bt
 
 * Repo owner or admin
 * Other community or team contact
+
+
+### Usage ###
+The main executable is projects/dkt/paramSurfaces/ShellDeformIsometrySemiNonLinAdaptive
+
+Parameter files are in /parameters/dkt (Plate, Half-Cylinder, Saddle)

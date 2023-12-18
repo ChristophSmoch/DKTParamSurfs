@@ -168,7 +168,6 @@ public:
       }
 
 
-      // TODO Christoph: Karte zur undeformierten Schale (nicht isometrisch)
       if( chartXAType == "PlateToNonIsometricTest" ){
           const RealType pi = 4 * atan ( 1.0 );
           const RealType radius = 1. / pi;
@@ -195,7 +194,6 @@ public:
         }
       }
 
-      // Half Cone Christoph
       if( chartXAType == "PlateToHalfCone" ){
           const RealType pi = 4 * atan ( 1.0 );
           for ( int nodeIdx=0; nodeIdx < _numVertices; ++nodeIdx ) {
@@ -223,7 +221,7 @@ public:
             }
         }
       }
-      // Half Cone Christoph
+
       if( chartXAType == "PlateToWobbly" ){
           const RealType pi = 4 * atan ( 1.0 );
           for ( int nodeIdx=0; nodeIdx < _numVertices; ++nodeIdx ) {

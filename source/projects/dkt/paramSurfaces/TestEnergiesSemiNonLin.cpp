@@ -73,7 +73,6 @@ int main(int argc, char ** argv) {
 //                                                      parser.template get<RealType> ("InitMaterial.areaHardMaterial"),
 //                                                      material, designTypeName );
 
-        // TODO Christoph
         ShellHandler<ConfiguratorTypePlateTriang,FirstAndSecondOrder> shellHandlerXA ( parser, conf );
         VectorType xB ( shellHandlerXA.getChartToUndeformedShell().size() );
 
