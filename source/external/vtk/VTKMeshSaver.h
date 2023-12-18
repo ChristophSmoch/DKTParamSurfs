@@ -160,7 +160,7 @@ public:
     data->SetPolys ( cells );
     
       
-    // scalar point data //TODO is saved as FIELD. How to save as POINTDATA?
+    // scalar point data 
     for (int i = 0; i < _scalarVertexData.size(); ++i) {
         auto pointDataVec = vtkSmartPointer<vtkDoubleArray>::New();
         pointDataVec->SetName( (_scalarVertexData[i]._descr).c_str() );
@@ -239,7 +239,7 @@ public:
     }
     data->SetPoints ( points );
     
-    // scalar point data //TODO is saved as FIELD. How to save as POINTDATA?
+    // scalar point data 
     for (int i = 0; i < _scalarVertexData.size(); ++i) {
         auto pointDataVec = vtkSmartPointer<vtkDoubleArray>::New();
         pointDataVec->SetName( (_scalarVertexData[i]._descr).c_str() );
@@ -297,7 +297,7 @@ public:
     if( dim == 3 ) data->SetOrigin( -1. * offsetPoints[0], -1. * offsetPoints[1], -1. * offsetPoints[2] );
 
       
-    // scalar point data //TODO is saved as FIELD. How to save as POINTDATA?
+    // scalar point data 
     for (int i = 0; i < _scalarVertexData.size(); ++i) {
         auto pointDataVec = vtkSmartPointer<vtkDoubleArray>::New();
         pointDataVec->SetName( (_scalarVertexData[i]._descr).c_str() );
@@ -371,7 +371,7 @@ public:
     data->SetCells (  _mesh._VTKCELLTYPE, cells );
     
       
-    // scalar point data //TODO is saved as FIELD. How to save as POINTDATA?
+    // scalar point data 
     for (int i = 0; i < _scalarVertexData.size(); ++i) {
         auto pointDataVec = vtkSmartPointer<vtkDoubleArray>::New();
         pointDataVec->SetName( (_scalarVertexData[i]._descr).c_str() );
@@ -490,7 +490,6 @@ public:
   } 
  
  
-  // TODO maybe use additional function xA?
   //  this is for example needed for shells
 //   VTKDeformedMeshSaver( const MeshType &mesh,  const VectorType &xA ) : 
 //   _mesh( mesh ), _numVertices ( mesh.getNumVertices() ),  _identityDeformVec( xA ) { }

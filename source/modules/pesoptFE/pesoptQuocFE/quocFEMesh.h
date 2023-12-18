@@ -204,7 +204,6 @@ public:
       parser.template setFixSizeVector<PointType>("InputMesh.LengthVec", _LengthVec, false );
   }
   
-  //TODO load from vtk
   void saveToParser( ParameterParserType & parser, const string fileNameMesh ) const {
 //       parser.set ( "InputMesh.dimChartDomain", static_cast<int>( dimChartDomain ) );
 //       parser.set ( "InputMesh.FEType", "Line" );
@@ -691,7 +690,6 @@ public:
   
 protected: 
     
-// TODO
    void loadFromVTK( const string& filename ) {
     VTKSaver vtkReader;
     int numVertices;
@@ -722,7 +720,6 @@ public:
       parser.template setFixSizeVector<PointType>("InputMesh.LengthVec", _LengthVec, false );
   }
   
-  //TODO load from vtk
   void saveToParser( ParameterParserType & parser, const string fileNameMesh ) const {
 /*      parser.set ( "InputMesh.dimChartDomain", static_cast<int>( dimChartDomain ) );
       parser.set ( "InputMesh.FEType", "Cuboid" );

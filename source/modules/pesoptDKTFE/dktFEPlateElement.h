@@ -3,8 +3,6 @@
 
 #include <pesopt_IO.h>
 
-// TODO need tangent space???
-//TODO projection onto tangent space???
 template<typename DataTypeContainer>
 class DKTPlateElement {
 
@@ -44,7 +42,7 @@ public :
     Matrix22 _ginvRefTriang; // (Dx^T Dx)^-1
     Matrix22 _GradMapRefTriang; // Dx
     Matrix22 _GradMapInvRefTriang; // Dx^-1
-    Matrix22 _GradGinvRefTriang; // Dx g^-1 (TODO = Dx^{-T}
+    Matrix22 _GradGinvRefTriang; // Dx g^-1 
     RealType _areaRefTriang;
     //******************************************
     
@@ -81,19 +79,6 @@ public:
   ~DKTPlateElement(){}
   
   
-  //Let v1, v2 basis of tangent space, write w as linear combination of v1, v2 and (v1 x v2): w = a1 * v1 + a2 * v2 + a3 * (v1 x v2), return coefficient a1 and a2
-//   void computeCoefficientsOfProjection (const TangentVecType& v1, const TangentVecType& v2, const TangentVecType& w, 
-//                                         RealType& a1, RealType& a2 ){
-//     RealType normV1Squared = v1.dot(v1); RealType normV2Squared = v2.dot(v2);
-//     RealType scalarProductV1V2 = v1.dot(v2); RealType scalarProductV1W = v1.dot(w); RealType scalarProductV2W = v2.dot(w);
-//     RealType scalarProductV1V2Squared = scalarProductV1V2 * scalarProductV1V2;
-//     
-//     a1 = normV2Squared * scalarProductV1W - scalarProductV1V2 * scalarProductV2W;
-//     a1 /= (normV1Squared * normV2Squared - scalarProductV1V2Squared);
-//     
-//     a2 = scalarProductV2W * normV1Squared - scalarProductV1W * scalarProductV1V2;
-//     a2 /= (normV1Squared * normV2Squared - scalarProductV1V2Squared);
-//   }
 
   
   
@@ -118,47 +103,6 @@ public:
   }
   
   
-  //TODO
-//   void updateProjectionCoefficients( const TangentVecIterator &tangentVec1, const TangentVecIterator &tangentVec2 ){ 
-//     
-//     // project edges to tangent space
-//     RealType tmpCoeff1, tmpCoeff2;
-//     TangentVecType vecToProject;
-//     
-//     // at node N_0 = (0,0) TODO -> replace by RefNode!!!
-//     // vec corresponding to (1,0)
-//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[0] ], tangentVec2 [ _globNodeIdx[0] ], _edges[2], _projCoeff1[0][0], _projCoeff2[0][0] );
-//     // vec corresponding to (0,1)
-//     vecToProject = -1.0 * _edges[1];
-//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[0] ], tangentVec2 [ _globNodeIdx[0] ], vecToProject, _projCoeff1[0][1], _projCoeff2[0][1] );
-//     
-//     // at node N_1 = (1,0) TODO -> replace by RefNode!!!
-//     // vec corresponding to (1,0)
-//     vecToProject = -1.0 * _edges[2];
-//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[1] ], tangentVec2 [ _globNodeIdx[1] ], vecToProject, tmpCoeff1 , tmpCoeff2  );
-//     _projCoeff1 [1][0] = - 1.0 * tmpCoeff1;
-//     _projCoeff2 [1][0] = - 1.0 * tmpCoeff2;
-//     // vec corresponding to (0,1)
-//     _projCoeff1 [1][1] = - 1.0 * tmpCoeff1;
-//     _projCoeff2 [1][1] = - 1.0 * tmpCoeff2;
-//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[1] ], tangentVec2 [ _globNodeIdx[1] ], _edges[0], tmpCoeff1 , tmpCoeff2 );
-//     _projCoeff1 [1][1] +=  tmpCoeff1;
-//     _projCoeff2 [1][1] +=  tmpCoeff2;
-// 
-//     // at node N_2 = (0,1) TODO -> replace by RefNode!!!
-//     // vec corresponding to (0,1)
-//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[2] ], tangentVec2 [ _globNodeIdx[2] ], _edges[1], tmpCoeff1 , tmpCoeff2  );
-//     _projCoeff1 [2][1] = - 1.0 * tmpCoeff1;
-//     _projCoeff2 [2][1] = - 1.0 * tmpCoeff2;
-//     // vec corresponding to (1,0)
-//     _projCoeff1 [2][0] = -1.0 * tmpCoeff1;
-//     _projCoeff2 [2][0] = -1.0 * tmpCoeff2;
-//     vecToProject = -1.0 * _edges[0];
-//     computeCoefficientsOfProjection ( tangentVec1 [ _globNodeIdx[2] ], tangentVec2 [ _globNodeIdx[2] ], vecToProject, tmpCoeff1 , tmpCoeff2 );
-//     _projCoeff1 [2][0] +=  tmpCoeff1;
-//     _projCoeff2 [2][0] +=  tmpCoeff2;
-//     
-//   }
 
   void printNodes() const {
       for(int localIdx=0;localIdx<3;++localIdx){

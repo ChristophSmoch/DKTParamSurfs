@@ -114,7 +114,6 @@ public:
   void setNeighbour ( const int elementID, const int acrossLocalNode, const int value ) const {  _neighbourElementsOfElements[elementID][acrossLocalNode] = value;}
 
   const TriangleType& getElement ( const int num ) const {return _triangIterator[num];}
-  // TODO this is used in adaptive mesh to manipulate nodeindices of element, try to use only the const & method
 //   TriangleType & getElement ( const int num ) {return _triangIterator[num];}
   void setElement ( const int num, const TriangleType Arg ) { _triangIterator[num] = Arg;}
 
@@ -126,18 +125,7 @@ public:
     TriangleType triang ( num, nodeIdx, _vertexIterator );
     _triangIterator[num] = triang;
   }
-  
-  //TODO rename???
-//   const EdgeType &getFullEdge( int num ) const { return _edgeIterator[num]; }
-//   const TangentVecType &getEdge( int num ) const { return _edgeIterator[num].getEdge( ); }
-//   const int getAdjacentNodeIdxOfEdge( int globalEdgeIdx, int localIdx ) const { 
-//       return _edgeIterator[globalEdgeIdx].getAdjacentNodeIdx(localIdx); }
-//   const PointType &getAdjacentNodeOfEdge( int globalEdgeIdx, int localIdx ) const { 
-//       return _edgeIterator[globalEdgeIdx].getAdjacentNode(localIdx); }
-//   const int getOppositeNodeIdxOfEdge( int globalEdgeIdx, int localIdx ) const { 
-//       return _edgeIterator[globalEdgeIdx].getOppositeNodeIdx(localIdx); }
-  
-  
+
   
   void updateAllAdjacentElementsForNodes () const {
     _vertexIteratorAdjacentTriangles.clear();
@@ -169,7 +157,6 @@ public:
   }
   
   void getCommonElements( const int nodeIdx1, const int nodeIdx2, std::vector<int> &commonElements ) const{
-      //WARNING very slow!!! TODO use that the element indices are ordered --> dont need the full loop
       for(int i=0;i<_vertexIteratorAdjacentTriangles[nodeIdx1].size(); ++i )
            for(int j=0;j<_vertexIteratorAdjacentTriangles[nodeIdx2].size(); ++j ){
               if(_vertexIteratorAdjacentTriangles[nodeIdx1][i] == _vertexIteratorAdjacentTriangles[nodeIdx2][j] ) 
@@ -178,7 +165,6 @@ public:
   }
   
   void getCommonElements( const int nodeIdx1, const int nodeIdx2, const int nodeIdx3, std::vector<int> &commonElements ) const{
-      //WARNING very slow!!! TODO use that the element indices are ordered
       for(int i=0;i<_vertexIteratorAdjacentTriangles[nodeIdx1].size(); ++i )
            for(int j=0;j<_vertexIteratorAdjacentTriangles[nodeIdx2].size(); ++j )
                for(int k=0;k<_vertexIteratorAdjacentTriangles[nodeIdx3].size(); ++k ){
@@ -289,8 +275,6 @@ public:
     _triangIterator.resize( numTriangles );
     for( int i = 0; i<numTriangles; ++i ) this->setElement ( i, triangleVec[i] ); 
     
-    //TODO edges from vtk???
-//     this->makeEdges();
   }    
     
     

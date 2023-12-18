@@ -39,7 +39,6 @@ public:
 // E(u) = 0.5 Mu \cdot u - F \cdot u,
 // for a constant matrix M and a constant vector F
 // Thus, DE(u) = M u - F and D^2E(u) = M
-// TODO derive from NonlinearEnergyOp
 template <typename DataTypeContainer >
 class QuadraticEnergyOp {
 protected :
@@ -97,66 +96,6 @@ public:
 
 
 
-//! version with reference_wrapper
-// template <typename DataTypeContainer >
-// class CombinedNonlinearConstraintOps :
-// public NonlinearConstraintOps<DataTypeContainer>{
-// 
-// protected:
-//   typedef DataTypeContainer DTContainer;
-//   typedef typename DataTypeContainer::RealType RealType;
-//   typedef typename DataTypeContainer::VectorType VectorType;
-//   typedef typename DataTypeContainer::SparseMatrixType SparseMatrixType;
-//   typedef pesopt::BoostParser ParameterParserType;
-//   
-//   mutable std::vector<int> _numConstraintsVec;
-//   mutable std::vector< std::reference_wrapper<pesopt::NonlinearConstraintOps<DataTypeContainer>> > _nonlinearConstraintOps;
-//   
-// public:
-//   
-//   CombinedNonlinearConstraintOps( ) : 
-//   NonlinearConstraintOps<DataTypeContainer>( 0 ) { }
-// 
-//   // Destroy polymorphic Ops correctly, important!
-//   virtual ~CombinedNonlinearConstraintOps () {}
-//   
-//   void push_back( const std::reference_wrapper<pesopt::NonlinearConstraintOps<DataTypeContainer>> constraintOps ) const {
-//      _nonlinearConstraintOps.push_back( constraintOps );
-//      _numConstraintsVec.push_back( constraintOps.get().getNumConstraints() );
-//      this->_numConstraints += constraintOps.get().getNumConstraints();
-//   }
-//  
-//   //TODO do this once at the beginning and store a map
-//   void getNumOpAndNumConstraint( const int numConstraint, int& numOp, int& numConstraintOp ) const {
-//       int counter = 0;
-//       for( int i=0; i<_nonlinearConstraintOps.size(); ++i )
-//         for( int j=0; j<_nonlinearConstraintOps[i].get().getNumConstraints(); ++j ){
-//          if( numConstraint == counter ){
-//             numOp = i; numConstraintOp = j;
-//          }
-//          counter++;
-//         }
-//   }
-//   
-//   void evaluateEnergy( const int numConstraint, const VectorType &Arg, RealType & energy ) const override{
-//       int numOp, numConstraintOp;
-//       this->getNumOpAndNumConstraint( numConstraint, numOp, numConstraintOp );
-//       _nonlinearConstraintOps[numOp].get().evaluateEnergy(numConstraintOp, Arg, energy );
-//   }
-// 
-//   void evaluateJacobian( const int numConstraint, const VectorType &Arg, VectorType & jacobian ) const override{
-//       int numOp, numConstraintOp;
-//       this->getNumOpAndNumConstraint( numConstraint, numOp, numConstraintOp );
-//       _nonlinearConstraintOps[numOp].get().evaluateJacobian(numConstraintOp, Arg, jacobian );
-//   }
-//   
-//   void evaluateHessian( const int numConstraint, const VectorType &Arg, SparseMatrixType & hessian ) const override{
-//       int numOp, numConstraintOp;
-//       this->getNumOpAndNumConstraint( numConstraint, numOp, numConstraintOp );
-//       _nonlinearConstraintOps[numOp].get().evaluateHessian(numConstraintOp, Arg, hessian );
-//   }
-// 
-// };
 
 //! version with pointer
 template <typename DataTypeContainer >
@@ -183,19 +122,7 @@ public:
   CombinedNonlinearConstraintOps( ) : 
   NonlinearConstraintOps<DataTypeContainer>( 0 ) { }
 
-  //TODO variadic constructur
-//   CombinedNonlinearConstraintOps( const NonlinearConstraintOps<DataTypeContainer>& constraintOps ) : 
-//   NonlinearConstraintOps<DataTypeContainer>( 0 )
-//   or NonlinearConstraintOps<DataTypeContainer>( constraintOps.getNumConstraints() )
-//   {
-//         this->push_back( constraintOps );
-//   }
-//   //   CombinedNonlinearConstraintOps( NonlinearConstraintOps<DataTypeContainer> ops, NonlinearConstraintOps<DataTypeContainer> ... rest )
-//   {
-//        this->push_back( constraintOps );
-//        CombinedNonlinearConstraintOps( rest... )
-//   }
-  
+ 
   
   
   // Destroy polymorphic Ops correctly, important!

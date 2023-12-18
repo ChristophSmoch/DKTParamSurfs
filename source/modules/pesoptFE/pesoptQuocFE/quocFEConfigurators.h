@@ -327,12 +327,12 @@ public:
   //! returns global index of the dof with number localIndex
   inline int localToGlobal ( const ElementType &T, int localIndex ) const {return T.getGlobalNodeIdx( localIndex );}
   
-  //TODO option either left, right, inside 
+  
   // divide globalCoord = BasePoint + h * LocalCoord
   // BasePoint = ceil( globalCoord / h ) * h
   // LocalCoord = globalCoord / length - ceil( globalCoord / h )
   // BasePointFac = ceil( globalCoord / h )
-  //TODO also for 2d case
+
   void getLocalCoords ( const PointType &GlobalCoord, int &elementNumber, PointType &LocalCoord ) const {
       PointType BasePoint;
       std::vector<int> BasePointFac ( 3 );

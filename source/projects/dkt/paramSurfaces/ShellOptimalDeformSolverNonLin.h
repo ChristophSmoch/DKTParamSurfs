@@ -142,7 +142,7 @@ protected:
     
     
     NewtonMethod< DataTypeContainer, NewtonOptimalStepsizeControl > NewtonSolver ( NonLinearEnergyOp, directLinearSystemSolver, 3 * this->_numGlobalDofsDisp, maxIterations, breakCondition, this->_outputLevel );
-    //TODO setAcceptTolerance???
+
     NewtonSolver.setAcceptTolerance( breakCondition * 1000. * startPoint.size() );
     const bool solvedToAcceptTol = NewtonSolver.solve( startPoint, this->_solDisp );
     NonLinearEnergyOp.evaluateHessian( this->_solDisp, _SystemMatAdjoint );

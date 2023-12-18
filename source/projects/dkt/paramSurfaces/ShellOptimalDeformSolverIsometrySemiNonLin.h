@@ -66,8 +66,7 @@ public:
       const RealType diff = ( this->_pf - pf ).squaredNorm();
       if ( diff > 1.e-15 ){ this->_pf = pf; solve(); }
     }
-    
-    //TODO Hessian of Lagrangian
+
     const SparseMatrixType getSystemMatForAdjointProblem () const { 
         std::vector<TripletType> tripletList ( this->getHessianLinElastTriplet() );
         tripletList.reserve( tripletList.size() + (4+3*8) * this->_numGlobalDofsDisp );
@@ -81,19 +80,9 @@ public:
     const ShellHandler<ConfiguratorType,NonLinElastEnergyType::_DiscreteFunctionCacheType> & getShellHandler ( ) const { return _shellHandler; }
 
     const VectorType& getSolutionMultiplierIso() const { return _solMultiplierIso;}
-    
-    //TODO
+
     RealType getLastResidual( ) const{
-//       QuadraticEnergyOp<DataTypeContainer> ElasticEnergy ( _HessianLinElast, this->_rhs );
-//       LagrangianIsometryPointwise<ConfiguratorType> Lagrangian ( ElasticEnergy, _HessianLinElastTriplet, _isoOp, _factorIsoConstraint );
-//      
-//       VectorType sol ( 3 * _numGlobalDofsDisp + 3 * _numInteriorNodes );
-//       Eigen::Ref<VectorType> sol_Disp = sol.segment( 0, 3 * _numGlobalDofsDisp ); sol_Disp = this->_solDisp;
-//       Eigen::Ref<VectorType> sol_Mult = sol.segment( 3 * _numGlobalDofsDisp, 3 * _numInteriorNodes ); sol_Mult = _solMultiplierIso;
-//      
-//       VectorType grad ( sol.size() );
-//       Lagrangian.evaluateJacobian( sol, grad );
-//       return grad.norm();
+
         return 0.;
     }
     
@@ -204,22 +193,7 @@ protected:
     IpoptConstraintSecondOrderSolver<DataTypeContainer> 
     ipoptSolver( NonLinearEnergyOp, isoOp, maxIterationsIpopt, breakConditionIpopt, x_l_vec , x_u_vec, linearSolverTypeIpopt, boundRelaxFactorIpopt, outputLevelIpopt );
     
-//     //BEGIN DerivativeTest
-//     if( this->_parser.template get<int>( "DerivativeTestConstraint.order" ) > 0 ){
-//         pesopt::consoleOutput( "test Derivative for opt deform nonlin" );
-//         VectorType testPoint = VectorType::Random( this->_solDisp.size() );
-//         for( int i = 0; i < this->_numGlobalDofsDisp; ++i ){
-//             if ( this->_mask[i] ){
-//                 for( int comp=0; comp<3; ++comp ) testPoint[i + comp * this->_numGlobalDofsDisp] = 0.0;
-//             }
-//         } 
-//         if( this->_parser.template get<int>( "DerivativeTestConstraint.order" ) ==  1 ) ipoptSolver.testDerivative( testPoint, 1 );
-//         if( this->_parser.template get<int>( "DerivativeTestConstraint.order" ) ==  2 ) ipoptSolver.testDerivative( testPoint, 2 );
-//         if( this->_parser.template get<int>( "DerivativeTestConstraint.order" ) == 12 ) ipoptSolver.testDerivative( testPoint, 2 );
-// 
-//         return true;
-//     }
-//     //END DerivativeTest
+
 
 
 //BEGIN DerivativeTest
@@ -243,10 +217,7 @@ protected:
     
     SolverInfo<DataTypeContainer> solverInfo;
     ipoptSolver.solve( startPoint_Disp, this->_solDisp, startPoint_Mult, this->_solMultiplierIso, solverInfo );
-    
-    //TODO compute system matrix for adjoint problem
-//     NonLinElastEnergyType ( this->_matOpConf, _shellHandler.getDirichletMask(), _shellHandler.getChartToUndeformedShell_Cache(), this->_pf, this->_rhs ).evaluateHessian( this->_solDisp, _SystemMatAdjoint );
-    
+
     bool solvedToAcceptTol = true;
     if( solverInfo.getError() > breakConditionIpopt ) solvedToAcceptTol = false;
     if( (this->_outputLevel > 0) && !solvedToAcceptTol ){

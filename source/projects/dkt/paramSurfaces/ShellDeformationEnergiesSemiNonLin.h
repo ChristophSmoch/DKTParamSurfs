@@ -729,17 +729,11 @@ public:
       SemiNonlinearBendingEnergyGradient<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, xABStorage, _pf, _factorBendingEnergy ).assembleAdd( Dest );
   }
 
-//   void evaluateMixedSecondDerivative(const VectorType& Displacement, const VectorType& adjointSol, VectorType& Dest) const {
-//       Dest.setZero();
-//       VectorType xB ( Displacement.size() ); xB = _xA + Displacement;
-//       DiscreteVectorFunctionStorage<ConfiguratorType,FirstAndSecondOrder> xBStorage ( _matOptConf._conf, xB, 3 );
-//       SemiNonlinearBendingEnergyMixedSecondDerivative<MatOptConfType> ( _matOptConf, _xAStorage, xBStorage, _pf, adjointSol, _factorBendingEnergy ).assembleAdd( Dest );
-//   }
 
   void evaluateHessian( const VectorType& Displacement, SparseMatrixType& Hessian ) const {
     Hessian.setZero();
     std::vector<TripletType> tripletList;
-//     tripletList.reserve( 9 * 9 * _matOptConf._conf.getInitializer().getNumElements() );  // TODO
+
     this->assembleTripletListHessian( Displacement, tripletList );
     Hessian.setFromTriplets( tripletList.cbegin(), tripletList.cend() );
     Hessian.makeCompressed();

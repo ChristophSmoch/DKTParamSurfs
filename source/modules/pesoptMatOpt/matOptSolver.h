@@ -6,9 +6,6 @@
 #include "matOptVTKPlotter.h"
 
 
-//TODO so far this is for
-// dirichlet boundary condition,
-// and single load (i.e. deformation(loadIdx))
 template<typename ConfiguratorType>
 class MaterialOptimizationMacroSolverBase {
   
@@ -69,11 +66,6 @@ public:
                 adaptiveMesh.refineAll( );
             else if( adaptiveRefinementType == "refineByFactor" )
                 adaptiveMesh.refineByFactor( _parser.template get<RealType> ( "MaterialOptimization.factorMultiLevel" ) );
-//TODO
-//             else if( adaptiveRefinementType == "refineMarkedElements" ){
-//                 MaskType markedElements; ...
-//                 adaptiveMesh.refineMarkedElements( markedElements );
-//             }
             else
                 throw std::invalid_argument( pesopt::strprintf ( "Wrong adaptiveRefinementType. In File %s at line %d.", __FILE__, __LINE__ ).c_str() ); 
             
@@ -147,7 +139,6 @@ private :
     
   void saveResultsVTK( const ParameterParserType & parserRefinementStep ) const{
       
-    //TODO diff
 //     MaterialOptimizationPeriodicCellVTKSaver<ConfiguratorType> vtkSaver( parserRefinementStep );
     MaterialOptimizationMacroVTKSaver<ConfiguratorType> vtkSaver( parserRefinementStep );
     vtkSaver.saveMaterial(  );
@@ -169,7 +160,6 @@ private :
     
     //! plot vtk files to png
     MaterialOptimizationVTKtoPNGPlotter<DataTypeContainer> VTKtoPNGPlotter( parserRefinementStep );
-    //TODO 
     const int numLoads = 1;
     
     if( parserRefinementStep.template get<bool> ("saving.plotPNGUndeformed") )
@@ -277,19 +267,13 @@ public:
         
         if( level > StartLevel ){  
             
-            // TODO instead assume that solMaterialCurrentLevel is already extended by computeOptimalDesign_RefinementStep
-            
             //refinement option
             const string adaptiveRefinementType = parserRefinementStep.template get<string> ( "MaterialOptimization.adaptiveRefinementType" );
             if( adaptiveRefinementType == "refineAll" )
                 adaptiveMesh.refineAll( );
             else if( adaptiveRefinementType == "refineByFactor" )
                 adaptiveMesh.refineByFactor( _parser.template get<RealType> ( "MaterialOptimization.factorMultiLevel" ) );
-//TODO
-//             else if( adaptiveRefinementType == "refineMarkedElements" ){
-//                 MaskType markedElements; ...
-//                 adaptiveMesh.refineMarkedElements( markedElements );
-//             }
+
             else
                 throw std::invalid_argument( pesopt::strprintf ( "Wrong adaptiveRefinementType. In File %s at line %d.", __FILE__, __LINE__ ).c_str() ); 
             
@@ -384,7 +368,7 @@ private :
     
     //! plot vtk files to png
     MaterialOptimizationVTKtoPNGPlotter<DataTypeContainer> VTKtoPNGPlotter( parserRefinementStep );
-    //TODO 
+
     const int numLoads = 1;
     
     if( parserRefinementStep.template get<bool> ("saving.plotPNGUndeformed") )
@@ -433,9 +417,6 @@ protected :
 
 
 
-//TODO so far this is for
-// quocmesh,
-// periodic boundary conditions,
 template<typename ConfiguratorType>
 class MaterialOptimizationCellMultipleLoadSolverBase {
   
@@ -493,7 +474,6 @@ public:
         
         if( level > StartLevel ){  
             
-            //TODO this is for periodic boundary conditions
             const ConfiguratorType confOldLevel ( adaptiveMesh.getCurrentMesh() );
 //             cout <<  "meshOldLevel numVertices = " <<  confOldLevel.getMesh().getNumVertices() <<  endl;
 //             cout <<  "boundary handler in computeOptimalDesign_MultiLevel: start" <<  endl;
@@ -507,11 +487,7 @@ public:
                 adaptiveMesh.refineAll( );
             else if( adaptiveRefinementType == "refineByFactor" )
                 adaptiveMesh.refineByFactor( _parser.template get<RealType> ( "MaterialOptimization.factorMultiLevel" ) );
-//TODO
-//             else if( adaptiveRefinementType == "refineMarkedElements" ){
-//                 MaskType markedElements; ...
-//                 adaptiveMesh.refineMarkedElements( markedElements );
-//             }
+
             else
                 throw std::invalid_argument( pesopt::strprintf ( "Wrong adaptiveRefinementType. In File %s at line %d.", __FILE__, __LINE__ ).c_str() ); 
             

@@ -483,7 +483,7 @@ public:
       pTmpDFx =  _stepSizeControlHelper.getHessian() * DescentDir;
       VectorType pTmp (DescentDir.size());
       pTmp = pTmpFy - pTmpFx - pTmpDFx;
-      //! \todo check sign
+
 //       pTmp += pTmp2;
 //       pTmp -= pTmp2;
       RealType L = pTmp.norm()/DescentDirNormSqr;

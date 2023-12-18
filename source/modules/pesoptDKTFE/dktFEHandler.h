@@ -286,8 +286,8 @@ public:
 
       if( chartXAType == "PlateLeftRight" ){
 
-        const RealType alpha = 2.0; //TODO optional
-        VectorType phase ( 1000 ); //TODO require that mesh has N_x \times N_y nodes
+        const RealType alpha = 2.0; 
+        VectorType phase ( 1000 ); 
         this->constructLeftRightClampedInit_PWLin( phase, alpha );
         VectorType gammaReal ( phase.size() ), gammaIm ( phase.size() );
         this->computeCurveFromPhase( phase, gammaReal, gammaIm );
@@ -395,7 +395,7 @@ public:
 
     gamma_x = 0., gamma_z = 0.;
 
-    int numSteps = 50; //TODO numQuadPoints
+    int numSteps = 50; 
     RealType tau = coords_x / static_cast<RealType> (numSteps);
 
     for(int i=0; i< numSteps; ++i){
@@ -463,7 +463,7 @@ public:
 
     gamma_x = 0.0; gamma_z = 0.0;
 
-    int numSteps = 50; //TODO numQuadPoints
+    int numSteps = 50; 
     RealType tau = coords_x / static_cast<RealType> (numSteps);
 
     for(int i=0; i< numSteps; ++i){
@@ -896,12 +896,12 @@ class ShellMaterialGenerator<ConfiguratorType,NodalValuedDofs>{
 
             case 31:{
                 designTypeName = "HolesDiffuse";
-                //TODO area \approx 2 sqrt(2) thickness
+                
                 constructHoles( material );
            }break;
            case 32:{
                 designTypeName = "Holes01";
-                //TODO area \approx 2 sqrt(2) thickness
+                
                 constructHoles( material );
                 for( int i=0; i<material.size(); ++i){
                   if( material[i] > 0. ) material[i] = 1.;
@@ -1145,12 +1145,12 @@ class ShellMaterialGenerator<ConfiguratorType,ElementValuedDofs>{
 
             case 31:{
                 designTypeName = "HolesDiffuse";
-                //TODO area \approx 2 sqrt(2) thickness
+                
                 constructHoles( material );
            }break;
            case 32:{
                 designTypeName = "Holes01";
-                //TODO area \approx 2 sqrt(2) thickness
+                
                 constructHoles( material );
                 for( int i=0; i<material.size(); ++i){
                   if( material[i] > 0. ) material[i] = 1.;
@@ -1303,7 +1303,7 @@ public:
         }else{
             meshDeformed.updateAllTriangles();
             meshDeformed.generateApproximativeTangentSpaceAtNodes();
-            //TODO optional with boundary mask
+            
             for( int i = 0; i < meshDeformed.getNumVertices(); ++i ){
                     const TangentVecType & tangentVec1 = meshDeformed.getTangentVec1( i ),
                                            tangentVec2 = meshDeformed.getTangentVec2( i ),
@@ -1324,31 +1324,8 @@ public:
   }
 
 
-// TODO
-//   void savePointCloudDeformedToFile (  const VectorType &disp ) const{
-//
-//     DKTFEVectorFunctionEvaluator<ConfiguratorType> xADFD ( _conf, _xA , 3 );
-//     const VectorType _xB( _xA + disp );
-//     DKTFEVectorFunctionEvaluator<ConfiguratorType> xBDFD ( _conf, _xB, 3 );
-//     std::vector<Point3DType> pointVecUndeformed; pointVecUndeformed.reserve( _mesh.getNumTriangs() * _conf.maxNumQuadPoints () );
-//     std::vector<Point3DType> pointVecDeformed; pointVecDeformed.reserve( _mesh.getNumTriangs() * _conf.maxNumQuadPoints () );
-//
-//     std::vector<RealType> pointVec_Material;
-//     for ( int elementIdx = 0; elementIdx < _mesh.getNumTriangs(); ++elementIdx){
-//         const typename ConfiguratorType::ElementType& El ( _mesh.getTriang( elementIdx ) );
-//         for ( int localQuadPointIndex = 0; localQuadPointIndex < _conf.maxNumQuadPoints (); ++localQuadPointIndex){
-//             Point3DType xA; xADFD.evaluateAtQuadPoint( El, localQuadPointIndex, xA );  pointVecUndeformed.push_back( xA );
-//             Point3DType xB; xBDFD.evaluateAtQuadPoint( El, localQuadPointIndex, xB );  pointVecDeformed.push_back( xB );
-//             const RealType pf = 0.; pointVec_Material.push_back( pf );
-//         }
-//     }
-//     std::string saveDirectoryPointCloud = _saveDirectory + "/" + "PointCloud";
-//     boost::filesystem::create_directory ( saveDirectoryPointCloud );
-//
-//     PointCloud<DataTypeContainer> pointCloud;
-//     pointCloud.saveAsLegacyVTK( pesopt::strprintf ( "%s/PointCloud_Undeformed.%s", saveDirectoryPointCloud.c_str(), _VTKFileType.c_str() ), pointVecUndeformed, pointVec_Material );
-//     pointCloud.saveAsLegacyVTK( pesopt::strprintf ( "%s/PointCloud_Deformed.%s", saveDirectoryPointCloud.c_str(), _VTKFileType.c_str() ), pointVecDeformed, pointVec_Material );
-//   }
+
+
 
   void saveShellWithFaceDataToFile ( const string dispOrDeform, const VectorType & dispOrDeformVec,
                                const VectorType & faceDataVec, const string outfile_base_name ) const{
@@ -1358,97 +1335,6 @@ public:
     meshSaver.addScalarData ( faceDataVec, "faceData", FACE_DATA );
     meshSaver.save( pesopt::strprintf ( "%s/%s.%s", _saveDirectory.c_str(), outfile_base_name.c_str(), _VTKFileType.c_str() ), VTKPOLYDATA );
   }
-
-
-//   void plotShellFctAndDerivativesOnElements ( const string dispOrDeform, const VectorType & dispOrDeformVec, const string outfile_base_name  ) const{
-//
-//       DataOnElementsPlotter<MeshType> plotter;
-//       //TODO compare with DFD( disp + xA )
-//       DKTFEVectorFunctionEvaluator<ConfiguratorType> dispDFD ( _conf, dispOrDeformVec, 3 );
-//       DKTFEVectorFunctionEvaluator<ConfiguratorType> xADFD ( _conf, _xA, 3 );
-//
-//       std::vector<Point3DType> pointVecUndeformed; pointVecUndeformed.reserve ( 3 * _mesh.getNumTriangs() );
-//       for ( int elementIdx = 0; elementIdx < _mesh.getNumTriangs(); ++elementIdx){
-//         const typename ConfiguratorType::ElementType& El ( _mesh.getTriang( elementIdx ) );
-//         for( int localNodeIndex = 0; localNodeIndex < 3; ++localNodeIndex )
-//             pointVecUndeformed.push_back( El.getNode(localNodeIndex) );
-//       }
-//       plotter.saveAsVTKPOLYDATA ( pointVecUndeformed, pesopt::strprintf ( "%s/%s_xA.%s", _saveDirectory.c_str(), outfile_base_name.c_str(), _VTKFileType.c_str() ) );
-//
-//       std::vector<Point3DType> pointVecDeformed; pointVecDeformed.reserve ( 3 * _mesh.getNumTriangs() );
-// //       std::vector<Point3DType> pointVecD1Deformed; pointVecD1Deformed.reserve ( 3 * _mesh.getNumTriangs() );
-// //       std::vector<Point3DType> pointVecD2Deformed; pointVecD2Deformed.reserve ( 3 * _mesh.getNumTriangs() );
-// //       std::vector<Point3DType> pointVecD3Deformed; pointVecD3Deformed.reserve ( 3 * _mesh.getNumTriangs() );
-//       std::vector<Point3DType> pointVecLaplaceUndeformed; pointVecLaplaceUndeformed.reserve ( 3 * _mesh.getNumTriangs() );
-//       std::vector<Point3DType> pointVecLaplaceDeformed; pointVecLaplaceDeformed.reserve ( 3 * _mesh.getNumTriangs() );
-//       for ( int elementIdx = 0; elementIdx < _mesh.getNumTriangs(); ++elementIdx){
-//         const typename ConfiguratorType::ElementType& El ( _mesh.getTriang( elementIdx ) );
-//         for( int localNodeIndex = 0; localNodeIndex < 3; ++localNodeIndex ){
-//             DomVecType RefCoords;  El.getRefCoordsFromLocalIndex( localNodeIndex, RefCoords );
-//             Point3DType coords, disp;
-//             xADFD.evaluate( El, RefCoords, coords );
-//             dispDFD.evaluate( El, RefCoords, disp );
-//             pointVecDeformed.push_back( coords + disp );
-//
-// //             Matrix33 GradDisp;
-// //             dispDFD.evaluateGradient( El, RefCoords, GradDisp );
-//
-//
-//             //Laplacian
-// //             Matrix22 gA, gAinv; xADFD.evaluateFirstFundamentalForm( El, RefCoords, gA ); gAinv = gA.inverse();
-// //             Matrix32 dXA; xADFD.evaluateGradient( El, RefCoords, dXA ); //TODO dispDFD.evaluateApproxGradient( El, RefCoords, dX );
-// //             Tensor322Type ddXA; xADFD.evaluateApproxHessianSym( El, RefCoords, ddXA );
-// //             DomVecType vecForLaplaceA; xADFD.evaluateVectorForLaplacian ( gAinv, dXA, ddXA, vecForLaplaceA );
-// //
-// //             Matrix32 dX; dispDFD.evaluateGradient( El, RefCoords, dX ); //TODO dispDFD.evaluateApproxGradient( El, RefCoords, dX );
-// //             Tensor322Type ddX; dispDFD.evaluateApproxHessianSym( El, RefCoords, ddX );
-// //
-// //             Point3DType laplaceXA, laplaceX;
-// //             dispDFD.evaluateLaplaceBeltrami ( gAinv, dXA, ddXA, vecForLaplaceA, laplaceXA );
-// //             dispDFD.evaluateLaplaceBeltrami ( gAinv, dX, ddX, vecForLaplaceA, laplaceX );
-// //
-// //
-// //             pointVecLaplaceUndeformed.push_back( laplaceXA + coords );
-// //             pointVecLaplaceDeformed.push_back( laplaceXA + laplaceX + coords ); //TODO????
-//
-//         }
-//       }
-//
-//       plotter.saveAsVTKPOLYDATA ( pointVecDeformed, pesopt::strprintf ( "%s/%s_xB.%s", _saveDirectory.c_str(), outfile_base_name.c_str(), _VTKFileType.c_str() ) );
-// //       plotter.saveAsVTKPOLYDATA ( pointVecLaplaceUndeformed, pesopt::strprintf ( "%s/%s_LapXA.vtk", _saveDirectory.c_str(), outfile_base_name.c_str() ) );
-// //       plotter.saveAsVTKPOLYDATA ( pointVecLaplaceDeformed, pesopt::strprintf ( "%s/%s_LapXB.vtk", _saveDirectory.c_str(), outfile_base_name.c_str() ) );
-//
-//
-// //     //! normals on deformed surface at nodes
-// //     VectorType normalAtNodes ( 3 * _numVertices );
-// //     for( int i = 0; i < mesh.getNumVertices(); ++i ){
-// //         TangentVecType tangentVec1, tangentVec2;
-// //         for( int comp = 0; comp < 3; ++comp ) {
-// //             tangentVec1[comp] = deformVec[i + _numVertices + comp * _numGlobalDofsDeform];
-// //             tangentVec2[comp] = deformVec[i + 2 * _numVertices + comp * _numGlobalDofsDeform];
-// //         }
-// //         TangentVecType normalVec = tangentVec1.cross( tangentVec2 );
-// //         RealType norm = normalVec.norm();
-// //         normalVec /= norm;
-// //         for( int comp = 0; comp<3; ++comp ) normalAtNodes[i + comp * _numVertices] = normalVec[comp];
-// //     }
-//   }
-
-
-//   void plotUndeformedShellWithForce ( const string outfile_base_name, const VectorType &force   ) const{
-//     DiscreteVectorFunctionStorage<ConfiguratorType> forceCached ( _conf, force, 3 );
-//     std::vector<Point3DType> pointVecAtQuadpoints; pointVecAtQuadpoints.reserve( _conf.getInitializer().getNumTriangs() * _conf.maxNumQuadPoints () );
-//     std::vector<TangentVecType> forceVecAtQuadpoints; forceVecAtQuadpoints.reserve( _conf.getInitializer().getNumTriangs() * _conf.maxNumQuadPoints () );
-//     for ( int elementIdx = 0; elementIdx < _conf.getInitializer().getNumTriangs(); ++elementIdx){
-//         const typename ConfiguratorType::ElementType& El ( _conf.getInitializer().getTriang( elementIdx ) );
-//         for ( int localQuadPointIndex = 0; localQuadPointIndex < _conf.maxNumQuadPoints (); ++localQuadPointIndex){
-//             pointVecAtQuadpoints.push_back( _xACachePtr->_coords[elementIdx][localQuadPointIndex] );
-//             forceVecAtQuadpoints.push_back ( forceCached._coords[elementIdx][localQuadPointIndex] );
-//         }
-//     }
-//     PointCloud<DataTypeContainer> pointCloud;
-//     pointCloud.saveAsLegacyVTK( pesopt::strprintf ( "%s/ForcePointCloud.%s", _saveDirectory.c_str(), _VTKFileType.c_str() ), pointVecAtQuadpoints, forceVecAtQuadpoints );
-//   }
 
 
 
@@ -1580,7 +1466,7 @@ public:
         }else{
             meshDeformed.updateAllTriangles();
             meshDeformed.generateApproximativeTangentSpaceAtNodes();
-            //TODO optional with boundary mask
+
             for( int i = 0; i < meshDeformed.getNumVertices(); ++i ){
                     const TangentVecType & tangentVec1 = meshDeformed.getTangentVec1( i ),
                                            tangentVec2 = meshDeformed.getTangentVec2( i ),

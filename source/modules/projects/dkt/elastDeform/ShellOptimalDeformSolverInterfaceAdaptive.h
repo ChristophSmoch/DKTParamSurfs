@@ -12,7 +12,6 @@
 #include "ShellBucklingTikzPlotter.h"
 
 
-//TODO so far for DKT-Deformations
 template<typename MatOptConfigurator>
 class EOCInterface {
     
@@ -173,9 +172,7 @@ public:
     shellVtkPlotter.plotShellWithData( "chart", parserVTKChart, "material", _supp );
     shellVtkPlotter.plotShellWithData( "undeformedShell", parserVTKUndeformed, "material", _supp );
     shellVtkPlotter.plotShellWithData( "deformedShell", parserVTKDeformed, "material", _supp );
-// TODO
-//     const string fileNameData = "Stress";
-//     shellVtkPlotter.plotStress( parserVTKStress, fileNameData, nameStressOnElementVec );
+
   }
   
 };
@@ -371,8 +368,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
                     else                          initMaterial[i] = 1.;
                 }
             }break;
-            
-            //BEGIN TODO only for P1
+
             case 11:{  //symmetrize in y direction: init(x,y,z) = 1/2 ( sol(x,y,z) + sol(x,1-y,z) )
                 for( int nodeIdx=0; nodeIdx<initMaterial.size(); ++nodeIdx ){
                     int vertexIndex;
@@ -401,7 +397,6 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
                     initMaterial[nodeIdx] = 0.5 * ( solutionMaterial[nodeIdx] + solutionMaterial[rotatedVertexIndex_xy]);
                 }
             }break;
-            //BEGIN TODO only for P1
             
             case 1000:{ // initNew = ( solutionOld + Random) / 2
                 VectorType rand = VectorType::Random( solutionMaterial.size() );
@@ -415,13 +410,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
                                     const VectorType &material, const VectorType &xA, const VectorType &displacement, 
                                     const std::vector<VectorType> &StressOnElementVec, const std::vector<string> &nameStressOnElementVec ) const{
       //! averaged stress on elements;
-// TODO instead of updateMesh use new ShellPlotter
-//         shellPlotter.clearData();
-//         shellPlotter.updateMesh( "undeform", xA );
-//         for( int i=0; i<StressOnElementVec.size(); ++i ){
-//             shellPlotter.addScalarData ( StressOnElementVec[i], nameStressOnElementVec[i], FACE_DATA );
-//         }
-//         shellPlotter.saveShellToFile( fileName );
+
   }
   
    template<DiscreteFunctionCacheType _DiscreteFunctionCacheType,bool IsometryConstraint>
@@ -478,9 +467,7 @@ void markAndRefineForGivenElementErrorVector( MeshType &mesh, VectorType & solut
        shellPlotter.saveShellWithMaterialToFile ( "undeform", xA, material, pesopt::strprintf( "undeformedShell" ).c_str()  );
        shellPlotter.saveShellWithMaterialToFile ( "disp", solDisp, material, pesopt::strprintf( "deformedShell" ).c_str() );      
        
-// TODO
-//        const string fileNameData = "Stress";
-//        this->saveStressOnUndeformedShell(  fileNameData, shellPlotter, material, xA, solDisp, StressOnElementVec, nameStressOnElementVec );
+
     } 
     
     template<bool IsometryConstraint>

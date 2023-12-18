@@ -182,7 +182,6 @@ void printDenseMatrixToFile( const MatrixType &mat, const string fileName, const
   out.close();
 }
 
-// TODO check if size of vec = size of file
 template<typename VectorType>
 void loadVectorFromFile(  VectorType &vec, const string fileName ){
   std::ifstream File; 
@@ -200,8 +199,6 @@ void loadVectorFromFile(  VectorType &vec, const string fileName ){
   File.close();
 }
 
-// TODO this requires 2x to copy vector (since result is first stored in vec)
-// TODO replace double by general type
 template<typename VectorType>
 VectorType loadVectorFromFile( const string fileName ){
   
@@ -358,7 +355,7 @@ protected:
 // to read csv files
 class CSVRow{
     public:
-        // TODO for C++17 use string_view
+
         std::string operator[](std::size_t index) const {
             return std::string(&m_line[m_data[index] + 1], m_data[index + 1] -  (m_data[index] + 1));
         }

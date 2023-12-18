@@ -206,7 +206,7 @@ public :
                                   const std::vector<TripletType> &ElasticHessianTriplet,
                                   const ShellIsometryHandler_Pointwise<ConfiguratorType> &isoOp,
                                   const RealType facIsoConstr = 1.0  ) : 
-//     _ElasticHessianTriplet ( ElasticEnergy.getTripletList() ), //! \todo getTripletList
+
     _ElasticEnergy ( ElasticEnergy ),
     _HessianElastic ( ElasticEnergy.getHessian() ),
     _ElasticHessianTriplet ( ElasticHessianTriplet ),

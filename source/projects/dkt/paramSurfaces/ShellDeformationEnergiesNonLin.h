@@ -345,7 +345,7 @@ public:
   void evaluateHessian( const VectorType& Displacement, SparseMatrixType& Hessian ) const {
     Hessian.setZero();
     std::vector<TripletType> tripletList;
-//     tripletList.reserve( 9 * 9 * _matOptConf._conf.getInitializer().getNumElements() );  // TODO
+
     this->assembleTripletListHessian( Displacement, tripletList );
     Hessian.setFromTriplets( tripletList.cbegin(), tripletList.cend() );
     Hessian.makeCompressed();
@@ -1262,7 +1262,7 @@ public:
   void evaluateHessian( const VectorType& Displacement, SparseMatrixType& Hessian ) const {
     Hessian.setZero();
     std::vector<TripletType> tripletList;
-//     tripletList.reserve( 9 * 9 * _matOptConf._conf.getInitializer().getNumElements() );  // TODO
+
     this->assembleTripletListHessian( Displacement, tripletList );
     Hessian.setFromTriplets( tripletList.cbegin(), tripletList.cend() );
     Hessian.makeCompressed();

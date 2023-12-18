@@ -175,7 +175,7 @@ public:
       this->makeOrientationConsistent();
       const int numVertices = this->getNumVertices();
       this->_tangentSpaceVec1.resize ( numVertices ); this->_tangentSpaceVec2.resize ( numVertices ); this->_normalSpaceVec.resize ( numVertices );
-      //TODO by default: interpolate normals linearly and construct tangent space by normal
+      
       this->updateAllAdjacentElementsForNodes();
   }
   
@@ -187,8 +187,7 @@ public:
       for( int elementIndex = 0; elementIndex < numElementsOld; ++elementIndex ) function[elementIndex] = oldFunction[elementIndex];
       typename std::map< int, ParentInformation >::const_iterator iter;
       for( int elementIndex = numElementsOld; elementIndex < function.size(); ++elementIndex ){
-//         //TODO elementIndexVector
-//         function[elementIndex] = function[ elementIndexVector[elementIndex] ];
+
       }  
   }
   
@@ -314,7 +313,6 @@ public:
   
   
   
-//TODO should be protected  
 public:
   // internal refinement functions
   GlobalIndex refine( GlobalIndex triangleToRefine ) {

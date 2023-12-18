@@ -104,11 +104,5 @@ public :
 
 
 
-//TODO imagesToVideo
-// mencoder mf://*.png -mf fps=10 -o test2.mpeg -ovc lavc -lavcopts vcodec=mjpe
-// mencoder mf://image*.png -mf fps=<number of frames per second> -o <Dateiname>.avi -ovc lavc -lavcopts vcodec=mjpeg
-// avconv -r 5 -i %03d.png -c:v libx264 -crf 10 -pix_fmt yuv420p apple.mov
-// -r 5 ist die Framerate.
-// -crf 10 in ein Qualitätsfaktor, je kleiner desto besser. 0 ist verlustfreie Kompression.
 
 #endif  //  __PESOPTIMAGEIO_H

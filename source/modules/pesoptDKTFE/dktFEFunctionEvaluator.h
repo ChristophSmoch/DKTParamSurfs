@@ -248,7 +248,6 @@ public:
 
 // //   void evaluateGradientInTangentSpaceAtQuadPoint ( const ElementType &El, int QuadPoint, Matrix32 &Dx ) const {
 // //     Matrix32 Dx33; this->evaluateGradientAtQuadPoint( El, QuadPoint, Dx33 );
-// //     //TODO
 // //     Dx.col(0) = Dx33.col(0);
 // //     Dx.col(1) = Dx33.col(1);
 // //   }
@@ -384,7 +383,6 @@ public:
     return std::sqrt( g.determinant() );
   }
 
-  //TODO used for Dirichlet Energy : int g^1 Du \cdot Du
 //   void evaluateFirstFundamentalFormInverseAsMatrix22 ( const Matrix22 &ginv, Matrix22 &ginvAsGradDeformType ) const {
 //     ginvAsGradDeformType = ginv;
 //   }
@@ -407,7 +405,6 @@ public:
   }
 
   //! computes derivative of g: Deriv_ijk = \partial_k g_ij = \sum_comp  \partial_ik x^comp \partial_j x^comp + \partial_i x^comp \partial_jk x^comp
-  // TODO choise of Hessian? approximation of first derivative?
   void evaluateApproxDerivativeOfFirstFundamentalForm ( const Matrix32 &dX, const Tensor322Type &ddX, Tensor222Type& Deriv ) const {
       for ( int i = 0; i < 2; ++i )
         for ( int j = 0; j < 2; ++j )
@@ -430,7 +427,6 @@ public:
 //             ChristoffelSym.set ( i , j , k, 0.5 * ( Dg( k, i, j) + Dg(k, j, i) - Dg(i,j,k) )   );
 //         }
 //   }
-  //TODO Gamma_ijk = partial_ij x cdot partial_k x
   void evaluateApproxChristoffelSymbolsOfFirstKind ( const Matrix32 &dX, const Tensor322Type &ddX, Tensor222Type& ChristoffelSym ) const {
       for ( int i = 0; i < 2; ++i )
         for ( int j = 0; j < 2; ++j )
@@ -549,137 +545,6 @@ public:
   }
 
 };
-
-
-// template <typename ConfiguratorType>
-// class PointWiseVectorFunctionEvaluatorShellFE<ConfiguratorType,3> {
-// public:
-//   typedef typename ConfiguratorType::RealType RealType;
-//   typedef typename ConfiguratorType::TangentVecType TangentVecType;
-//   typedef typename ConfiguratorType::Point3DType Point3DType;
-//   typedef typename ConfiguratorType::VectorType VectorType;
-//   typedef typename ConfiguratorType::Matrix22  Matrix22;
-//   typedef typename ConfiguratorType::Matrix32  Matrix32;
-//   typedef typename ConfiguratorType::Matrix33  Matrix33;
-//
-//   typedef typename ConfiguratorType::Tensor222Type  Tensor222Type;
-//   typedef typename ConfiguratorType::Tensor322Type  Tensor322Type;
-//
-//   typedef typename ConfiguratorType::ElementType ElementType;
-//   typedef typename ElementType::DomVecType  DomVecType;
-//   typedef typename ElementType::DomVecType DomVecType;
-//   typedef typename ElementType::Matrix32 Matrix32;
-//   typedef typename ElementType::Matrix22 Matrix22;
-//
-//
-// public:
-//
-//   PointWiseVectorFunctionEvaluatorShellFE ( ) { }
-//
-//
-// // TODO for Dx in R^3x3???????????
-//   void evaluateFirstFundamentalForm ( const Matrix33 &Dx, Matrix22 &g ) const {
-// //     g = Dx.transpose() * Dx;
-//        g.setZero(); g(0,0) = 1.; g(1,1) = 1.;
-//   }
-//
-//  //TODO used for Dirichlet Energy : int g^1 Du \cdot Du
-//   void evaluateFirstFundamentalFormInverseAsMatrix22 ( const Matrix22 &/*ginv*/, Matrix22 &ginvAsGradDeformType ) const {
-//     ginvAsGradDeformType.setZero(); ginvAsGradDeformType(0,0) = 1.; ginvAsGradDeformType(1,1) = 1.; ginvAsGradDeformType(2,2) = 1.;
-//   }
-//
-//
-//   // given chart X -> compute n \circ X  = d_1 X \cross d_2 X / |.|
-// TODO
-//   void evaluateNormal ( const Matrix33 &Dx, TangentVecType &normal ) const {
-//     TangentVecType unNormalizedNormal ( (Dx.col(0)).cross(Dx.col(1)) );
-//     normal = unNormalizedNormal.normalized();
-//       normal = TangentVecType( 0., 0., 1. );
-//   }
-//
-//
-//   void evaluateSecondFundamentalForm ( const Tensor322Type &ddX, const TangentVecType &normal, Matrix22& shapeTensor ) const {
-//       for ( int i = 0; i < 2; ++i )
-//         for ( int j = 0; j < 2; ++j ) {
-//           TangentVecType ddX_ij;
-//           ddX.getVector( ddX_ij, i, j );
-//           shapeTensor( i , j ) = normal.dot( ddX_ij );
-//         }
-//   }
-/*
-
-  //! computes derivative of g: Deriv_ijk = \partial_k g_ij = \sum_comp  \partial_ik x^comp \partial_j x^comp + \partial_i x^comp \partial_jk x^comp
-  // TODO choise of Hessian? approximation of first derivative?
-  void evaluateApproxDerivativeOfFirstFundamentalForm ( const Matrix33 &dX, const Tensor322Type &ddX, Tensor222Type& Deriv ) const {
-//       for ( int i = 0; i < 2; ++i )
-//         for ( int j = 0; j < 2; ++j )
-//           for( int k=0; k<2; ++k ){
-//             RealType tmp = 0.0;
-//             for( int comp=0; comp<3; ++comp ){
-//               tmp += ddX( comp, i, k ) * dX( comp, j ) + dX( comp, i ) * ddX( comp, j, k );
-//             }
-//             Deriv.set ( i , j , k, tmp );
-//         }
-//       cout << "TODO" << endl;
-  }*/
- /*
-  //! Gamma_ijk = 1/2 ( \partial_j g_ki + \partial_i g_kj - \partial_k g_ij )
-  void evaluateApproxChristoffelSymbolsOfFirstKind ( const Matrix33 &dX, const Tensor322Type &ddX, Tensor222Type& ChristoffelSym ) const {
-//       Tensor222Type Dg;
-//       evaluateApproxDerivativeOfFirstFundamentalForm ( dX, ddX, Dg );
-//       for ( int i = 0; i < 2; ++i )
-//         for ( int j = 0; j < 2; ++j )
-//           for( int k=0; k<2; ++k ){
-//             ChristoffelSym.set ( i , j , k, 0.5 * ( Dg( k, i, j) + Dg(k, j, i) - Dg(i,j,k) )   );
-//         }
-//             cout << "TODO" << endl;
-  }
-
-  //! Gamma_ij^m = \sum_k g^m,k Gamma_i,j,k = \sum_k 1/2 g^m,k ( \partial_j g_ki + \partial_i g_kj - \partial_k g_ij )
-  void evaluateApproxChristoffelSymbolsOfSecondKind ( const Matrix22 &ginv, const Matrix33 &dX, const Tensor322Type &ddX, Tensor222Type &ChristoffelSym2 ) const {
-//     Tensor222Type ChristoffelSym1;
-//     evaluateApproxChristoffelSymbolsOfFirstKind ( dX, ddX, ChristoffelSym1 );
-//     for ( int i = 0; i < 2; ++i )
-//         for ( int j = 0; j < 2; ++j )
-//           for( int m=0; m<2; ++m ){
-//             RealType tmp = 0.0;
-//             for( int k=0; k<2; ++k ){
-//               tmp += 0.5 * ginv( m, k ) * ChristoffelSym1( i, j, k );
-//             }
-//             ChristoffelSym2.set ( i , j , m, tmp  );
-//         }
-//       cout << "TODO" << endl;
-  }
-
-  //! g^-1 Gamma
-  void evaluateVectorForLaplacian ( const Matrix22 &ginv, const Matrix33 &dX, const Tensor322Type &ddX, DomVecType& vec ) const {
-//     vec.setZero();
-//     Tensor222Type ChristoffelSym2;
-//     evaluateApproxChristoffelSymbolsOfSecondKind ( ginv, dX, ddX, ChristoffelSym2 );
-//     for( int l=0; l<2; ++l )
-//       for ( int j=0; j<2; ++j )
-//         for( int k=0; k<2; ++k )
-//           vec[l] += ginv( j, k ) * ChristoffelSym2( j, k, l );
-//             cout << "TODO" << endl;
-  }
-
-  //! Laplace-Beltrami
-  void evaluateLaplaceBeltrami ( const Matrix22 &gAinv, const Matrix33 &dX, const Tensor322Type &ddX, const DomVecType& vecForLaplaceA, Point3DType &laplace ) const {
-//       for( int comp = 0; comp <3; ++comp ) laplace[comp] = pesopt::ddProd<RealType,Matrix22>( ginv, ddX[comp] ) - vecForLaplace.dot( dX.row(comp) );
-//             cout << "TODO" << endl;
-  }
-
-};
-
-
-*/
-
-
-
-
-
-
-
 
 
 

@@ -80,7 +80,7 @@ bool gmres_new(const MatrixType & mat, const Rhs & rhs, Dest & x, const Precondi
   const RealScalar r0Norm = r0.norm();
 
   // is initial guess already good enough?
-  //TODO this is the difference
+  //this is the difference
   if(r0Norm < tol )
   {
     tol_error = r0Norm;
@@ -111,7 +111,6 @@ bool gmres_new(const MatrixType & mat, const Rhs & rhs, Dest & x, const Precondi
     v = VectorType::Unit(m, k - 1);
 
     // apply Householder reflections H_{1} ... H_{k-1} to v
-    // TODO: use a HouseholderSequence
     for (Index i = k - 1; i >= 0; --i) {
       v.tail(m - i).applyHouseholderOnTheLeft(H.col(i).tail(m - i - 1), tau.coeffRef(i), workspace.data());
     }
@@ -121,7 +120,6 @@ bool gmres_new(const MatrixType & mat, const Rhs & rhs, Dest & x, const Precondi
     v = precond.solve(t);
 
     // apply Householder reflections H_{k-1} ... H_{1} to v
-    // TODO: use a HouseholderSequence
     for (Index i = 0; i < k; ++i) {
       v.tail(m - i).applyHouseholderOnTheLeft(H.col(i).tail(m - i - 1), tau.coeffRef(i), workspace.data());
     }

@@ -201,7 +201,6 @@ protected:
     Eigen::Ref<VectorType> startPoint_Disp = startPoint.segment( 0, 3 * this->_numGlobalDofsDisp ); startPoint_Disp = _initDisp;
     Eigen::Ref<VectorType> startPoint_Mult = startPoint.segment( 3 * this->_numGlobalDofsDisp, 3 * _numInteriorNodes ); startPoint_Mult = _initMultiplierIso;
     
-    //TODO as member depending on solvertype (directly from hessianop) 
     std::vector<TripletType> _HessianLinElastTripletSym;
     for( int i=0; i< _HessianLinElastTriplet.size(); ++i ){
       int row = _HessianLinElastTriplet[i].row();

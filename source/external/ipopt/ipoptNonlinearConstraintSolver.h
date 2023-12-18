@@ -410,7 +410,7 @@ public:
     init_x = true; init_z = false;
     for ( int j = 0; j < _startingPoint.size (); ++j ) x[j] = _startingPoint[j];
     init_lambda = false;
-    //TODO init_lambda = true; for( int i=0; i< _startingLambda.size(); ++i ) lambda[i] = _startingLambda[i];
+  
     return true;
   }
 
@@ -794,7 +794,7 @@ public:
     init_x = true; init_z = false;
     for ( int j = 0; j < _startingPoint.size (); ++j ) x[j] = _startingPoint[j];
     init_lambda = false;
-    //TODO init_lambda = true; for( int i=0; i< _startingLambda.size(); ++i ) lambda[i] = _startingLambda[i];
+
     return true;
   }
 

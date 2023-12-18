@@ -75,76 +75,7 @@ public:
 
 
 
-// template<typename DataTypeContainer>
-// class QuocBoundaryElement1D {
-// public : 
 
-// static const int numNodes = 1;
-
-//   typedef typename DataTypeContainer::RealType              RealType;
-//   typedef typename DataTypeContainer::RealVecChart            RealVecChart;
-//   typedef typename DataTypeContainer::RealVecChartBoundary    RealVecChartBoundary;
-//   typedef typename DataTypeContainer::PointType             PointType;
-//   typedef typename ElementType::ElementNodeIndicesType      ElementNodeIndicesType;
-//   typedef std::vector<PointType>                            VertexIterator;
-//   typedef QuocElement1D<DataTypeContainer>                  ElementType;
-// 
-//   protected :   
-//     // global indices of element and nodes
-//     int _globBoundaryIdx;
-//     const ElementType _element; //! \todo something wrong for const ElementType & _element;
-//     const QuocBoundaryType _boundaryType;
-//     RealVecChart _normal;
-//     PointType _boundaryNodes[1];
-//     PointType _boundaryNodesRefCoord[1];
-//     const RealType _h;
-//     int _nodeIndicesOf1DElement[1];
-//     
-// public:
-//   
-//   QuocBoundaryElement1D () : _globBoundaryIdx(-1) {}
-//   
-//   QuocBoundaryElement1D( const int globalBoundaryIdx, const ElementType & element, const QuocBoundaryType &boundaryType, const RealType h  ) : 
-//      _globBoundaryIdx(globalBoundaryIdx), _element (element), _boundaryType ( boundaryType ), _h(h) {
-//          
-//          _normal.setZero();
-//          switch( boundaryType ){
-//              case LEFT:{
-//                _boundaryNodesRefCoord[0] << 0.0;
-//                _boundaryNodes[0] = element.getNode(0);
-//                _normal[0] = -1.;
-//                _nodeIndicesOf1DElement[0] = 0;
-//              }break;
-//                  
-//              case RIGHT:{
-//                _boundaryNodesRefCoord[0] << 1.0;
-//                _boundaryNodes[0] = element.getNode(1);
-//                _normal[0] = 1.;
-//                _nodeIndicesOf1DElement[0] = 1;
-//              }break;
-//                  
-//              default:
-//                  break;
-//          }
-//     }
-//   
-//   ~QuocBoundaryElement1D(){}
-// 
-//   const ElementType & getElement() const {return _element;}
-//   int getNodeIndexOfElement(const int index ) const{ return _nodeIndicesOf1DElement[index];}
-//   const RealVecChart& getNormal() const {return _normal;}
-//   const PointType& getBoundaryNode ( int i ) const { return _boundaryNodes[i];}
-//   PointType& getBoundaryNode ( int i ) { return _boundaryNodes[i];}
-//   const PointType& getBoundaryNodeRefCoord ( int i ) const { return _boundaryNodesRefCoord[i];}
-//   PointType& getBoundaryNodeRefCoord ( int i ) { return _boundaryNodesRefCoord[i];}
-//   const RealType getVolumeOfBoundaryElement() const {return _h;}
-//   const QuocBoundaryType getBoundaryType() const {return _boundaryType;}
-//   void getRefCoord( const RealVecChartBoundary &refCoordBoundary, RealVecChart & refCoord ) const {
-//     refCoord = ( 1. - refCoordBoundary ) * this->getBoundaryNodeRefCoord(0) + refCoordBoundary * this->getBoundaryNodeRefCoord(1);   
-//   }
-// 
-// };
-    
     
     
     
@@ -241,7 +172,6 @@ public :
   protected :   
     // global indices of element and nodes
     int _globBoundaryIdx;
-    //! \todo something wrong for const ElementType & _element;
     //     const ElementType _element; 
     const ElementType &_element;
     const QuocBoundaryType _boundaryType;
@@ -417,7 +347,6 @@ public :
 
   protected :   
     int _globBoundaryIdx;
-    //! \todo something wrong for const ElementType & _element;
     // const ElementType _element; 
     const ElementType & _element;
     const QuocBoundaryType _boundaryType;

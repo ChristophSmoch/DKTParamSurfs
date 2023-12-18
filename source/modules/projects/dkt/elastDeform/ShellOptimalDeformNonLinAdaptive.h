@@ -115,7 +115,7 @@ public:
     ShellHandlerInterface<ConfiguratorType> shellHandler( conf, this->_parser.template get<string>( "InputMesh.chartXAType" ), static_cast<ShellBoundaryType>( this->_parser.template get<int>( "InputMesh.ShellType" ) ), this->_parser.template get<bool> ( "InputMesh.ClampedBoundaryCondition" ) );
     MaskType DirichletMask ( shellHandler.getDirichletMask() );
     if( this->_parser.template get<int> ( "InputMesh.tangentSpaceType" ) == 2 ){
-        mesh.generateApproximativeTangentSpaceAtNodes( DirichletMask ); //! \todo should be done directly in triangleMesh?
+        mesh.generateApproximativeTangentSpaceAtNodes( DirichletMask ); 
 //         mesh.updateAllProjectionCoefficients(); 
     }
     
@@ -144,12 +144,6 @@ public:
           SolutionDisplacement.resize( InitDisplacement.size() ); SolutionDisplacement = InitDisplacement;
       }
 
-      //! TODO set initialmaterial on refined mesh
-      //       VectorType initMaterial ( material.size() );
-      //       if( refinementStep == 0 )
-      //         this->setInitialMaterial( this->_parser.template get<int> ( "MaterialOptimizationAdapativeRefinement.firstStepInitializationType" ), mesh, material  );
-      //       else
-      //         this->setInitialMaterial( this->_parser.template get<int> ( "MaterialOptimizationAdapativeRefinement.adaptiveMaterialInitializationType" ), mesh, material  );
       
       //! SOLVE
       VectorType membraneStressVec ( mesh.getNumElements() ), bendingStressVec ( mesh.getNumElements() ), totalStressVec( mesh.getNumElements() );

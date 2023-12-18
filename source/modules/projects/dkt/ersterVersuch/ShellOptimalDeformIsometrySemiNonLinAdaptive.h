@@ -117,7 +117,7 @@ public:
     ShellHandlerInterface<ConfiguratorType> shellHandler( conf, this->_parser.template get<string>( "InputMesh.chartXAType" ), static_cast<ShellBoundaryType>( this->_parser.template get<int>( "InputMesh.ShellType" ) ), this->_parser.template get<bool> ( "InputMesh.ClampedBoundaryCondition" ) );
     MaskType DirichletMask ( shellHandler.getDirichletMask() );
     if( this->_parser.template get<int> ( "InputMesh.tangentSpaceType" ) == 2 ){
-        mesh.generateApproximativeTangentSpaceAtNodes( DirichletMask ); //! \todo should be done directly in triangleMesh?
+        mesh.generateApproximativeTangentSpaceAtNodes( DirichletMask ); 
 //         mesh.updateAllProjectionCoefficients(); 
     }
     

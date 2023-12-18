@@ -7,7 +7,6 @@
 #include <dktFEQuadrature.h>
 #include <dktFEConfigurators.h>
 
-//TODO replace by AreaOp.assembleOnElements()
 // computes vector with \int_El 1
 template <typename ConfiguratorType, DiscreteFunctionCacheType _DiscreteVectorFunctionCacheType >
 void evaluateAreaOfElements( const ConfiguratorType &conf,
@@ -286,7 +285,6 @@ void updateRefinedPositions_InterpolationOfNormalsAndFunctionOnNodes( const Conf
         if( iter == newMesh.getInterpolationMap().end() ) 
             throw std::invalid_argument ( pesopt::strprintf ( "unknown vertex in file %s at line %d.", __FILE__, __LINE__ ).c_str() );
         // use linear interpolation of normals
-        //TODO parent does not need to be contained in oldmesh, but has lower index???
         if( (iter->second.globalIndices[0] > nodeIdx ) || (iter->second.globalIndices[1] > nodeIdx ) )
             throw std::invalid_argument ( pesopt::strprintf ( "parent indices should be smaller then child??? in file %s at line %d.", __FILE__, __LINE__ ).c_str() );
         TangentVecType normalInterpolated = 0.5 * ( newMesh.getNormalVec(iter->second.globalIndices[0]) + newMesh.getNormalVec(iter->second.globalIndices[1]) );
@@ -542,7 +540,6 @@ void switchProlongationOfPhaseField( const int ProlongationType,
                         if( (newMask[i]) &&  (material[i] > -0.5) ) material[i] = 1.;    
                     }
                 }
-                //TODO
                 if( feType == C1Dofs ) newMesh.prolongateScalarFct_DKTLinearly( material ); 
         }break;
             

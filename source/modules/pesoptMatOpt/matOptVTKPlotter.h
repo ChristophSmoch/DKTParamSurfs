@@ -91,8 +91,7 @@ public :
                      vonMisesStress += 3 * pesopt::Sqr( stress(i,j) );
                }
            }
-           // TODO use materialfactor???
-           // stressVec[p] = materialfactor * std::sqrt( vonMisesStress );
+
            stressVec[p] = std::sqrt( vonMisesStress );
        }
     }
@@ -183,7 +182,7 @@ public :
        
        const int numSubdivLevels = _parser.template get<RealType> ( "saving.numSubdivLevelsInterface" );
        string subdivString = "";
-       //TODO  maybe do subdivision here
+
        if( numSubdivLevels > 0 )
            subdivString = pesopt::strprintf( "_Subdiv%d", numSubdivLevels );
        
@@ -244,9 +243,6 @@ public :
 };
 
 
-
-
-// TODO replace by VTKDeformedMeshSaver
 template< typename ConfiguratorType >
 class VTKFEMeshSaver{
   
@@ -390,8 +386,7 @@ public :
         pesopt::consoleOutputItem( "save deformations" );
             
         MaterialOptimizationVTKSaver<ConfiguratorType> meshSaver( _conf );
-            
-        //TODO
+
         const int numLoads = 1;
         
         const string saveDirectoryDeformation = _parser.createSubDirectory( "Deformation" );
@@ -485,8 +480,6 @@ public :
         
 };
 
-
-//TODO more general BoundaryConditionHandler
 template< typename ConfiguratorType >
 class MaterialOptimizationPeriodicCellVTKSaver {
     
@@ -556,7 +549,7 @@ public :
             }
             MeshType meshOutside ( numDofVecOutside, lengthVecOutside );
             VectorType materialOutsideSoft ( meshOutside.getNumVertices() );
-            //TODO read lower bound for phase field from parser
+
             for( int i=0; i<materialOutsideSoft.size(); ++i ) materialOutsideSoft[i] = 0.0;
             for( int nodeIdxOffset=0; nodeIdxOffset < meshOutside.getNumVertices(); nodeIdxOffset++ ){
                 const PointType& GlobalCoordsOffset = meshOutside.getVertex ( nodeIdxOffset );
@@ -637,7 +630,7 @@ public :
             }
             MeshType meshBlockOutside ( _numDofVecBlockOutside, _lengthVecBlockOutside );
             VectorType materialBlockOutsideSoft ( meshBlockOutside.getNumVertices() );
-            //TODO read lower bound for phase field from parser
+
             for( int i=0; i<materialBlockOutsideSoft.size(); ++i ) materialBlockOutsideSoft[i] = 0.0;
             for( int nodeIdxBlock=0; nodeIdxBlock < meshBlockOutside.getNumVertices(); nodeIdxBlock++ ){
                 const PointType& GlobalCoordsBlockOffset = meshBlockOutside.getVertex ( nodeIdxBlock );
@@ -804,7 +797,6 @@ public :
             pesopt::loadVectorFromFile<VectorType>( material, pesopt::strprintf ( "%s/materialExtended.txt", _saveDirectory.c_str() ) ); 
             FEScalarFunctionEvaluator<ConfiguratorType> discreteFctSingleCell ( conf, material );
             
-            //read material properties //TODO optional (since different for bone), maybe use name of material
             MaterialProperties<RealType,ConfiguratorType::dimChartDomain> HardMaterial ( "Hard", 1.0, 1.0, _parser.template get<RealType> ( "Material.ElastModulus" ),
                                                   _parser.template get<RealType> ( "Material.PoissonRatio" ) );
             const RealType factorVoidMaterial = _parser.template get<RealType> ( "Material.factorVoidMaterial" );

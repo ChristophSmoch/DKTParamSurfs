@@ -118,15 +118,7 @@ public:
   
     const int numElementsNew = this->_meshVector[this->_refinementLevel].getNumElements();
     vecNew.resize ( numComponents * numElementsNew );
-    // TODO see https://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
-    // Version with Eigen::Ref
-//     std::vector<Eigen::Ref<VectorType> > refsNew;
-//     refsNew.reserve( numComponents );
-//     for( int c=0; c < numComponents; ++c )
-//         refsNew.push_back ( vecNew.segment( c * numElementsNew, numElementsNew) );
-//     for( int c=0; c < numComponents; ++c )
-//         prolongateScalarFunctionOnElements<ConfiguratorType>(refsOld[c], refsNew[c] );
-    // Version with hard copy
+
      std::vector<VectorType> refsNew;
      refsNew.reserve( numComponents );
      for( int c=0; c < numComponents; ++c )

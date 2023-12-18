@@ -402,30 +402,7 @@ public:
                                            "DiffNormalVector", "avDiffNormalVector"
     };
     ShellWithMaterialPlotter<ConfiguratorType,ConfiguratorTypePf::_ShellFEType> shellPlotter( matOptConf._conf, shellHandler.getChartToUndeformedShell(), shellHandler.getDirichletMask(), saveDirectory, parser.template get<string>("saving.VTKFileType") );
-//  TODO instead of update mesh use new ShellWithMaterialPlotter
-//     this->saveStressOnUndeformedShell( "Isometry", shellPlotter, material, shellHandler.getChartToUndeformedShell(), solDisp, CurvVector, nameCurvVector );
-//     this->plotStress( saveDirectory, "Isometry", nameCurvVector );
-//     //save nodalwise values
-//     shellPlotter.clearData();
-//     shellPlotter.updateMesh( "undeform", shellHandler.getChartToUndeformedShell() );
-//     shellPlotter.addScalarData ( convolutedGaussCurvVec, "convolutedGaussCurv", VERTEX_DATA );
-//     shellPlotter.addScalarData ( EigenValues1ShapeOp, "EigenValues1ShapeOp", VERTEX_DATA );
-//     shellPlotter.addScalarData ( EigenValues2ShapeOp, "EigenValues2ShapeOp", VERTEX_DATA );
-//     shellPlotter.addScalarData ( EigenValuesSmallestAbsShapeOp, "EigenValuesSmallestAbsShapeOp", VERTEX_DATA );
-//     shellPlotter.saveShellToFile( "IsometryNodalWise" );
-//     //
-//     shellPlotter.clearData();
-//     shellPlotter.updateMesh( mesh );
-//     shellPlotter.updateMesh( "disp", solDisp );
-//     shellPlotter.addScalarData ( convolutedGaussCurvVec, "convolutedGaussCurv", VERTEX_DATA );
-//     shellPlotter.addScalarData ( EigenValues1ShapeOp, "EigenValues1ShapeOp", VERTEX_DATA );
-//     shellPlotter.addScalarData ( EigenValues2ShapeOp, "EigenValues2ShapeOp", VERTEX_DATA );
-//     shellPlotter.addScalarData ( EigenValuesSmallestAbsShapeOp, "EigenValuesSmallestAbsShapeOp", VERTEX_DATA );
-//     shellPlotter.addVectorData ( EigenVecs1ShapeOp_convert, 3, "EigenVecs1ShapeOp", VERTEX_DATA );
-//     shellPlotter.addVectorData ( EigenVecs2ShapeOp_convert, 3, "EigenVecs2ShapeOp", VERTEX_DATA );
-//     shellPlotter.addVectorData ( EigenVecsSmallestAbsShapeOp_convert, 3, "EigenVecsSmallestAbsShapeOp", VERTEX_DATA );
-//     shellPlotter.saveShellToFile ( "IsometryNodalWiseDeformed" );    
-    
+
     
     //image of gauss map 
     auto data = vtkSmartPointer<vtkPolyData>::New();
@@ -482,7 +459,7 @@ public:
     ShellHandlerInterface<ConfiguratorType> shellHandler( conf, this->_parser.template get<string>( "InputMesh.chartXAType" ), static_cast<ShellBoundaryType>( this->_parser.template get<int>( "InputMesh.ShellType" ) ), this->_parser.template get<bool> ( "InputMesh.ClampedBoundaryCondition" ) );
     MaskType DirichletMask ( shellHandler.getDirichletMask() );
     if( this->_parser.template get<int> ( "InputMesh.tangentSpaceType" ) == 2 ){
-        mesh.generateApproximativeTangentSpaceAtNodes( DirichletMask ); //! \todo should be done directly in triangleMesh?
+        mesh.generateApproximativeTangentSpaceAtNodes( DirichletMask ); 
 //         mesh.updateAllProjectionCoefficients(); 
     }
     

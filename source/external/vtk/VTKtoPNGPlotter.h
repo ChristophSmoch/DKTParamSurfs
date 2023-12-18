@@ -41,7 +41,7 @@ public :
       double scalarRange[2];
       if( useScalarData ){
                    
-        //TODO is this always the right option?
+        
         mapper->SetColorModeToMapScalars();
         
 #ifdef __DEBUGVTKTOPNGPLOTTER
@@ -50,7 +50,7 @@ public :
           
         switch( supp ){
             case VERTEX_DATA:{
-            //TODO ???
+            
             mapper->SetScalarModeToUsePointFieldData();
 //             mapper->SetScalarModeToUsePointData();
             mapper->ScalarVisibilityOn();
@@ -259,7 +259,7 @@ public :
     
     
     
-     //scalar data type:  1 - point, 2 - cell //TODO replace by enum or string
+     //scalar data type:  1 - point, 2 - cell 
     template<typename ParameterParserType>
     void plotMultipleToPngWithParserInfo( const string &inputFileName1, 
                                           const ParameterParserType &parser1, const bool useScalarData1,  const string &nameScalarData1, const VTKDataSupp supp1,
@@ -461,7 +461,7 @@ public :
         light->SetHeadLightWarmth(parserLight.template get<double>("Light.HeadWarmth")); light->SetKeyToHeadRatio(parserLight.template get<double>("Light.HeadKeyRatio"));
         
         
-      //box at boundary //TODO
+      //box at boundary 
 //         vtkSmartPointer<vtkDataSet> gridBox;
 //         auto mapperBox = vtkSmartPointer<vtkDataSetMapper>::New();
 //         auto actorBox = vtkSmartPointer<vtkActor>::New();
@@ -477,7 +477,7 @@ public :
         auto renderer = vtkSmartPointer<vtkRenderer>::New();
         renderer->AddActor(actor1);
         renderer->AddActor(actor2);
-//         if( parserRenderer.template get<int> ("BoundaryBox.useBoundaryBox") ) renderer->AddActor(actorBox); //TODO
+//         if( parserRenderer.template get<int> ("BoundaryBox.useBoundaryBox") ) renderer->AddActor(actorBox); 
         light->AddLightsToRenderer(renderer);//for vtklight: renderer->AddLight(light);
 //         if( parserRenderer.template get<bool>("ScalarBar.useScalarBar")  ) renderer->AddActor2D(scalarBar);
         

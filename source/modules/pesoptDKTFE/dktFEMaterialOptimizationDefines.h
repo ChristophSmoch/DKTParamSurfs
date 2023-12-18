@@ -55,7 +55,7 @@ public:
   void print() const {
     std::cout << "-------- " << getName() << " --------" << std::endl
               << "density              : " << getDensity() << " kg/m^3" << std::endl
-              << "diffusionCoefficient : " << getDiffusionCoefficient() << " TODO" << std::endl
+              << "diffusionCoefficient : " << getDiffusionCoefficient()  << std::endl
               << "elast modulus   (E)  : " << getElastModulus() << " GPa" << std::endl
               << "poisson ratio   (nu) : " << getPoissonRatio()  << std::endl
               << "1st Lame    (lambda) : " << getLambda() << " GPa" << std::endl
@@ -70,7 +70,6 @@ public:
   void setMu( const RealType ElastModulus, const RealType PoissonRatio ) { _mu = ElastModulus / ( 2. * ( 1. + PoissonRatio ) ) ;}
   void setLambdaMu( const RealType lambda, const RealType mu ) {
     _lambda = lambda; _mu = mu;
-    //TODO: E, nu
   }
 
   void set( const Material<RealType>& material ) {
@@ -124,8 +123,8 @@ class PhaseFieldFunctions {
 
    const ConfiguratorType &_conf;
    const ConfiguratorTypePf &_confpf;
-   const int _pfFunctionMaterialType; //TODO as template argument: 1 - linear, 2 - second order, 4- fourth order, -1 - hom
-   const int _pfFunctionDoubleWellType; //TODO as template argument:  2 - second order, 4- fourth order
+   const int _pfFunctionMaterialType; 
+   const int _pfFunctionDoubleWellType; 
    mutable RealType _factorDoubleWell;
 
    PhaseFieldFunctions ( const ConfiguratorType &conf, const ConfiguratorTypePf &confpf,
@@ -210,99 +209,6 @@ class PhaseFieldFunctions {
     }
 
 
-// #ifdef SHELLFE_APPROXCHARFCT_FIRSTORDER
-//
-//     RealType approxCharFct_material ( const RealType v ) const { return 0.5 * ( v + 1.0 ); }
-//     RealType approxCharFct_material_Derivative ( const RealType /*v*/ ) const { return 0.5;}
-//     RealType approxCharFct_material_SecondDerivative ( const RealType /*v*/ ) const { return 0.0;}
-//
-//     RealType approxCharFct_material ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType chi = approxCharFct_material( v );
-//         return c_hard * chi + c_soft * (1.-chi);
-//     }
-//     RealType approxCharFct_material_Derivative ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType tmp = approxCharFct_material_Derivative(v);
-//         return (c_hard - c_soft) * tmp;
-//     }
-//
-// #endif //SHELLFE_APPROXCHARFCT_SECONDORDER
-
-// #ifdef SHELLFE_APPROXCHARFCT_SECONDORDER
-//
-//     RealType approxCharFct_material ( const RealType v ) const { return 0.25 * pesopt::Sqr( v + 1.0 ); }
-//     RealType approxCharFct_material_Derivative ( const RealType v ) const { return 0.5 * ( v + 1.0 );}
-//     RealType approxCharFct_material_SecondDerivative ( const RealType /*v*/ ) const { return 0.5;}
-//
-//     RealType approxCharFct_material ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType chi = approxCharFct_material( v );
-//         return c_hard * chi + c_soft * (1.-chi);
-//     }
-//     RealType approxCharFct_material_Derivative ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType tmp = approxCharFct_material_Derivative(v);
-//         return (c_hard - c_soft) * tmp;
-//     }
-//
-// #endif //SHELLFE_APPROXCHARFCT_SECONDORDER
-
-// #ifdef SHELLFE_APPROXCHARFCT_FOURTHORDER
-//
-//     RealType approxCharFct_material ( const RealType v ) const { return pesopt::Sqr( pesopt::Sqr( v + 1.0 ) ) / 16.; }
-//     RealType approxCharFct_material_Derivative ( const RealType v ) const { return 0.25 * pesopt::Cub( v + 1.0 );}
-//     RealType approxCharFct_material_SecondDerivative ( const RealType v ) const { return 0.75 * pesopt::Sqr( v + 1.0 );}
-//
-//     RealType approxCharFct_material ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType chi = approxCharFct_material( v );
-//         return c_hard * chi + c_soft * (1.-chi);
-//     }
-//     RealType approxCharFct_material_Derivative ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType tmp = approxCharFct_material_Derivative(v);
-//         return (c_hard - c_soft) * tmp;
-//     }
-// #endif //SHELLFE_APPROXCHARFCT_FOURTHORDER
-
-
-// #ifdef SHELLFE_APPROXCHARFCT_1DHOMOGENIZATION
-//
-//     RealType approxCharFct_material ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType tmp = (1. + v) / c_hard + (1. - v) / c_soft;
-//         return 2. / tmp;
-//     }
-//     RealType approxCharFct_material_Derivative ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType tmp = (1. + v) / c_hard + (1. - v) / c_soft;
-//         return -2. * (1. / c_hard - 1. / c_soft ) / pesopt::Sqr( tmp );
-//     }
-//     RealType approxCharFct_material_SecondDerivative ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType tmp = (1. + v) / c_hard + (1. - v) / c_soft;
-//         return 4. * pesopt::Sqr(1. / c_hard - 1. / c_soft ) / pesopt::Cub( tmp );
-//     }
-//
-//     //TODO: for more than one paramter:
-// //     RealType approxCharFct_material ( const RealType v ) const { return 0.25 * pesopt::Sqr( v + 1.0 ); }
-// //     RealType approxCharFct_material_Derivative ( const RealType v ) const { return 0.5 * ( v + 1.0 );}
-// //     RealType approxCharFct_material_SecondDerivative ( const RealType /*v*/ ) const { return 0.5;}
-// #endif //SHELLFE_APPROXCHARFCT_1DHOMOGENIZATION
-
-
-// #ifdef SHELLFE_APPROXCHARFCT_WIRTH
-//     RealType approxCharFct_vol ( const RealType v ) const { return 0.25 * pesopt::Sqr( v + 1.0 ); }
-//     RealType approxCharFct_vol_Derivative ( const RealType v ) const { return 0.5 * ( v + 1.0 );}
-//     RealType approxCharFct_vol_SecondDerivative ( const RealType /*v*/ ) const { return 0.5;}
-//
-//     RealType approxCharFct_material ( const RealType v ) const { return 0.25 * pesopt::Sqr( v + 1.0 ); }
-//     RealType approxCharFct_material_Derivative ( const RealType v ) const { return 0.5 * ( v + 1.0 );}
-//     RealType approxCharFct_material_SecondDerivative ( const RealType /*v*/ ) const { return 0.5;}
-//
-//     RealType approxCharFct_material ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType chi = approxCharFct_material( v );
-//         return c_hard * chi + c_soft * (1.-chi);
-//     }
-//     RealType approxCharFct_material_Derivative ( const RealType v, const RealType c_hard, const RealType c_soft ) const {
-//         RealType tmp = approxCharFct_material_Derivative(v);
-//         return (c_hard - c_soft) * tmp;
-//     }
-// #endif //SHELLFE_APPROXCHARFCT_WIRTH
-
-
 
 
     RealType doubleWell ( const RealType v ) const {
@@ -350,12 +256,6 @@ class PhaseFieldFunctions {
         }
         return aux;
     }
-
-
-
-//     RealType doubleWell ( const RealType v ) const { return _factorDoubleWell * pesopt::Sqr( v * v - 1.0 );}
-//     RealType doubleWellDerivative ( const RealType v ) const { return _factorDoubleWell * 4.0 * ( v * v - 1.0 ) * v;}
-//     RealType doubleWellSecondDerivative ( const RealType v ) const { return _factorDoubleWell * 4.0 * ( 3. * v * v - 1.0 );}
 
 };
 

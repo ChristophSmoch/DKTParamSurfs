@@ -7,11 +7,7 @@
 #include "triangleFEMesh.h"
 #include "triangleFEQuadrature.h"
   
-//TODO
-// enum ShellFEType {
-//   ElementValuedDofs,
-//   NodalValuedDofs,
-// };
+
 
 
 template <typename DataTypeContainer = DataTypeContainerTriangleFE, 

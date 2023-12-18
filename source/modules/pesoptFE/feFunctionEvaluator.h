@@ -246,8 +246,7 @@ public:
     DerivativeVectorValuedType Dx; this->evaluateGradientAtQuadPoint(El,QuadPoint,Dx);
     DxSym = 0.5 * ( Dx + Dx.transpose() );
   }
-  
-  //TODO evaluate partial derivative of bf
+
   RealType evaluateDivergence ( const ElementType &El, const RealVecChart& RefCoord ) const {
     RealType divergence = 0.;
     RealVecChart v;
@@ -409,7 +408,6 @@ public:
     }
   
 protected:
-  //TODO different order:
   // 0 3 5
   //   1 4
   //     2

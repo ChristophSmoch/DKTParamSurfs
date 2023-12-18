@@ -170,8 +170,7 @@ public:
     }
     
     const int getNumDofs ( ) const { return _numDofs; }
-      
-    //TODO getEnergyInfo
+
 };
 
 

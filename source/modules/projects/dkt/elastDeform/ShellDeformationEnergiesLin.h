@@ -1366,11 +1366,11 @@ public:
       DKTFEVectorFunctionEvaluator<ConfiguratorType> dispDFD ( _matOptConf._conf, displacement, 3 );
       DKTFEVectorFunctionEvaluator<ConfiguratorType> xADFD ( _matOptConf._conf, xA, 3 );
       PointWiseVectorFunctionEvaluatorShellFE<ConfiguratorType> _pointwiseEvaluator;
-      Matrix32 dXA; xADFD.evaluateGradient( El, RefCoord, dXA ); //TODO dispDFD.evaluateApproxGradient( El, RefCoord, dX );
+      Matrix32 dXA; xADFD.evaluateGradient( El, RefCoord, dXA ); 
       Matrix22 gA, gAinv; _pointwiseEvaluator.evaluateFirstFundamentalForm( dXA, gA ); gAinv = gA.inverse();
       Tensor322Type ddXA; xADFD.evaluateApproxHessianSym( El, RefCoord, ddXA );
-      DomVecType vecForLaplaceA; _pointwiseEvaluator.evaluateVectorForLaplacian ( gAinv, dXA, ddXA, vecForLaplaceA ); //TODO this is wrong!!!!!!!!!!! dXA, ddXA
-      Matrix32 dX; dispDFD.evaluateGradient( El, RefCoord, dX ); //TODO dispDFD.evaluateApproxGradient( El, RefCoord, dX );
+      DomVecType vecForLaplaceA; _pointwiseEvaluator.evaluateVectorForLaplacian ( gAinv, dXA, ddXA, vecForLaplaceA );
+      Matrix32 dX; dispDFD.evaluateGradient( El, RefCoord, dX );
       Tensor322Type ddX; dispDFD.evaluateApproxHessianSym( El, RefCoord, ddX );
       TangentVecType laplaceX;
       this->evaluateLaplaceBeltrami ( gAinv, dX, ddX, vecForLaplaceA, laplaceX );
@@ -1381,7 +1381,7 @@ public:
    RealType evaluateBendingStressAtQuadPoint( const ElementType &El, const int QuadPoint, const VectorType &material, const VectorType &displacement ) const{
       DKTFEScalarFunctionEvaluator<ConfiguratorTypePf> materialDFD ( _matOptConf._confpf, material );
       DKTFEVectorFunctionEvaluator<ConfiguratorType> dispDFD ( _matOptConf._conf, displacement, 3 );
-      Matrix32 dX; dispDFD.evaluateGradientAtQuadPoint( El, QuadPoint, dX ); //TODO dispDFD.evaluateApproxGradient( El, QuadPoint, dX );
+      Matrix32 dX; dispDFD.evaluateGradientAtQuadPoint( El, QuadPoint, dX );
       Tensor322Type ddX; dispDFD.evaluateApproxHessianSymAtQuadPoint( El, QuadPoint, ddX );
       TangentVecType laplaceX;
       this->evaluateLaplaceBeltrami ( _xAStorage.getFirstFFInv(El.getGlobalElementIdx(),QuadPoint), dX, ddX, _xAStorage.getGInvChristoffel2(El.getGlobalElementIdx(),QuadPoint), laplaceX );
@@ -1443,7 +1443,7 @@ protected:
     RealType evaluateIntegrand ( const typename ConfiguratorType::ElementType &El, int QuadPoint ) const{
      
       Matrix32 GradDisp; _disp.evaluateGradientAtQuadPoint( El, QuadPoint, GradDisp );
-      //TODO Matrix32 GradDisp; _disp.evaluateApproxGradientAtQuadPoint( El, QuadPoint, GradDisp );
+      
       Tensor322Type HessianDisp; _disp.evaluateApproxHessianSymAtQuadPoint( El, QuadPoint, HessianDisp );
     
       Point3DType laplace;

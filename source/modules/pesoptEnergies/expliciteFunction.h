@@ -87,70 +87,7 @@ public:
 
 
 
-// //RealVecChart = RealVecChart, RealType = RealType, DerivativeType = RealVecChart
-// //f(x,y) = x^3 + y^2 x + y^3
-// //Df(x,y) = (3x^2 + y^2,  2xy + 3y^2 )
-// template< typename RealVecChart, typename RealType, typename DerivativeType>
-// class ExampleFunction_Simple 
-// : public ExpliciteScalarFunctionBase<RealVecChart,RealType,DerivativeType,ExampleFunction_Simple<RealVecChart,RealType,DerivativeType> > {
-//     
-// public:
-//     
-//   ExampleFunction_Simple() : ExpliciteScalarFunctionBase<RealVecChart,RealType,DerivativeType,ExampleFunction_Simple<RealVecChart,RealType,DerivativeType> > () {}
-//     
-//    void evaluate ( const RealVecChart &coords, RealType &fct ) const {
-//        fct = coords[0] * coords[0] * coords[0] + coords[0] * coords[1] * coords[1] + coords[1] * coords[1] * coords[1];
-//    }
-//    
-//    void evaluateDerivative ( const RealVecChart &coords, DerivativeType &Derivative ) const {
-//        Derivative.setZero();
-//        Derivative(0) = 3. * coords[0] * coords[0] + coords[1] * coords[1];
-//        Derivative(1) = 2. * coords[0] * coords[1] + 3. * coords[1] * coords[1];
-//    }
-//    
-// //    void evaluateLaplace ( const RealVecChart &coords, RealType &fct ) const {
-// //        fct.setZero();
-// //        fct[2] = -2. * M_PI * M_PI * sin( M_PI * coords[0] ) * sin( M_PI * coords[1] ) ;
-// //    }
-//    
-// //    void evaluateBiLaplace ( const RealVecChart &coords, RealType &fct ) const {
-// //        fct.setZero();
-// //        fct[2] = 4. * M_PI * M_PI * M_PI * M_PI * sin( M_PI * coords[0] ) * sin( M_PI * coords[1] );
-// //    }
-//    
-//    //TODO
-// //     exactLaplaceDKT[i+2*conf.getNumGlobalDofs()] = -2. * M_PI * M_PI * sin( M_PI * coords[0] ) * sin( M_PI * coords[1] );
-// //     exactLaplaceDKT[i+2*conf.getNumGlobalDofs()+numVertices] = -2. * M_PI * M_PI * M_PI * cos( M_PI * coords[0] ) * sin( M_PI * coords[1] );
-// //     exactLaplaceDKT[i+2*conf.getNumGlobalDofs()+2*numVertices] = -2. * M_PI * M_PI * M_PI * sin( M_PI * coords[0] ) * cos( M_PI * coords[1] );
-// 
-// /*
-//     double L2Norm_UnitSquare ( ) const  { return 0.25; }
-//     double L2NormDerivative_UnitSquare ( ) const  {return 4.9348; }
-//     double L2NormLaplace_UnitSquare ( ) const  { return 97.409; }*/
-//     
-// };
 
-
-
-
-
-
-
-
-
-// 1) function with simple Dirichlet boundary condition on (0,1)^n
-//  u(x_1, .., x_n)   = \prod_{i=1}^n sin( pi x_i )  
-// Du(x_1, .., x_n)   = \pi \left( cos(pi x_i) \prod_{j \neq i} sin(pi x_j)  \right)_{i=1, ..., n} 
-// D^2u(x_1, .., x_n) = \pi^2 | - sin(pi x) sin(pi y)          cos(pi x) cos(pi y)   |
-//             |                   cos(pi x) cos(pi y)      -  sin(pi x) sin(pi y)   |
-// laplace(u)(x_1, .., x_n) = -n \pi^2 u(x_1, .., x_n) 
-// bilaplace(u)(x_1, .., x_n) = n^2 pi^4 u(x_1, .., x_n) 
-// TODO so far in 2D:
-// int |u|^2 = 1/4
-// int |D u|^2 = pi^2 / 2 \approx 4.9348
-// int |D^2 u|^2 = pi^4 \approx 97.409
-// int |laplace(u)|^2 = pi^4 \approx 97.409 
-//RealVecChart = Vec3, RealType = Vec3, DerivativeType = Mat33
 template< typename DataTypeContainer>
 class ExampleFunction_SimplySupportedOnUnitCube 
 : public ExpliciteScalarFunctionBase<DataTypeContainer > {
@@ -191,7 +128,7 @@ public:
        bilap = lap * lap;
    }
 
-   // TODO so far in 2D
+ 
    double L2Norm_UnitSquare ( ) const  { return 0.25; }
    double L2NormDerivative_UnitSquare ( ) const  {return 4.9348; }
    double L2NormLaplace_UnitSquare ( ) const  { return 97.409; }
@@ -210,7 +147,7 @@ public:
 // Du(x) = 512 ( x_i (x_i-1) (2x_i-1) \prod_{j \neq i} x_j^2 (x_j-1)^2 )_i
 // \trace D^2u(x) = \left( 512  (6x_i^2 - 6x_i +1) \prod_{j \neq i} x_j^2 (x_j-1)^2 \right)_i             
 // laplace(u)(x,y) =  512 * \sum_i \left( (6x_i^2 - 6x_i +1) \prod_{j \neq i} x_j^2 (x_j-1)^2 \right)
-// TODO in 2D
+
 // bilaplace(u)(x,y) = 2048 ( 6x^2 - 6x + 1) * ( 6y^2 - 6y + 1) + 6144 ( ( x (x - 1) )^2 + (y (y-1))^2 ) ;
 // int |u|^2 = 0.16512
 // int |D u|^2 = 3.96288
@@ -257,7 +194,7 @@ public:
        }
    }
    
-   // TODO so far in 2D
+
    void evaluateBiLaplace ( const RealVecChart &coords, RealType &bilap ) const {
        bilap = 0.;
        
@@ -285,18 +222,7 @@ public:
 //              + 6144. * ( pesopt::Sqr( coords[0] * (coords[0] - 1.) ) + pesopt::Sqr( coords[1] * (coords[1] - 1.) ) );
    }
    
-   
-   //TODO derivative of Laplace 
-//     exactLaplaceDKT[i+2*conf.getNumGlobalDofs()]  = 512. * ( 6. * pesopt::Sqr( coords[0] ) - 6. * coords[0] + 1.) * pesopt::Sqr( coords[1] * (coords[1] - 1.) )
-//         + 512. * ( 6. * pesopt::Sqr( coords[1] ) - 6. * coords[1] + 1.) * pesopt::Sqr( coords[0] * (coords[0] - 1.) );    
-//     exactLaplaceDKT[i+2*conf.getNumGlobalDofs()+numVertices] = 
-//                           3072. * ( 2. * coords[0] - 1. ) * pesopt::Sqr( coords[1] * (coords[1] - 1. ) )
-//                         + 1024. * ( 6. * pesopt::Sqr( coords[1] ) - 6. * coords[1] + 1.) * coords[0] * ( coords[0] - 1.) * (2. * coords[0] - 1.);
-//     exactLaplaceDKT[i+2*conf.getNumGlobalDofs()+2*numVertices] = 
-//                           3072. * ( 2. * coords[1] - 1. ) * pesopt::Sqr( coords[0] * (coords[0] - 1. ) )
-//                         + 1024. * ( 6. * pesopt::Sqr( coords[0] ) - 6. * coords[0] + 1.) * coords[1] * ( coords[1] - 1.) * (2. * coords[1] - 1.);
-    
-    // TODO so far in 2D
+
     double L2Norm_UnitSquare ( ) const  { return  0.16512;}
     double L2NormDerivative_UnitSquare ( ) const  {return 3.96288;}
     double L2NormLaplace_UnitSquare ( ) const  { return 213.995;}

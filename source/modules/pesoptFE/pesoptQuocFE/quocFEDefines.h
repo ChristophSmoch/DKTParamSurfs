@@ -42,7 +42,6 @@ public :
 
 
 
-//TODO different for 2d, 3d?
 enum QuocBoundaryType {
       NOBOUNDARY = 0,
       ALL = 100,

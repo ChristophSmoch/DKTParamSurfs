@@ -574,7 +574,6 @@ public:
     const typename ConfiguratorType::BaseFuncSetType &bfs = _conf.getBaseFunctionSet ( El );
     const int numQuadPoints = bfs.numQuadPoints( );
 
-    //TODO cache b_i, b_j? use symmetry?
     for ( int q = 0; q < numQuadPoints; ++q ) {
       nonlinearity = getNonlinearity ( El, q );
       for ( int i = 0; i < numDofs; ++i ) {
@@ -658,7 +657,6 @@ public:
     const typename ConfiguratorType::BaseFuncSetType &bfs = _conf.getBaseFunctionSet ( El );
     const int numQuadPoints = bfs.numQuadPoints( );
 
-    //TODO cache b_i, b_j? use symmetry?
     for ( int q = 0; q < numQuadPoints; ++q ) {
       nonlinearity = getNonlinearity ( El, q );
       for ( int i = 0; i < numDofs; ++i ) {
@@ -741,7 +739,6 @@ public:
     const typename ConfiguratorType::BaseFuncSetType &bfs = _conf.getBaseFunctionSet ( El );
     const int numQuadPoints = bfs.numQuadPoints( );
 
-    //TODO cache b_i, b_j? use symmetry?
     for ( int q = 0; q < numQuadPoints; ++q ) {
       nonlinearity = getNonlinearity ( El, q );
       for ( int i = 0; i < numDofs; ++i ) {
@@ -936,9 +933,7 @@ public:
     Dest.setFromTriplets( tripletListMasked.begin(), tripletListMasked.end() );
   }
   
-  
-  
-  //TODO so far only for LagrangianOp
+
   void assembleTripletListDirichlet ( std::vector<TripletType> & tripletListMasked, const MaskType& boundaryMask, const RealType Factor = 1.0 ) const {
     std::vector<TripletType> tripletList;
     assembleTripletList ( tripletList, Factor );

@@ -146,7 +146,6 @@ public:
   }
   
   void getCommonElements( const int nodeIdx1, const int nodeIdx2, std::vector<int> &commonElements ) const{
-      //TODO very slow!!! use that the element indices are ordered --> dont need the full loop
       for(int i=0;i<_vertexIteratorAdjacentTriangles[nodeIdx1].size(); ++i )
            for(int j=0;j<_vertexIteratorAdjacentTriangles[nodeIdx2].size(); ++j ){
               if(_vertexIteratorAdjacentTriangles[nodeIdx1][i] == _vertexIteratorAdjacentTriangles[nodeIdx2][j] ) commonElements.push_back(_vertexIteratorAdjacentTriangles[nodeIdx1][i]); 
@@ -154,7 +153,6 @@ public:
   }
   
   void getCommonElements( const int nodeIdx1, const int nodeIdx2, const int nodeIdx3, std::vector<int> &commonElements ) const{
-      //TODO very slow!!! use that the element indices are ordered
       for(int i=0;i<_vertexIteratorAdjacentTriangles[nodeIdx1].size(); ++i )
            for(int j=0;j<_vertexIteratorAdjacentTriangles[nodeIdx2].size(); ++j )
                for(int k=0;k<_vertexIteratorAdjacentTriangles[nodeIdx3].size(); ++k ){

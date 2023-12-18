@@ -21,7 +21,6 @@
 #include <unsupported/Eigen/IterativeSolvers>
 
 
-//TODO compute kernel of a matrix with eigen
 //  FullMatrixType matDense = FullMatrixType(matSparse);
 //  Eigen::FullPivLU<FullMatrixType> lu(matDense);
 //  FullMatrixType A_null_space = lu.kernel();

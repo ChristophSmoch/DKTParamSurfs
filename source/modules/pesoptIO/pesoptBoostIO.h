@@ -30,7 +30,6 @@ std::string createSubDirectory ( const std::string OldDirectory, const std::stri
 }
     
 void moveFile( const std::string FileName, const std::string OldDirectory, const std::string NewDirectory ){
-    //TODO use boost::filesystem::rename ( OldDirectory + "/" + FileName, NewDirectory + "/" + FileName );
    std::string systemCommand;
    systemCommand += "mv ";
    systemCommand += OldDirectory + "/" + FileName + " ";
@@ -58,7 +57,7 @@ void moveDirectory( const std::string OldDirectory, const std::string NewDirecto
 
 
 void copyFile( const std::string FileName, const std::string OldDirectory, const std::string NewDirectory ){
-   //TODO use boost::filesystem::copy ( OldDirectory + "/" + FileName, NewDirectory + "/" + FileName );
+
    string systemCommand;
    systemCommand += "cp ";
    systemCommand += OldDirectory + "/" + FileName + " ";
@@ -73,7 +72,6 @@ void copyFile( const std::string FileName, const std::string OldDirectory, const
 
 
 void copyDirectory( const std::string OldDirectory, const std::string NewDirectory ){
-   //TODO use 
 //     boost::filesystem::copy ( OldDirectory, NewDirectory );
    std::string systemCommand;
    systemCommand += "cp -r ";
@@ -87,7 +85,6 @@ void copyDirectory( const std::string OldDirectory, const std::string NewDirecto
 }
     
 void copyDirectoryContent( const std::string OldDirectory, const std::string NewDirectory ){
-   //TODO use 
 //     boost::filesystem::copy ( OldDirectory, NewDirectory );
    std::string systemCommand;
    systemCommand += "cp -r ";
@@ -154,7 +151,6 @@ public:
         return *this;
     }
     
-    //TODO: only for one level: (A.B.C not allowed),
     //insert leaves (see https://stackoverflow.com/questions/8154107/how-do-i-merge-update-a-boostproperty-treeptree)
     void merge( const std::string & ParFilename ){
         boost::property_tree::ptree ptUpdates;

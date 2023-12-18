@@ -28,7 +28,7 @@ public:
     return 1. / ( 2. * ( 1. + PoissonRatio ) ) ;
  }
     
- // TODO this is copied from 2d case
+
  const RealType computeLambdaFromNuE( const RealType PoissonRatio,  const RealType ElastModulus  ) const {
      return ElastModulus * PoissonRatio / ( ( 1. + PoissonRatio ) * ( 1. - PoissonRatio ) );
  }
@@ -172,7 +172,7 @@ public:
     std::cout << "-------- " << getName() << " --------" << std::endl
               << "dimChartDomain            : " << _dimChartDomain << std::endl
               << "density              : " << getDensity() << " kg/m^3" << std::endl
-              << "diffusionCoefficient : " << getDiffusionCoefficient() << " TODO" << std::endl
+              << "diffusionCoefficient : " << getDiffusionCoefficient() << std::endl
               << "elast modulus   (E)  : " << getElastModulus() << " GPa" << std::endl
               << "poisson ratio   (nu) : " << getPoissonRatio()  << std::endl
               << "1st Lame    (lambda) : " << getLambda() << " GPa" << std::endl
@@ -290,7 +290,7 @@ public:
     std::cout << "-------- " << getName() << " --------" << std::endl
               << "dimChartDomain            : " << _dimChartDomain << std::endl
               << "density              : " << getDensity() << " kg/m^3" << std::endl
-              << "diffusionCoefficient : " << getDiffusionCoefficient() << " TODO" << std::endl
+              << "diffusionCoefficient : " << getDiffusionCoefficient() << std::endl
               << "elast modulus   (E)  : " << getElastModulus() << " GPa" << std::endl
               << "poisson ratio   (nu) : " << getPoissonRatio()  << std::endl
               << "1st Lame    (lambda) : " << getLambda() << " GPa" << std::endl
@@ -410,7 +410,7 @@ public:
     std::cout << "-------- " << getName() << " --------" << std::endl
               << "dimChartDomain            : " << _dimChartDomain << std::endl
               << "density              : " << getDensity() << " kg/m^3" << std::endl
-              << "diffusionCoefficient : " << getDiffusionCoefficient() << " TODO" << std::endl
+              << "diffusionCoefficient : " << getDiffusionCoefficient() << std::endl
               << "elast modulus   (E)  : " << getElastModulus() << " GPa" << std::endl
               << "poisson ratio   (nu) : " << getPoissonRatio()  << std::endl
               << "1st Lame    (lambda) : " << getLambda() << " GPa" << std::endl
@@ -472,86 +472,10 @@ public:
 
 
 
-// template<typename RealType>
-// class MaterialPropertiesDictionary {
-// protected :   
-//   std::unordered_map<std::string, MaterialProperties<RealType,dimChartDomain> > _MaterialPropertiesDictionary;
-//   
-// public :
-//     MaterialPropertiesDictionary ( ) {
-//     //                                                    Name                  Density     Diffusion,  E       nu   
-//     static const MaterialProperties<RealType,dimChartDomain> Air                 ( "Air"                 , 0.001225  , 1         ,   1.e-8 , 0.0    );
-//     static const MaterialProperties<RealType,dimChartDomain> Aluminum            ( "Aluminum"            , 2.71e3    , 1         ,  70     , 0.33  );
-//     static const MaterialProperties<RealType,dimChartDomain> Brass               ( "Brass"               , 8.5e3     , 1         , 103     , 0.33  );
-// //  static const MaterialProperties<RealType,dimChartDomain> Bone_Compacta       ( "Bone Compacta"       , 1         , 12e3  , 0.3   );
-// //  static const MaterialProperties<RealType,dimChartDomain> Bone_Spongiosa      ( "Bone Spongiosa"      , 1         , 100   , 0.2   );
-//     static const MaterialProperties<RealType,dimChartDomain> Bone                ( "Bone"                , 1         , 1         , 10   ,    0.2   );
-//     static const MaterialProperties<RealType,dimChartDomain> Carbon              ( "Carbon"              , 2.25e3    , 1         ,   6.9   , 0.0     );
-//     static const MaterialProperties<RealType,dimChartDomain> Ceramic             ( "Ceramic"             , 2.5e3     , 1         , 350     , 0.0     );
-//     static const MaterialProperties<RealType,dimChartDomain> Concrete            ( "Concrete"            , 2.35e3    , 1         ,  24     , 0.15  );
-//     static const MaterialProperties<RealType,dimChartDomain> Copper              ( "Copper"              , 8.94e3    , 1         , 115     , 0.345 );
-//     static const MaterialProperties<RealType,dimChartDomain> Glass               ( "Glass"               , 2.6e3     , 1         ,  65     , 0.235 );
-//     static const MaterialProperties<RealType,dimChartDomain> Gold                ( "Gold"                , 19.32e3   , 1         ,  83     , 0.44  );
-//     static const MaterialProperties<RealType,dimChartDomain> Iron                ( "Iron"                , 7.87e3    , 1         , 170     , 0.25  );
-//     static const MaterialProperties<RealType,dimChartDomain> Magnesium           ( "Magnesium"           , 1.74e3    , 1         ,  41     , 0.35  );
-//     static const MaterialProperties<RealType,dimChartDomain> Nickel              ( "Nickel"              , 8.89e3    , 1         , 210     , 0.31  );
-//     static const MaterialProperties<RealType,dimChartDomain> Nitinol_Austenite   ( "Nitinol Austinite"   , 6.45      , 1         ,  83     , 0.33  );
-//     static const MaterialProperties<RealType,dimChartDomain> Nitinol_Martensite  ( "Nitinol Martensite"  , 6.45      , 1         ,  24     , 0.33  );
-//     static const MaterialProperties<RealType,dimChartDomain> Nylon               ( "Nylon"               , 1.1e3     , 1         ,   2.4   , 0.4   );
-//     static const MaterialProperties<RealType,dimChartDomain> Platinum            ( "Platinum"            , 21.4e3    , 1         , 145     , 0.38  );
-//     static const MaterialProperties<RealType,dimChartDomain> Polymer             ( "Polymer"             , 1.        , 1         , 0.25    , 0.3  );
-//     static const MaterialProperties<RealType,dimChartDomain> Rubber              ( "Rubber"              , 1.15e3    , 1         ,   0.0023, 0.45 );
-//     static const MaterialProperties<RealType,dimChartDomain> Silver              ( "Silver"              , 10.49e3   , 1         ,  76     , 0.37  );
-//     static const MaterialProperties<RealType,dimChartDomain> Steel               ( "Steel"               , 7.85e3    , 1         , 200     , 0.285 );
-//     static const MaterialProperties<RealType,dimChartDomain> Stone_Granite       ( "Stone Granite"       , 2.6e3     , 1         ,  55     , 0.25  );
-//     static const MaterialProperties<RealType,dimChartDomain> Stone_Marble        ( "Stone Marble"        , 2.75e3    , 1         ,  75     , 0.25  );
-//     static const MaterialProperties<RealType,dimChartDomain> Tin                 ( "Tin"                 , 7.3e3     , 1         ,  42     , 0.36  );
-//     static const MaterialProperties<RealType,dimChartDomain> Titanium            ( "Titanium"            , 4.54e3    , 1         , 110     , 0.33  );
-//     static const MaterialProperties<RealType,dimChartDomain> Zinc                ( "Zinc"                , 7.14e3    , 1         , 108     , 0.25  );
-//     
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Air"                , Air ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Aluminum"           , Aluminum ) ); 
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Brass"              , Brass ) ); 
-// //  _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Bone Compacta"      , Bone_Compacta ) ); 
-// //  _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Bone Spongiosa"     , Bone_Spongiosa ) ); 
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Bone"               , Bone ) ); 
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Carbon"             , Carbon ) ); 
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Ceramic"            , Ceramic ) ); 
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Concrete"           , Concrete ) ); 
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Copper"             , Copper ) ); 
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Glass"              , Glass ) ); 
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Gold"               , Gold ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Iron"               , Iron ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Magnesium"          , Magnesium ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Nickel"             , Nickel ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Nitinol Austenite"  , Nitinol_Austenite ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Nitinol Martensite" , Nitinol_Martensite ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Nylon"              , Nylon ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Platinum"           , Platinum  ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Polymer"            , Polymer ) ); 
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Rubber"             , Rubber ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Silver"             , Silver  ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Steel"              , Steel ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Stone Granite"      , Stone_Granite ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Stone Marble"       , Stone_Marble ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Tin"                , Tin  ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Titanium"           , Titanium  ) );
-//     _MaterialPropertiesDictionary.insert( std::pair< std::string, MaterialProperties<RealType,dimChartDomain> >( "Zinc"               , Zinc ) );
-//         
-//     }
-//     
-//     MaterialProperties<RealType,dimChartDomain> getMaterialFromDictionary( const std::string name ) const{
-//         typename std::unordered_map< std::string, MaterialProperties<RealType,dimChartDomain> >::const_iterator iter;
-//         iter = _MaterialPropertiesDictionary.find( name );
-//         if( iter == _MaterialPropertiesDictionary.end() ) throw std::invalid_argument( pesopt::strprintf ( "Unknown MaterialProperties. In File %s at line %d.", __FILE__, __LINE__ ).c_str() ); 
-//         return iter->second;
-//     }
-//     
-// };
 
 
 #define QUOC_APPROXCHARFCT_FOURTHORDER
-//TODO in dependence of phasefield variable in interval (a,b)
+
 // here (a,b) = (0,1)
 // also typical (a,b) = (-1,1)
 template < typename RealType >

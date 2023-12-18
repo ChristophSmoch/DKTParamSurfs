@@ -149,7 +149,7 @@ public:
       pesopt::scaleVector<RealType,VectorType> ( tmp, -1, 1, material, _pfLowerBound, _pfUpperBound );
   }
   
-//TODO 
+
 //   void switchMaterialType( VectorType &material, VTKDataSupp dataSupp = VERTEX_DATA ) const{
  void switchMaterialType( VectorType &material ) const{
       switch( _parser.template get<int>( "Material.initMaterialType" ) ){
@@ -214,7 +214,7 @@ public:
  //==========================================================================================================================
  //==================================   Boundary     ========================================================================
  //==========================================================================================================================
- // TODO difference: periodic or not
+
  void switchMaterialBoundaryType( VectorType& material_l, VectorType& material_u, 
                                   VectorType& initMaterial, 
                                   const bool hasPeriodicBoundary ){ 
@@ -385,7 +385,6 @@ public:
 //             } break;
             
             
-          // TODO periodic boundary
           //Schwarz P
           case 20:{
               VectorType SchwarzPSurface ( initMaterial.size() );
@@ -408,7 +407,7 @@ public:
        //        right triangle (0, 0), (1, 0),  (0, 1/sqrt(3)) 
        // ====================================================       
            
-          // strut with distance depending on mesh size (in 2d: segment x segment, in 3d: TODO) 
+          // strut with distance depending on mesh size (in 2d: segment x segment) 
           // plus interface with of phasefield
             case 105: {
               const RealType strutSize = _parser.template get<RealType>("Boundary.strutSizeBoundaryConditionMaterial");
@@ -445,7 +444,7 @@ public:
        //        equilateral triangle (1, 0), (0, sqrt(3)),  (-1, 0) 
        // ====================================================       
            
-          // strut with distance depending on mesh size (in 2d: segment x segment, in 3d: TODO) 
+          // strut with distance depending on mesh size (in 2d: segment x segment) 
           // plus interface with of phasefield
             case 205: {
               const RealType strutSize = _parser.template get<RealType>("Boundary.strutSizeBoundaryConditionMaterial");

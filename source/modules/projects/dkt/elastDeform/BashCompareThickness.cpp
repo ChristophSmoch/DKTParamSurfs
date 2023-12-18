@@ -30,7 +30,7 @@ void executeProgrammOptDeformForSingleForce( const ParameterParserType &parserFo
                 
     if( linearEnergyType ){
         if( IsometryConstraint ) systemCommand += "./ShellOptimalDeformationIsometryLinAdaptive ";
-        //TODO else systemCommand += "./ShellOptimalDeformationLinAdaptive "                
+         
     }else{
         if( IsometryConstraint ) systemCommand += "./ShellOptimalDeformationIsometryNonLinAdaptive ";
         else                     systemCommand += "./ShellOptimalDeformationNonLinAdaptive ";
@@ -118,7 +118,7 @@ void plotResultsToCompareThicknessAndForce( const string saveDirectory ) {
             ParameterParserType parserForceIter ( parserIter );
             setSaveDirectoryForce( parserForceIter, compareFactorForceVec[factorForceIter] );
             const string saveDirectoryForceIter = parserForceIter.template get<string> ("saving.saveDirectory" );
-            const string saveDirectoryForceIterFinal = saveDirectoryForceIter + "/FinalResult"; //TODO or numAdaptiveRefinementSteps?
+            const string saveDirectoryForceIterFinal = saveDirectoryForceIter + "/FinalResult";
             executeProgrammPlotDeformForSingleForce( parserForceIter, saveDirectoryForceIter, saveDirectoryForceIterFinal );
         }
         runPdflatexWithBashFile( "summary.tex", saveDirectoryIter );
@@ -256,9 +256,7 @@ void compareThicknessAndForce( const int ElastEnergy, const int numAdaptiveRefin
                 parser.merge( "../../../../parameters/dkt/OptDeformIsometryLin.ini" );
                 subDirectory = parser.createSubDirectory( "IsometryLinElast" );
             }else{
-                //TODO
-                //parser.merge( "../../../../parameters/dkt/OptDeformLin.ini" );
-                //subDirectory = parser.createSubDirectory( "LinElast" );
+                
             }
         }else{
             if( IsometryConstraint ){
@@ -404,7 +402,7 @@ void compareLInfBound( const int ElastEnergy, const int numAdaptiveRefinementSte
 
             
             std::vector<RealType> compareFactorForceVec;
-            compareFactorForceVec.push_back( 1. ); //TODO possibly different initial values for f_0
+            compareFactorForceVec.push_back( 1. ); 
             
             bool existLastIterSmallerBound = false, existLastIterLargerBound = false;
             int lastIterSmallerBound, lastIterLargerBound;

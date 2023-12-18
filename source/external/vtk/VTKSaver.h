@@ -230,7 +230,7 @@ public :
         }
   }
     
-    //TODO does not work for legacy file format: only detects first array
+   
     template<typename VecType>
     bool getPointDataVec ( const string &inputFileName, const string &arrayName, std::vector<VecType> &dataVec ) const {
         string file_extension; VTKDATATYPE dataType;
@@ -272,7 +272,7 @@ public :
         }
   }
   
-  //TODO does not work for legacy file format: only detects first array
+  
   template<typename VecType>
   bool getCellDataVec ( const string &inputFileName, const string &arrayName, std::vector<VecType> &dataVec ) const {
         string file_extension; VTKDATATYPE dataType; 
@@ -310,7 +310,7 @@ public :
 //         string file_extension; VTKDATATYPE dataType;
 //         vtkSmartPointer<vtkDataSet> data; this->readVTKDataSet( inputFileName, data, file_extension, dataType );
 //         
-//         //TODO
+//         
 // //         vtkIdType idNumCellsInFile = data->GetNumberOfCells();
 // //         dataVec.resize( idNumCellsInFile );
 // 
@@ -325,7 +325,7 @@ public :
 //             if( numVectors > 1 ){
 //               for (vtkIdType tupleIdx = 0; tupleIdx < numVectors; ++tupleIdx)
 //                 for( int compIdx = 0; compIdx < numComponents; ++compIdx ){
-//                     //TODO
+//                     
 // //                     dataVec[tupleIdx][compIdx] = dataArray->GetComponent(tupleIdx, compIdx);         
 //                 }
 //               }

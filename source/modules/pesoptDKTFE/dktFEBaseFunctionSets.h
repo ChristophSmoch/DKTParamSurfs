@@ -104,15 +104,13 @@ public:
   //****************************************************
   RealType evaluateOnRefTriang ( int BaseFuncNum, const DomVecType &RefCoord ) const { return this->asImp().evaluateOnUnitTriang(BaseFuncNum,RefCoord);}
   inline const RealType evaluateOnRefTriang ( int BaseFuncNum, int QuadPoint ) const { return this->evaluateOnRefTriang ( BaseFuncNum, this->_quadRule.getRefCoord ( QuadPoint ) );}
-  
-  //TODO Gradient is now 3d Vector, before 2d vector!!!
+
   // Gradient = Dxref g^{-1} Grad_UnitTriang
   void evaluateGradientOnRefTriang ( int BaseFuncNum, const DomVecType &RefCoord, DomVecType &Gradient ) const {
     DomVecType GradUnitTriang; this->asImp().evaluateGradientOnUnitTriang( BaseFuncNum, RefCoord, GradUnitTriang );
     DomVecType ginvDx; ginvDx = _triangle->getInverseMetricRefTriang( ) * GradUnitTriang;  
     const DomVecType dir0 = _triangle->edgeRefTriang(0,1);
     const DomVecType dir1 = _triangle->edgeRefTriang(0,2); 
-    //TODO for g^-1 = Dx^TDx: normalDirection = dir0 x dir1 / |..|
     Gradient = ginvDx[0] * dir0 + ginvDx[1] * dir1;
   }
 
@@ -1311,7 +1309,6 @@ public:
       DomVecType GradUnitTriang; this->evaluateApproxGradientOnUnitTriang( BaseFuncNum, RefCoord, GradUnitTriang );
       Gradient[0] = GradUnitTriang[0];
       Gradient[1] = GradUnitTriang[1];
-      //TODO
   }
   
   inline DomVecType evaluateApproxGradientOnRefTriang ( int BaseFuncNum, int QuadPoint ) const {
@@ -1322,7 +1319,6 @@ public:
   
   
    //DTheta  
-   //TODO Matrix32 Hessian = Dx g^-1 HessianUnitTriang -> meaning in tangent vec directions??
 //    void evaluateApproxHessianOnRefTriang ( int BaseFuncNum, const DomVecType &RefCoord, Matrix22 &Hessian ) const {    
 //     const Matrix22& DxGinv = _triangle->getGradientTimesInverseMetricRefTriang();
 //     Matrix22 HessianUnitTriang; this->evaluateApproxHessianOnUnitTriang( BaseFuncNum, RefCoord, HessianUnitTriang );
@@ -1355,7 +1351,6 @@ public:
     HessianVec[0] = DxGinv(0,0) * Hx1 + DxGinv(0,1) * Hx2;
     HessianVec[1] = DxGinv(1,0) * Hy1 + DxGinv(1,1) * Hy2;
     HessianVec[2] = DxGinv(1,0) * Hx1 + DxGinv(1,1) * Hx2 + DxGinv(0,0) * Hy1 + DxGinv(0,1) * Hy2;
-    //TODO
 //        Matrix22 Hessian; this->evaluateApproxHessianOnRefTriang( BaseFuncNum, RefCoord, Hessian );
 //        HessianVec(0) = Hessian(0,0);
 //        HessianVec(1) = Hessian(1,1);

@@ -30,7 +30,6 @@ public :
             mc->SetValue(0, threshold);
 
             //save 
-            //TODO so far only for .vtk but not for .vtp!!!
             auto writer = vtkSmartPointer<vtkPolyDataWriter>::New(); //.vtk
             writer->SetFileName(outputFileName.c_str());
             writer->SetFileTypeToASCII();         
@@ -38,8 +37,8 @@ public :
             writer->Write();
 //             VTKSaver vtkWriter;
 //             string file_extension_output; //VTKDATATYPE dataType = VTKPOLYDATA;
-//             /*vtkWriter.saveVTKDataSet( outputFileName, mc->GetOutput(), file_extension_output, dataType );*/ //TODO does not work
-//             vtkWriter.writeVTKAlgorithmOutput( outputFileName, mc->GetOutputPort(), file_extension_output, VTKPOLYDATA ); //TODO does not compile: need SetInputConnection instead of SetInputData
+//             /*vtkWriter.saveVTKDataSet( outputFileName, mc->GetOutput(), file_extension_output, dataType );*/ 
+//             vtkWriter.writeVTKAlgorithmOutput( outputFileName, mc->GetOutputPort(), file_extension_output, VTKPOLYDATA ); 
             
             return true;
         }else{
@@ -50,7 +49,6 @@ public :
     }
     
     
-    //! TODO   inputFile can be arbitrary???
     //         outputFile is polydata (ie. either .vtk with polydata or .vtp)
     void getInterfaceByContourFilter( const string &inputFileName, const string &outputFileName,
                                       const string &ActiveScalars, const float threshold = 0.5,
@@ -116,7 +114,7 @@ public :
 //         
 //         VTKSaver vtkWriter;
 //         string file_extension_output;
-//         vtkWriter.saveVTKDataSet( outputFileName, poly->GetOutput(), file_extension_output, dataType  ); //TODO
+//         vtkWriter.saveVTKDataSet( outputFileName, poly->GetOutput(), file_extension_output, dataType  );
 //     }
     
     
@@ -147,7 +145,6 @@ public :
     
     
     //! \note inputfile has to be of type polydata 
-    //! \todo check if input file is polydata, use 
     //        VTKSaver vtkReader;
     //    string file_extension; VTKDATATYPE dataType;
     //    vtkSmartPointer<vtkDataSet> dataSet; vtkReader.readVTKDataSet( inputFileName, dataSet, file_extension, dataType );

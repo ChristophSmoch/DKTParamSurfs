@@ -12,7 +12,6 @@
 
 
 
-//TODO use projected pcg from quocmesh
 /*
 template < typename VectorType, typename MatrixType, typename iOpType = Op<VectorType> >
 class PCGInverseProjectEqConstr : {
@@ -38,7 +37,7 @@ public:
     // projection before iterations
     const DataType constraint = constrVec * Dest;
     if ( std::abs ( constraint ) > projectThreshold ) {
-        for( int i=0; i<Dest.size(); ++i) Dest[i] -= constraint; //TODO normalize?
+        for( int i=0; i<Dest.size(); ++i) Dest[i] -= constraint; 
     }
 
     h = _mat * dest;
@@ -61,7 +60,7 @@ public:
       // projection during iterations
       const DataType constraint = constrVec * Dest;
       if ( std::abs ( constraint ) > projectThreshold ) {
-          for( int i=0; i<Dest.size(); ++i) Dest[i] -= constraint; //TODO normalize?
+          for( int i=0; i<Dest.size(); ++i) Dest[i] -= constraint; 
       }
 
       g += (alpha_numer / alpha_denom ) * h;
@@ -125,8 +124,7 @@ void conjugate_gradient_new(const MatrixType& mat, const Rhs& rhs, Dest& x,
     tol_error = 0;
     return;
   }
-  
-  //TODO project x
+
   
   RealScalar threshold = tol*tol*rhsNorm2;
   RealScalar residualNorm2 = residual.squaredNorm();
@@ -149,7 +147,6 @@ void conjugate_gradient_new(const MatrixType& mat, const Rhs& rhs, Dest& x,
 
     Scalar alpha = absNew / p.dot(tmp);         // the amount we travel on dir
     x += alpha * p;                             // update solution
-    //TODO project
     residual -= alpha * tmp;                    // update residual
     
     residualNorm2 = residual.squaredNorm();

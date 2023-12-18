@@ -71,7 +71,7 @@ int main(int argc, char ** argv) {
         VectorType initDisp( 3 * conf.getNumGlobalDofs() ); 
         initDisp.setZero();
         
-        //TODO
+        
         VectorType material( confpf.getNumGlobalDofs() );
         for( int i=0; i<material.size(); ++i ) material[i] = 1.;
 

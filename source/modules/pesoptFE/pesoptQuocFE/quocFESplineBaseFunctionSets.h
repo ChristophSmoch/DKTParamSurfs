@@ -228,7 +228,6 @@ protected:
 public:
   typedef FECachedSecondOrderBaseFunctionSetBase < DataTypeContainer, QuadType,  16,  QuocSplineBaseFunctionSet2D<DataTypeContainer, QuadType, ElementType> > BaseType;
   
-  // TODO quadrature does not have any influence!
   typedef Quoc1DDataTypeContainer DataTypeContainer1D;
   typedef typename DataTypeContainer1D::RealVecChart RealVecChart1D;
   typedef typename DataTypeContainer1D::DerivativeVectorValuedType DerivativeVectorValuedType1D;
@@ -323,8 +322,7 @@ protected:
     
 public:
   typedef FECachedSecondOrderBaseFunctionSetBase < DataTypeContainer, QuadType,  64,  QuocSplineBaseFunctionSet3D<DataTypeContainer, QuadType, ElementType> > BaseType;
-  
-  // TODO quadrature does not have any influence!
+
   typedef Quoc1DDataTypeContainer DataTypeContainer1D;
   typedef typename DataTypeContainer1D::RealVecChart RealVecChart1D;
   typedef typename DataTypeContainer1D::DerivativeVectorValuedType DerivativeVectorValuedType1D;

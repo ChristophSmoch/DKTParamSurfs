@@ -35,7 +35,7 @@ public:
     _numGlobalDofs ( conf.getNumGlobalDofs() ) {
         this->_DirichletMask.resize( this->_numGlobalDofs, false );
         this->_PeriodicMask.resize( this->_numGlobalDofs, false );
-        this->_PeriodicIndices.resize( this->_numGlobalDofs ); //TODO if no periodic mask, then _PeriodicIndices(i) = i for all i;
+        this->_PeriodicIndices.resize( this->_numGlobalDofs ); 
     }
   
   
@@ -453,9 +453,6 @@ public:
 };
 
 
-
-
-// TODO clamped wrt one ring of boundary nodes
 //      maybe distinguish if C1 dofs or tangent space derivatives are considered
 template< typename ConfiguratorType >
 class FEClampedBoundaryConditionHandler

@@ -559,8 +559,7 @@ public:
     setPrintOptionsIpopt( _ipoptPrintLevel, _ipoptOutputFile, ipoptApp );
     
     ipoptApp->Options()->SetStringValue ( "hessian_approximation", "exact" );
-    
-    // TODO optional (default 1.e-8)
+
     ipoptApp->Options()->SetNumericValue ( "bound_relax_factor", _boundRelaxFactorIpopt );
     
     
